@@ -1,0 +1,433 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">	
+	
+  	<ui:define name="metadata">
+  		<f:metadata>
+  			<f:importConstants type="com.ib.omb.system.OmbConstants" />			
+			<f:viewAction action="#{userData.checkPageAccess(104)}" onPostback="false" />			
+		</f:metadata>
+	</ui:define>
+                
+    <ui:define name="title">#{navTexts['/pages/procList.xhtml']}</ui:define>
+   
+    <ui:define name="viewname">
+        <li>#{navTexts['/pages/procList.xhtml']}</li> 
+    </ui:define>
+	
+	<ui:define name="content">				
+			
+			<h:form id="formProcList" >
+				
+				<div class="container #{guestPreferences.containerPosition}">
+				
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilter" >
+	
+						<div class="card">
+		
+							<div class="p-grid ui-fluid p-align-end">
+							
+								<!-- Регистратура -->
+								<p:focus for="idReg" />								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-3">		
+									<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label" />	
+									<p:selectOneMenu value="#{procList.idReg}" id="idReg">
+										<f:selectItem value="#{null}" itemValue="#{null}"/>	 						 				
+				                        <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTRATURI, now, procList.currentLang)}"                           
+				                     		var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/> 
+				                     	<p:ajax event="change" listener="#{procList.actionFindAllDefProcedures(false)}" update="formProcList:defId"/>
+			                      	</p:selectOneMenu>															
+								</div>
+								
+								<!-- Номер на процедура -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-1">							
+									<h:outputText value="#{labels['procList.numProc']}" styleClass="form-label" />
+									<p:inputText value="#{procList.exeId}" />						
+								</div>
+								
+								<!-- Дефиниция на процедура -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-3">							
+									<h:outputText value="#{labels['procList.numDef']}" styleClass="form-label" style="white-space: nowrap;"/>									
+									<p:selectOneMenu value="#{procList.defId}" id="defId" autoWidth="false">
+						 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+						                <f:selectItems value="#{procList.defProcList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+									</p:selectOneMenu>						
+								</div>	
+								
+								<!-- Инициращ документ -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-1">							
+									<h:outputText value="#{labels['procList.inicDoc']}" styleClass="form-label"/>
+									<p:inputText value="#{procList.rnDoc}" />						
+								</div>
+								
+								<!-- Статус -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-4">	
+							        <h:outputText value="#{labels['procDefList.status']}" styleClass="form-label" />
+							        <ibg:selectManyModalA  compType="2" maxResults="50" codeClassif="#{OmbConstants.CODE_CLASSIF_PROC_STAT}" 
+										id="status" dateClassif="#{procList.decodeDate}" filtered="false"
+										selectedCodes="#{procList.statusList}" saveStateTree="true"
+										selectedClassifs="#{procList.statusListClassif}"  
+										withBtnClear="true" styleAutoComp="width:100%;" />																        
+								</div>
+								
+								<!-- Наименование на процедура -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-6">							
+									<h:outputText value="#{labels['procDefList.nameProc']}" styleClass="form-label"/>
+									<p:inputText value="#{procList.procName}" />						
+								</div>		
+								
+								<!-- Описание на процедура -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-6">									
+									<h:outputText value="#{labels['procDefList.opisProc']}" styleClass="form-label"/>
+									<p:inputText value="#{procList.procInfo}" />						
+								</div>
+								
+								<!-- Период на начало на изпълнение -->
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3">		
+							        <h:outputText  value="#{labels['procList.periodBegin']}"  styleClass="form-label" style="white-space: nowrap;"/>
+					            	<p:selectOneMenu id="perBegin" value="#{procList.periodBegin}">
+						                <f:selectItem value="#{null}" itemValue="#{null}"/>
+						                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, procList.currentLang)}" 
+						                   var="pb" itemLabel="#{pb.tekst}" itemValue="#{pb.code}" />
+						                <p:ajax event="change" update="formProcList:perBegin formProcList:beginFrom formProcList:beginTo" listener="#{procList.changePeriodBegin}"/>   
+					         		 </p:selectOneMenu>
+								</div>
+				
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">	
+						            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="beginFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+							         	value="#{procList.beginFrom}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perBegin" listener="#{procList.changePeriodBegin}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perBegin" listener="#{procList.changePeriodBegin}"/>      
+							        </p:datePicker>	
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">	
+						             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									 <p:datePicker id="beginTo" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+							         	value="#{procList.beginTo}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perBegin" listener="#{procList.changePeriodBegin}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perBegin" listener="#{procList.changePeriodBegin}"/>      
+							         </p:datePicker>
+								</div>
+								
+								<!-- Отговорен за изпълнението -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-5 p-xl-5 ui-fluid">	
+							        <h:outputText  value=" #{labels['procDefList.otgIzpal']}"  styleClass="form-label"/>
+							        <div class="selectModalA">
+						            	<ibg:selectManyModalA id="otgIzp" compType="2" maxResults="50"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+											dateClassif="#{now}" filtered="false" styleAutoComp=""  
+											saveStateTree="false" showRadioBtn="true" withBtnClear="true"	
+											selectedCodes="#{procList.procCodeRefList}"
+											selectedClassifs="#{procList.scCodeRefList}"
+											header="#{labels['procDefList.otgIzpal']}" /> 
+						      		</div>
+								</div>	
+								
+								<!-- Период на срок за изпълнение -->
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3">		
+							        <h:outputText  value="#{labels['procList.periodSrok']}"  styleClass="form-label" style="white-space: nowrap;"/>
+					            	<p:selectOneMenu id="perSrok" value="#{procList.periodSrok}">
+						                <f:selectItem value="#{null}" itemValue="#{null}"/>
+						                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, procList.currentLang)}" 
+						                   var="ps" itemLabel="#{ps.tekst}" itemValue="#{ps.code}" />
+						                <p:ajax event="change" update="formProcList:perSrok formProcList:srokFrom formProcList:srokTo" listener="#{procList.changePeriodSrok}"/>   
+					         		 </p:selectOneMenu>
+								</div>
+				
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">
+						            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="srokFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+							         	value="#{procList.srokFrom}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perSrok" listener="#{procList.changePeriodSrok}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perSrok" listener="#{procList.changePeriodSrok}"/>      
+							        </p:datePicker>	
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">
+						             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									 <p:datePicker id="srokTo" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+							         	value="#{procList.srokTo}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perSrok" listener="#{procList.changePeriodSrok}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perSrok" listener="#{procList.changePeriodSrok}"/>      
+							         </p:datePicker>
+								</div>
+								
+								<!-- Контролиращ на етап -->						
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-5 p-xl-5">
+									<h:outputText value="#{labels['procExeList.etapContr']}" styleClass="form-label"/>
+									<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+										id="controlEtap" dateClassif="#{now}" filtered="false" 														
+										selectedCode="#{procList.etapCodeRef}" saveStateTree="true"
+										withBtnClear="true" compType="2" styleAutoComp="" />	
+								</div>
+								
+								<!-- Период на край на изпълнение -->
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3">	
+							        <h:outputText  value="#{labels['procList.periodEnd']}"  styleClass="form-label" style="white-space: nowrap;"/>
+					            	<p:selectOneMenu id="perEnd" value="#{procList.periodEnd}">
+						                <f:selectItem value="#{null}" itemValue="#{null}"/>
+						                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, procList.currentLang)}" 
+						                   var="pb" itemLabel="#{pb.tekst}" itemValue="#{pb.code}" />
+						                <p:ajax event="change" update="formProcList:perEnd formProcList:endFrom formProcList:endTo" listener="#{procList.changePeriodEnd}"/>   
+					         		 </p:selectOneMenu>
+								</div>
+				
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">
+						            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="endFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+							         	value="#{procList.endFrom}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perEnd" listener="#{procList.changePeriodEnd}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perEnd" listener="#{procList.changePeriodEnd}"/>      
+							        </p:datePicker>	
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-2 p-xl-2">
+						             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									 <p:datePicker id="endTo" pattern="dd.MM.yyyy" mask="true" showIcon="true"  locale="bg"  
+							         	value="#{procList.endTo}" styleClass="form-control" >
+							         	<p:ajax event="change" update="formProcList:perEnd" listener="#{procList.changePeriodEnd}"/>
+							         	<p:ajax event="dateSelect" update="formProcList:perEnd" listener="#{procList.changePeriodEnd}"/>      
+							         </p:datePicker>
+								</div>
+								
+								<!-- Само просрочени процедури -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-5 p-xl-5">									
+									<p:selectBooleanCheckbox value="#{procList.overdue}" styleClass="form-label" itemLabel="#{labels['procList.onlyOverdue']}" /> 										
+								</div>	
+								
+							</div>
+		
+							<div class="filter-buttons">
+								
+								<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+												id="btnSearchProc" update="resultTable panelFilter" partialSubmit="true"
+												process="@this panelFilter resultTable" actionListener="#{procList.actionSearch}" styleClass="p-mr-3"/>
+								<p:defaultCommand target="btnSearchProc" />
+		
+								<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+												 id="btnClear" update="resultTable panelFilter" partialSubmit="true"
+												 process="@this panelFilter resultTable" actionListener="#{procList.actionClear}"
+												 styleClass="ui-button-warning" />	
+							</div>
+		
+						</div>
+					
+					</h:panelGroup>
+				
+				</div>
+				
+				<h:panelGroup id="resultTable" layout="block" styleClass="margin-top">
+
+				<h:panelGroup layout="block" styleClass="card">
+
+					<div class="table-toolbar">
+					
+						<p:commandButton icon="fas fa-file" action="#{procList.actionFindAllDefProcedures(true)}" value="#{labels['procList.newProc']}" update="formProcList:panelDlgCreateProc" 
+										 oncomplete="PF('modalCreateProc').show();" styleClass="ui-button-success" />
+						
+						<span class=" p-mx-2" jsf:rendered="#{procList.proceduresList.rowCount > 0}"> 
+							<span class="fas fa-ellipsis-v" />
+						</span>	
+
+						<h:outputText value="#{ui_labels['general.reportResult']} #{procList.proceduresList.rowCount} " styleClass="form-label" rendered="#{procList.proceduresList.rowCount > 0}"/>
+
+					</div>
+
+					<p:dataTable id="tblProcList" var="row" value="#{procList.proceduresList}" lazy="true" rendered="#{procList.proceduresList != null}"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="15" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblProcList" fileName="proceduresListXls" postProcessor="#{procList.postProcessXLSProcList}" />
+								</h:commandLink>
+<ui:remove><!-- 
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									 <p:dataExporter type="pdf"  target="tblProcList" fileName="proceduresListPdf" encoding="windows-1251"
+					        			preProcessor="#{procList.preProcessPDFProcList}" options="#{procList.pdfOptions()}"/>
+							
+								</h:commandLink>
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblProcList" fileName="proceduresListCsv" encoding="CP1251" />
+								</h:commandLink>
+ --></ui:remove>
+							</div>
+
+						</f:facet>
+
+						<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="15" exportable="false">
+							<p:commandButton icon="fas fa-edit" action="#{procList.actionGoto(row[0])}" ajax="false" styleClass="btn-new" rendered="#{row[15]==null}" />									
+							
+							<ui:remove><p:commandButton icon="fas fa-eye" action="#{procList.actionGoto(row[0])}" ajax="false" styleClass="btn-new" 
+									rendered="#{userData.userId ne row[4] and !userData.hasAccess(OmbConstants.CODE_CLASSIF_BUSINESS_ROLE, OmbConstants.CODE_ZNACHENIE_BUSINESS_ROLE_PROC_ADMIN) and userData.userAccess ne row[4]}"/></ui:remove>							
+							
+							<p:commandButton type="button" icon="fas fa-lock" id="lockButton" ajax="false" alt="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[15], procList.currentLang, now)}"
+							   title="#{beanMessages['procList.lockedProc']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[15], procList.currentLang, now)}"   
+			 				   rendered="#{row[15]!=null}" styleClass="ui-button-secondary"/>
+					 		<p:tooltip for="lockButton">
+					 			#{beanMessages['procList.lockedProc']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[15], procList.currentLang, now)} на 
+					 			<h:outputText value="#{row[16]}" >
+					 				<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procList.timeZone}"/>
+					 			</h:outputText>
+					 		</p:tooltip>
+						
+						</p:column>
+						
+						<p:column width="20" sortBy="#{row.a0}" headerText="#{labels['procDefList.nomProc']}">
+							<h:outputText value="#{row[0]}" />
+						</p:column>
+						
+						<p:column width="70" sortBy="#{row.a1}" headerText="#{labels['procExeEdit.btnDef']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROCEDURI, row[1], procList.currentLang, now)}" />							
+						</p:column>
+
+						<p:column width="130" sortBy="#{row.a2}" headerText="#{labels['procDefList.nameProc']}">
+							<h:outputText value="#{row[2]}" escape="false"/>							
+						</p:column>
+
+						<p:column width="5" exportable="false" id="opisInstruc">
+							<f:facet name="header">
+								<p:tooltip value="#{labels['procDefList.opisProc']} / #{labels['procExeEdit.instruction']}" for="opisInstruc" />
+							</f:facet>
+							<p:commandLink id="procInfo">
+								<i class="fas fa-info-circle table-icon"></i>
+							</p:commandLink>
+							<p:overlayPanel for="procInfo" style="width: 400px;" at="right center">
+								<span class="form-label">#{labels['procDefList.opisProc']}: </span>
+								<h:outputText value="#{row[3]}" escape="false" />
+								<br />
+								<span class="form-label"><h:outputText value="#{labels['procExeEdit.instruction']}:" rendered="#{row[13] ne null}"/> </span>
+								<h:outputText value="#{row[13]}" escape="false" rendered="#{row[13] ne null}"/>
+							</p:overlayPanel>
+						</p:column>
+
+						<p:column width="110" headerText="#{labels['procDefList.opisProc']} / #{labels['procExeEdit.instruction']}" visible="false" exportable="true" >
+							<h:outputText value="#{labels['procDefList.opisProc']}: "/>	
+							<h:outputText value="#{row[3]}" escape="false" />
+							<h:outputText value="; #{labels['procExeEdit.instruction']}: " rendered="#{row[13] ne null}"/>						
+							<h:outputText value="#{row[13]}" escape="false" rendered="#{row[13] ne null}" />
+						</p:column>
+
+						<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['procList.otgovoren']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[4], procList.currentLang, now)}"/>								
+						</p:column>
+
+						<p:column width="35" sortBy="#{row.a5}" headerText="#{labels['procList.begin']}">
+							<h:outputText value="#{row[5]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{procList.timeZone}"/>
+							</h:outputText>	
+						</p:column>
+						
+						<p:column width="35" sortBy="#{row.a6}" headerText="#{labels['procDefEdit.srok']}">
+							<h:outputText value="#{row[6]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{procList.timeZone}"/>
+							</h:outputText>	
+						</p:column>
+						
+						<p:column width="35" sortBy="#{row.a7}" headerText="#{labels['procList.end']}">
+							<h:outputText value="#{row[7]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{procList.timeZone}"/>
+							</h:outputText>	
+						</p:column>
+						
+						<p:column width="50" sortBy="#{row.a8}" headerText="#{labels['procDefList.status']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_STAT, row[8], procList.currentLang, now)}" />											
+						</p:column>
+						
+						<p:column width="90" sortBy="#{row.a14}" headerText="#{labels['docDestruction.note']}">
+							<h:outputText value="#{row[14]}"/>
+						</p:column>
+						
+						<p:column width="70" sortBy="#{row.a11}" headerText="#{labels['procList.document']}">
+							<h:outputText value="#{row[11]}/" rendered="#{row[11] ne null}"/>
+							<h:outputText value="#{row[12]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{procList.timeZone}"/>
+							</h:outputText>	
+						</p:column>
+
+						<ui:remove> <p:column width="90" sortBy="#{row.a9}" headerText="#{labels['regData.registratura']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row[9], procList.currentLang, now)}	" />														
+						</p:column>	</ui:remove>	
+
+					</p:dataTable>
+
+				</h:panelGroup>
+
+			</h:panelGroup>	
+			
+			<p:dialog header="#{labels['procList.titleCreateProc']}" widgetVar="modalCreateProc" modal="true" width="800" height="100" resizable="true" appendTo="@form">
+	
+				<p:messages id="messages" >
+			        <p:autoUpdate />
+			    </p:messages>	
+						
+				<p:outputPanel id="panelDlgCreateProc">
+				
+					<div class="p-grid">
+					
+						<!-- Избор на активна дефиниция на процедура, за която да се започне изпълнение -->
+						<div  class=" p-col-12 p-md-12">								
+							<h:outputText value="#{labels['procList.selectIdDefProc']}" styleClass="form-label req"/>
+							<p:selectOneMenu value="#{procList.idDefProc}" id="idDefProc" style="width: 55%">
+				 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+			                    <f:selectItems value="#{procList.proceduriList}"  var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+		                      	<p:ajax event="change" update="panelCreateProc"/>
+							</p:selectOneMenu>			
+						</div>
+						
+						<h:panelGroup id="panelCreateProc" styleClass="p-grid p-col-12 p-nogutter" layout="block">
+		
+							<h:panelGroup rendered="#{procList.idDefProc != null}">
+		
+								<div class=" p-col-12 p-md-12">
+									<p:commandButton icon="fas fa-save" action="#{procList.actionCreateProc}"  value="#{labels['procList.createProc']}"  ajax="false"/>
+								</div>
+		
+							</h:panelGroup>
+		
+						</h:panelGroup>
+					
+					</div>
+					
+				</p:outputPanel>
+						
+				<f:facet name="footer">
+				          	
+		          	<div class="p-grid p-nogutter">
+			       		
+			       		<div class="p-col-12" align="right">
+				       	 	<p:commandButton id="bntCloseCreateProc" update="panelDlgCreateProc" process="@this panelDlgCreateProc"
+				       	 	    icon="fas fa-times" styleClass="ui-button-secondary" value="#{labels['register.cancel']}" oncomplete="PF('modalCreateProc').hide();" />	
+				 		</div>
+			 		
+			 		</div>
+				
+				</f:facet>	
+				
+			</p:dialog> 	
+			
+		</h:form>
+			
+	</ui:define>	
+	
+</ui:composition>

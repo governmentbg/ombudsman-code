@@ -1,0 +1,264 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+	
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />			
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/eventsList.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/eventsList.xhtml']}</li>
+	    </ui:define> 
+	    
+		
+	<ui:define name="content">
+	
+		<h:form id="eventsForm">
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+				<h:panelGroup id="panelFilterEvents" rendered="#{!eventsList.fromDb}">
+					<div class="card ">
+					
+						<div  class="p-grid  ui-fluid p-align-end" >
+						
+							<!--Вид организирано събитие-->							
+							<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['events.vid']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="eventsVid" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_VID_EVENT}" 																
+									dateClassif="#{eventsList.decodeDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{eventsList.eventCodeList}"
+									selectedClassifs="#{eventsList.eventsVidClassif}"
+									styleAutoComp="width:100%;"
+									withBtnClear="true" /> 
+														
+							</div>
+							
+							<!-- Само текущи и предстоящи-->								
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-6  ui-fluid">
+								<p:selectBooleanCheckbox value="#{eventsList.onlyCurrent}" styleClass="form-label" itemLabel="#{labels['events.onlyCurrent']}" /> 	
+							</div>	
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['events.period']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="period" value="#{eventsList.period}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD, now, eventsList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                <p:ajax event="change" update="eventsForm:period eventsForm:dateFrom eventsForm:dateTo" listener="#{eventsList.changePeriod}"/>  
+				         		 </p:selectOneMenu>
+							</div>
+																		
+							
+			
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					            <h:outputText value="#{labels['procList.begin']}" styleClass="form-label"/>
+								<p:datePicker id="dateFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+						         	value="#{eventsList.dateFrom}" styleClass="form-control" >
+						         	<p:ajax event="change" update="eventsForm:period" listener="#{eventsList.changeDate}"/>
+						         	<p:ajax event="dateSelect" update="eventsForm:period" listener="#{eventsList.changeDate}"/>      
+						        </p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					             <h:outputText value="#{labels['procList.end']}" styleClass="form-label"/>
+								 <p:datePicker id="dateTo" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+						         	value="#{eventsList.dateTo}" styleClass="form-control" >
+						         	<p:ajax event="change" update="eventsForm:period" listener="#{eventsList.changeDate}"/>
+						         	<p:ajax event="dateSelect" update="eventsForm:period" listener="#{eventsList.changeDate}"/>          
+						         </p:datePicker>
+							</div>
+							
+							 <!--Описание-->	
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+						        <h:outputText  value="#{labels['delo.opisanie']}"  styleClass="form-label"/>
+					        	<p:inputText value="#{eventsList.eventInfo}" id="info" /> 
+						    </div>
+																							    
+						    <!--Организатор-->						
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+								<h:outputText value="#{labels['events.organizator']}" styleClass="form-label"/>
+								
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" showRadioBtn="false"
+														id="organizator" dateClassif="#{eventsList.decodeDate}" filtered="false" sortByName="false"											
+														selectedCode="#{eventsList.organizator}" saveStateTree="true" isSelectNode="false"
+														compType="2" styleAutoComp="min-width: 220px;" />
+							</div>
+							
+	 						<!--Участници-->							 
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['procDefEdit.referentsTask']}" styleClass="form-label"/>						
+									<ibg:selectManyAdmStr compType="2" maxResults="50" 
+										codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+										dateClassif="#{eventsList.decodeDate}" filtered="false"
+										selectedCodes="#{eventsList.codeRefList}" isSelectNode="false"
+										selectedClassifs="#{eventsList.codeRefClassif}" sortByName="false"
+										withBtnClear="true" showRadioBtn="false" styleAutoComp="width:100%;" />														   
+							</div>
+							
+							<!--Ресурси-->							 
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['events.resourses']}" styleClass="form-label"/>						
+									<ibg:selectManyModalA compType="2" maxResults="50" isSelectNode="false"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_EVENT_RESOURCES}"
+										dateClassif="#{eventsList.decodeDate}" filtered="false"
+										selectedCodes="#{eventsList.resourcesList}"
+										selectedClassifs="#{eventsList.resoursesClassif}" sortByName="false"
+										saveStateTree="true" withBtnClear="true" showRadioBtn="false" styleAutoComp="width:100%;" />														   
+							</div>
+						  	
+						</div> 
+						
+						<div class="filter-buttons">
+			
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"							    
+							id="btnSearch" update="panelTblEvents" partialSubmit="true"
+							process="@this panelFilterEvents" actionListener="#{eventsList.actionSearch}" styleClass="p-mr-3"/> 
+						<p:defaultCommand target="btnSearch"/>
+						
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"							    
+							id="btnClear" update="panelTblEvents panelFilterEvents" partialSubmit="true"
+							process="@this" actionListener="#{eventsList.actionClear}" styleClass="ui-button-warning" /> 
+					</div> 
+					</div>
+							
+				</h:panelGroup>
+			</div>	
+			
+			<!-- Резултат -->
+			<h:panelGroup id="panelTblEvents" layout="block" styleClass="card margin-top">
+				
+				  			
+						<div class="table-toolbar">
+							<p:commandButton id="newBtn" icon="fas fa-plus" ajax="false" action="eventEdit.xhtml?faces-redirect=true" value="#{labels['events.new']}" rendered="#{!eventsList.fromDb}"
+						    	styleClass="ui-button-success"/> 
+						   <h:panelGroup rendered="#{eventsList.eventList != null}">
+								<span class="fas fa-ellipsis-v  p-mx-2" />
+								
+								<h:outputText value="#{ui_labels['general.reportResult']} #{eventsList.eventList.rowCount}" styleClass="form-label"/>					
+							</h:panelGroup>
+						</div>
+									  
+				  
+				  <p:dataTable id="tblEventList" var="row" value="#{eventsList.eventList}" lazy="true" 	rendered="#{eventsList.eventList != null}"
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}" emptyMessage="#{labels['doc.listEmptyMsg']}"		
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="true" paginator="true">
+						
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{eventsList.eventList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblEventList" fileName="eventsList"	
+					        			postProcessor="#{eventsList.postProcessXLS}" />
+					    		</h:commandLink>
+					<ui:remove><!--  --></ui:remove>
+					    		<h:commandLink id="pdf"  rendered="#{eventsList.eventList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        	 	  <h:graphicImage library="images" name="pdf.png" />
+					        	 	   <p:dataExporter type="pdf"  target="tblEventList" fileName="eventsList" 	 encoding="windows-1251"
+					        			 preProcessor="#{eventsList.preProcessPDF}" options="#{eventsList.pdfOptions()}"/>
+					    		</h:commandLink> 
+					   --></ui:remove>
+				            </div>
+				       	</f:facet>	
+					
+								
+				  	<p:column width="10" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+					</p:column>	
+					
+					<p:column  width="30" exportable="false" >	
+						<p:commandButton rendered="#{(row[6]==eventsList.userId or row[5]==eventsList.userId or eventsList.admin) and !eventsList.fromDb}"  
+							icon="fas fa-edit" action="#{eventsList.actionGoto(0,row)}" ajax="false" title="#{ui_labels['general.edit']}">	
+						</p:commandButton>	
+						
+						<p:button  icon="fas fa-eye"  target="_blank"  href="#{eventsList.actionGoto(1,row)}"
+							           title="#{ui_labels['general.view']}" 
+					  				   rendered="#{eventsList.fromDb or (row[6]!=eventsList.userId and row[5]!=eventsList.userId and !eventsList.admin)}" >
+					  	</p:button>				
+					</p:column>
+					
+					<p:column width="210" sortBy="#{row.a1}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['events.vid']}"  />										  
+						</f:facet>  
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_VID_EVENT, row[1], eventsList.currentLang, now)}"/> 
+					</p:column>
+					
+					<p:column width="110" sortBy="#{row.a3}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['procList.begin']}"  />									  
+						</f:facet>
+						<h:outputText value="#{row[3]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{eventsList.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+					
+					<p:column width="110" sortBy="#{row.a4}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['procList.end']}"  />									  
+						</f:facet>
+						<h:outputText value="#{row[4]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{eventsList.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+					
+					<p:column width="200" sortBy="#{row.a2}" >
+						<f:facet name="header"> 
+							 <h:outputText  value="#{labels['delo.opisanie']}"/>										  
+						</f:facet>
+						<h:outputText value="#{row[2]}" />
+					</p:column>
+					
+					<p:column width="110" sortBy="#{row.a5}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['events.organizator']}"/>									  
+						</f:facet>
+						
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR,row[5], eventsList.currentLang, eventsList.decodeDate)}"/>	
+
+					</p:column>
+					
+					<p:column width="*" sortBy="#{row.a7}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['procDefEdit.referentsTask']}" />									  
+						</f:facet>
+						
+					<h:outputText value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], eventsList.currentLang, eventsList.decodeDate)}" />
+					</p:column>
+														
+					<p:column width="200" sortBy="#{row.a8}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['events.resourses']}" />									  
+						</f:facet>
+						
+						<h:outputText value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_EVENT_RESOURCES, row[8], eventsList.currentLang, eventsList.decodeDate)}" /> 
+						
+					</p:column>
+					
+					<p:column width="200" sortBy="#{row.a9}">
+						<f:facet name="header"> 
+							 <h:outputText  value="#{labels['docu.note']}"/>										  
+						</f:facet>
+						<h:outputText value="#{row[9]}" />
+					</p:column>
+					
+				</p:dataTable>
+				
+			</h:panelGroup>	
+	
+		</h:form>
+	</ui:define>
+</ui:composition>

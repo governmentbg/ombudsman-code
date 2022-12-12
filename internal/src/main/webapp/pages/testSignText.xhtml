@@ -1,0 +1,39 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:h="http://java.sun.com/jsf/html"
+ 	xmlns:f="http://java.sun.com/jsf/core" 
+  	xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    template="/template/template.xhtml"
+    xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+   <ui:define name="title">Test SignText</ui:define>
+    
+    
+    <ui:define name="viewname">
+        <li>Test SignText</li>
+        
+    </ui:define>
+	
+	<ui:define name="head"> 
+
+
+	</ui:define>
+	
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			
+		</f:metadata>
+	</ui:define>
+
+    <ui:define name="content">
+		<h:form id="testForm" >
+		
+			<ibg:compSignXml value="#{testSignText.xmlData}"></ibg:compSignXml>	 
+	
+		</h:form>
+			
+	</ui:define>
+</ui:composition>	
+			

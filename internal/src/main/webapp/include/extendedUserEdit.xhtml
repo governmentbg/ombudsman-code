@@ -1,0 +1,162 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" 
+				xmlns:ui="http://java.sun.com/jsf/facelets" 
+				xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+    <style type="text/css">
+
+        ol {
+            padding-left: 15px;
+        }
+
+        ol li {
+            margin-bottom: 0.5rem;
+        }
+       
+    </style>
+    
+     <h:panelGroup id="panelDelov" layout="block">
+		<h:panelGroup rendered="#{userEdit.typePanelData eq 2}" > 
+		
+		
+	<p:outputPanel id="selectedRegistraturi" class="p-col-12 p-mt-2">    	
+    
+    	<div class="table-toolbar">				
+			<p:commandButton icon="fas fa-list" id="btnForReg" title="Добавяне на допълнителни регистратури" 
+							value="Допълнителни регистратури" styleClass="ui-button-success" rendered="#{userEdit.showAddRegistraturiButton and userEdit.delovoditel}" />
+			<p:overlayPanel id="panelForReg" for="btnForReg" widgetVar="varWidgetReg" rendered="#{userEdit.showAddRegistraturiButton and userEdit.delovoditel}" my="left center" at="right center" >				
+				<p:selectOneMenu value="#{userEdit.registraturaForEdit}" id="registraturiList" >
+				<f:selectItem value="#{null}" itemValue="#{null}"/>
+	            <f:selectItems value="#{userEdit.registraturiList}" var="item" itemLabel="#{item.tekst}" itemValue="#{item.code}"/>
+	            <p:ajax event="change" update="formUserEdit:selRegTbl" listener="#{userEdit.actionSetRegistriForReg}"/>
+			</p:selectOneMenu>	
+			<p:commandButton value="Добави" styleClass="btn-new" icon="fas fa-plus" action="#{userEdit.selectRegistratura}" 
+          							update="formUserEdit:registraturiList formUserEdit:selectedRegistraturiTbl formUserEdit:selectedMailboxes"
+          							oncomplete="PF('varWidgetReg').hide();" />
+			</p:overlayPanel>
+		</div>
+    <h:panelGroup  id="selectedRegistraturiTbl">
+    
+    	<p:remoteCommand name="cmdSelRegister" update="formUserEdit:selectedRegistraturiTbl"
+				partialSubmit="true" process="formUserEdit:selectedRegistraturiTbl @this"
+				actionListener="#{userEdit.selRegisterDopReg}" />
+				
+        <p:dataTable id="selRegTbl" value="#{userEdit.selectedRegistraturi}" rendered="#{userEdit.delovoditel and userEdit.selectedRegistraturi.size() > 0}" var="row" lazy="false" tableStyle="table-layout: auto"
+                     rowIndexVar="riv" sortMode="single" emptyMessage="#{ui_labels['general.norows']}">
+                     
+            <f:facet name="header">
+	            Допълнителни регистратури, които обслужва като деловодител
+	        </f:facet>
+	        
+	        <p:column style="width:16px">
+	            <p:rowToggler />
+	        </p:column>	
+  
+         <!--Регистър-->							 
+		<p:column style="width:55px">
+	
+		 <p:commandButton action="#{userEdit.loadSpecificsDopReg(row.key)}" id="btnR"
+                oncomplete="document.getElementById('formUserEdit:selRegTbl:#{riv}:btnMoadlA:dialogButtonM').click();"
+                partialSubmit="true" process="@this"
+                update="formUserEdit:selRegTbl:#{riv}:btnMoadlA" icon="fas fa-list-ul" styleClass="btn-new" title="#{labels['users.chooseRegistri']}"/>				
+				
+		  				
+		
+			<ibg:selectManyModalA   id="btnMoadlA" styleBtn="display:none"	
+			    compType="1" maxResults="50" header="#{labels['users.chooseRegistri']}" 
+				codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI_SORTED}" 
+				selectedCodes="#{userEdit.registerForEditList}"	
+				specifics="#{userEdit.specificsRegisterForEdit}" sortByName="false"
+				saveStateTree="false" showRadioBtn="true" 
+				styleAutoComp="width:100%;" filtered="false" 
+				onComplete="cmdSelRegister()"/>		
+		
+		</p:column>
+		
+		 <!--Висчки регистри на конкретната доп. регистратура-->							 
+		<p:column style="width:25px">
+		
+			<p:commandButton id="btnAllRegistriForReg" title="#{labels['users.chooseAllRegistries']}" action="#{userEdit.loadAllRegistriForDopReg(row.key)}" 
+				 partialSubmit="true" process="formUserEdit:selectedRegistraturiTbl @this" update="formUserEdit:selectedRegistraturiTbl"
+				 icon="fas fa-check-double" />			
+		
+		</p:column>
+		
+             <p:column headerText="Регистратура">
+	            <h:outputText value="#{userEdit.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row.key, userEdit.currentDate)}" />
+	        </p:column>
+
+            <p:column style="width: 25px">
+                <p:commandButton action="#{userEdit.removeRegistratura(row.key)}" update="formUserEdit:selectedRegistraturi formUserEdit:registraturiList formUserEdit:selectedMailboxes" icon="fas fa-trash"
+                                 styleClass="ui-button-danger" title="#{ui_labels['general.delete']}">
+                    <p:confirm header="#{ui_labels['general.delete']}" message="#{labels['users.deleteRegistriConfirm']}" icon="fas fa-exclamation-triangle"/>
+                </p:commandButton>
+            </p:column>
+
+            <p:rowExpansion>
+                <p:dataView id="registriesList" value="#{row.value}" emptyMessage="#{labels['users.noChooseRegisters']}" var="reg" layout="list" 
+                			paginator="true" paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" rows="5" gridIcon="pi pi-th-large" listIcon="pi pi-bars">
+                   <f:facet name="header">
+			            #{labels['extendedUserEdit.registri']}
+			        </f:facet>
+			        <p:dataViewGridItem>
+			        	<h:outputText value="#{userEdit.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, reg, userEdit.currentDate)}"/>
+			        </p:dataViewGridItem> 
+			        <p:dataViewListItem >
+                		<h:outputText value="#{userEdit.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, reg, userEdit.currentDate)}"/>
+                	</p:dataViewListItem>
+                </p:dataView>
+            </p:rowExpansion>
+
+        </p:dataTable>
+     	</h:panelGroup>  
+     
+ </p:outputPanel>
+        
+	</h:panelGroup>
+	</h:panelGroup>
+        
+   <h:panelGroup id="panelMailboxes" layout="block">
+		<h:panelGroup rendered="#{userEdit.typePanelData eq 3}">
+		
+		<p:outputPanel id="selectedMailboxes" class="p-col-12 p-mt-2" >
+        
+        <p:dataTable id="tblUserMailboxes" var="row" value="#{userEdit.usersMailBoxes}" rows="10" 
+					rowIndexVar="idx" sortMode="single" style="margin-bottom:20px; width: 99%" scrollable="true" scrollWidth="99%" 
+					emptyMessage="#{ui_labels['general.norows']}" >
+					
+					  <f:facet name="header">
+			            Пощенски кутии към потребител
+			        </f:facet>
+			        
+			      <p:column  width="10">
+						<f:facet name="header">
+						     <h:outputText value="Активна" />
+						</f:facet>
+						<p:selectBooleanButton id="activeMailbox" value="#{row[3]}" 
+	                                   onLabel="#{ui_labels['general.yes']}"
+	                                   offLabel="#{ui_labels['general.no']}"	                                   
+	                                   onIcon="fas fa-toggle-on"
+	                                   offIcon="fas fa-toggle-off"
+	                                   styleClass="margin-left">	               
+	            		</p:selectBooleanButton> 											
+					</p:column> 
+
+					<p:column width="150" headerText="Пощенска кутия">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+
+					<p:column width="120" headerText="Регистратура">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row[2], userEdit.currentLang, now)}" />
+					</p:column>
+			       
+			    </p:dataTable>	
+    </p:outputPanel>
+    
+    </h:panelGroup>
+	</h:panelGroup>
+
+</ui:composition>

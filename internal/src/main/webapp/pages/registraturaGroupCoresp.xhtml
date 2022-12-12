@@ -1,0 +1,490 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/registraturaGroupCoresp.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+        <li>#{navTexts['/pages/registraturaGroupCoresp.xhtml']}</li>        
+    </ui:define>
+    
+     <ui:define name="head">
+	    <script type="text/javascript">
+		    function doOnClick() {
+		    	document.getElementById("idLinkCor").click();
+		    }
+		</script>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(36)}" onPostback="false" /> 
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="formRegGroupCoresp">
+				
+			<h:panelGroup id="panelGrCoresp" layout="block">
+
+				<div class="container #{guestPreferences.containerPosition}">
+				
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilter">
+	
+						<div class="card">
+		
+							<div class="p-grid ui-fluid p-align-end">
+							
+								<!-- Наименование на група -->
+								<div  class="p-col-12 p-sm-12 p-md-3 p-lg-3 p-xl-3" >								
+									<h:outputText value="#{labels['regGrSluj.naimGr']}" styleClass="form-label"/>
+									<p:inputText value="#{registraturaGroupCoresp.name}" />						
+								</div>		
+								
+								<!-- Описание на група -->
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-6" >								
+									<h:outputText value="#{labels['regGrSluj.opisGr']}" styleClass="form-label"/>
+									<p:inputText value="#{registraturaGroupCoresp.info}" />						
+								</div>
+								
+								<!-- Регистратура -->								
+								<ui:remove> <div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4" >	
+									<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label" />	
+									<p:selectOneMenu value="#{registraturaGroupCoresp.idReg}" id="idReg">						 				
+				                       <f:selectItem value="#{null}" itemValue="#{null}"/>					 				
+					                   <f:selectItems value="#{registraturaGroupCoresp.registraturiList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+			                      	</p:selectOneMenu>															
+								</div> </ui:remove>
+								
+								<!-- Тип на групата -->								
+								<div class="p-col-12 p-sm-12 p-md-3 p-lg-3 p-xl-3" >	
+									<h:outputText value="#{labels['regGrCoresp.typeGroup']}" styleClass="form-label" />	
+									<p:selectOneMenu value="#{registraturaGroupCoresp.grType}" id="grTip">
+									 	<f:selectItem value="#{null}" itemValue="#{null}"/>					 				
+				                        <f:selectItems value="#{registraturaGroupCoresp.grTypesList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				                        <p:ajax event="change" update="panelFilter"  process="@this panelFilter" partialSubmit="true"/> 
+			                      	</p:selectOneMenu>															
+								</div>
+								
+								<!-- Кореспондент -->						
+								<div class="p-col-12 p-sm-12 p-md-5 p-lg-5 p-xl-5" jsf:rendered="#{registraturaGroupCoresp.grType eq OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_CORRESP}">
+									<h:outputText value="#{labels['dvijenie.grupiKorespondenti']}" styleClass="form-label"/>
+									<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}" 
+										id="coresp" dateClassif="#{now}" filtered="false" 													
+										selectedCode="#{registraturaGroupCoresp.codeRef}" saveStateTree="true"
+										withBtnClear="true" compType="4" sortByName="true" styleAutoComp="" minQueryLength="2" />	
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-5 p-lg-5 p-xl-5" jsf:rendered="#{registraturaGroupCoresp.grType eq OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_SEOS}">
+									<h:outputText value="#{labels['dvijenie.grupiSeos']}" styleClass="form-label"/>
+									<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_EGOV_ORGANISATIONS}" 
+										id="seos" dateClassif="#{now}" filtered="false" 														
+										selectedCode="#{registraturaGroupCoresp.codeRef}" saveStateTree="true"
+										withBtnClear="true" compType="4" sortByName="true" styleAutoComp="" minQueryLength="2"/>	
+								</div>
+								
+							</div>
+		
+							<div class="filter-buttons">
+								
+								<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+												id="btnSearch" update="pRegGrCorespData panelFilter" partialSubmit="true"
+												process="@this panelFilter pRegGrCorespData" actionListener="#{registraturaGroupCoresp.actionSearch}" styleClass="p-mr-3"/>
+								<p:defaultCommand target="btnSearch" />
+				
+								<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+												 id="btnClear" update="pRegGrCorespData panelFilter pRegGrCorespBasicData" partialSubmit="true"
+												 process="@this panelFilter pRegGrCorespData pRegGrCorespBasicData" actionListener="#{registraturaGroupCoresp.actionClear}"
+												 styleClass="ui-button-warning" />	
+							</div>
+		
+						</div>
+					
+					</h:panelGroup>
+
+					<h:panelGroup id="pRegGrCorespData" layout="block" styleClass="margin-top">
+
+						<h:panelGroup layout="block" styleClass="card">
+
+						<div class="p-grid p-col-12 p-nogutter">
+						
+							<div class="table-toolbar">
+							
+								<p:commandButton icon="fas fa-file" action="#{registraturaGroupCoresp.actionNew}" 
+											update="formRegGroupCoresp:panelGrCoresp" value="#{labels['regGrSluj.newGr']}" styleClass="ui-button-success" oncomplete="doOnClick();"/>
+									
+									<a id="idLinkCor" href="#correspBasicData" style="display:none"></a>									
+					
+									<span class=" p-mx-2" jsf:rendered="#{registraturaGroupCoresp.regGrCorespList.size() > 0}"> 
+										<span class="fas fa-ellipsis-v" />
+									</span>
+			
+									<h:outputText value="#{ui_labels['general.reportResult']} #{registraturaGroupCoresp.regGrCorespList.size()} " styleClass="form-label" rendered="#{registraturaGroupCoresp.regGrCorespList.size() > 0}"/>
+			
+								</div>	
+
+							<p:dataTable id="tblRegGrCorespList" var="row" value="#{registraturaGroupCoresp.regGrCorespList}" 
+								rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+								paginatorAlwaysVisible="true" paginator="true">
+
+								<f:facet name="{Exporters}">
+									
+									<div style="float: left">
+										<h:commandLink id="excel">
+											<h:graphicImage library="images" name="excel2.png" />
+											<p:dataExporter type="xls" target="tblRegGrCorespList" fileName="regGrCorespXls" postProcessor="#{registraturaGroupCoresp.postProcessXLS}"/>
+										</h:commandLink>
+									<ui:remove><!-- 
+										<h:commandLink id="pdf">
+											<h:graphicImage library="images" name="pdf.png" />
+											 <p:dataExporter type="pdf" target="tblRegGrCorespList" fileName="regGrCorespPdf" encoding="windows-1251"
+					        					preProcessor="#{registraturaGroupCoresp.preProcessPDF}" options="#{registraturaGroupCoresp.pdfOptions()}"/>
+										</h:commandLink>	
+
+										<h:commandLink id="csv">
+											<h:graphicImage library="images" name="csv.png" />
+											<p:dataExporter type="csv" target="tblRegGrCorespList" fileName="regGrCorespCsv" encoding="CP1251" />
+										</h:commandLink>
+									 --></ui:remove>
+									</div>
+								</f:facet>
+
+								<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>
+
+								<p:column width="30" exportable="false">
+									<p:commandButton icon="fas fa-edit" action="#{registraturaGroupCoresp.actionEdit(row.id)}"
+										ajax="true" title="#{ui_labels['general.edit']}" styleClass="btn-new" update="formRegGroupCoresp:pRegGrCorespBasicData" oncomplete="doOnClick();"/>
+								</p:column>
+								
+								<p:column width="250" sortBy="#{row.groupType}" headerText="#{labels['regGrCoresp.typeGroup']}"> 
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURA_GROUP_TYPE, row.groupType, registraturaGroupCoresp.currentLang, now)}" />									
+								</p:column>
+
+								<p:column width="250" sortBy="#{row.groupName}" headerText="#{labels['regGrSluj.naimGr']}">
+									<h:outputText value="#{row.groupName}" />
+								</p:column>
+
+								<p:column width="250" headerText="#{labels['regGrSluj.opisGr']}">
+									<h:outputText value="#{row.groupInfo}" />
+								</p:column>
+								
+								<ui:remove> <p:column width="250" headerText="#{labels['regData.registratura']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row.registraturaId, registraturaGroupCoresp.currentLang, now)}" />
+								</p:column> </ui:remove>
+							</p:dataTable>
+
+						</div>
+
+					</h:panelGroup>
+					
+					</h:panelGroup>
+					
+					<a id="correspBasicData"/>
+					
+					<h:panelGroup id="pRegGrCorespBasicData" layout="block" styleClass="margin-top">
+					
+					<h:panelGroup layout="block" styleClass="card" rendered="#{registraturaGroupCoresp.groupCoresp != null}">
+					
+						<p:toolbar id="tbtnPanel1t">
+								<f:facet name="left">									
+									<p:commandButton icon="fas fa-save" action="#{registraturaGroupCoresp.actionSave}"
+											update="formRegGroupCoresp:panelGrCoresp" value="#{ui_labels['general.save']}" />	
+								</f:facet>
+								
+								<f:facet name="right">		
+								
+									<h:panelGroup id="pRegInfo" rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">
+		
+									 		<ibg:compObjAudit id="a2" idObj="#{registraturaGroupCoresp.groupCoresp.id}" 
+												 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_REISTRATURA_GROUP}"
+												 	identInfo="#{registraturaGroupCoresp.groupCoresp.groupName}" 	/>
+									</h:panelGroup>	                  
+									
+									<p:commandButton icon="fas fa-times" action="#{registraturaGroupCoresp.actionDelete}" rendered="#{registraturaGroupCoresp.groupCoresp.id != null}" styleClass="ui-button-danger"
+											update="formRegGroupCoresp:panelGrCoresp" value="#{ui_labels['general.delete']}" onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/>
+									
+								</f:facet>
+							
+							</p:toolbar>
+							
+							<br />
+									 
+							<!-- Тип на групата -->
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-6 p-grid ui-fluid" >
+								<p:selectOneRadio id="vLice" value="#{registraturaGroupCoresp.groupCoresp.groupType}" layout="grid" columns="2">
+								 	 <f:selectItem itemLabel="Група кореспонденти" itemValue="#{OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_CORRESP}" />
+					           		 <f:selectItem itemLabel="Група СЕОС" itemValue="#{OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_SEOS}"/>
+								     <p:ajax event="change" update="formRegGroupCoresp"  process="@this formRegGroupCoresp" 
+								     			listener="#{registraturaGroupCoresp.actionChangeGroupType}"/>
+								</p:selectOneRadio>	
+							</div>
+
+							<!-- Наименование на групата -->
+							<div  class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid" >
+								<h:outputText value="#{labels['regGrSluj.naimGr']}" styleClass="form-label req" />
+								<p:inputText id="naimGr" value="#{registraturaGroupCoresp.groupCoresp.groupName}" />
+								<p:message for="naimGr" display="tooltip" >
+									<p:autoUpdate/>
+								</p:message>
+							</div>
+							
+							<!-- Регистратура -->								
+							<ui:remove> <div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 p-grid ui-fluid" >	
+								<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label req" />	
+								<p:selectOneMenu value="#{registraturaGroupCoresp.groupCoresp.registraturaId}" id="idRegGr">
+									<f:selectItem value="#{null}" itemValue="#{null}"/>					 				
+			                        <f:selectItems value="#{registraturaGroupCoresp.registraturiList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/> 
+		                      	</p:selectOneMenu>															
+							</div> </ui:remove> 							
+
+							<!-- Описание на групата -->
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid" >
+								<h:outputText value="#{labels['regGrSluj.opisGr']}" styleClass="form-label"/>
+								<p:inputText id="opisanieGr" value="#{registraturaGroupCoresp.groupCoresp.groupInfo}" />
+							</div>
+							
+							<div id="regGrCorr" style="margin-top:8px" jsf:rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">
+
+							<!-- Включени кореспонденти -->							
+							<h:panelGroup rendered="#{registraturaGroupCoresp.groupCoresp.groupType eq OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_CORRESP}">							
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12" jsf:rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">
+								<h:outputText value="#{labels['regGrCoresp.inclSluj']}" styleClass="form-label" />
+								
+								<div class="select-modal-wrapper">
+									<h:panelGroup id="refCorrInp">
+									
+									<p:remoteCommand name="cmdSelectCorresp" 
+										update="pRegGrCorespBasicData"
+										process="pRegGrCorespBasicData @this"
+										actionListener="#{registraturaGroupCoresp.actionSelectCorresp}" />
+
+										<ibg:selectOneModalA id="refCorrInp1"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+											dateClassif="#{now}"
+											selectedCode="#{registraturaGroupCoresp.codeCorresp}"
+											selectedText="#{registraturaGroupCoresp.txtCorresp}"
+											hiddenTxt="true" saveStateTree="false" withBtnClear="true"
+											minQueryLength="3" styleAutoComp="width:99%;" compType="3"
+											filtered="false"
+											dopInfoAutoComp="true" 
+											dopInfoTitleAutoComp="#{ui_labels['general.adres']}"
+											itemtipAtPosition="center bottom"
+											onComplete="cmdSelectCorresp()" />
+
+									</h:panelGroup>
+
+									<h:panelGroup id="refCorr">
+										<!--  Разширено търсене на кореспондент -->
+										<p:commandButton id="btnCorrS" 
+											onmousemove="document.getElementById('formRegGroupCoresp:btnCorrS').focus();"
+											icon="fas fa-list-ul" partialSubmit="true"
+											process="formRegGroupCoresp:dpCorrSearch"
+											update="formRegGroupCoresp:dpCorrSearch @this"
+											styleClass="select-modal-button"											
+											oncomplete="PF('mCorrS').show();"
+											title="#{labels['search.extendRef']}" />
+											
+									</h:panelGroup>
+								</div>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12" jsf:rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">		
+							<p:dataTable id="tblCorespList" var="row" value="#{registraturaGroupCoresp.correspList}" lazy="true"
+								rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+								paginatorAlwaysVisible="true" paginator="true">
+								
+								<f:facet name="{Exporters}">
+									
+									<div style="float: left">
+										<h:commandLink id="excel">
+											<h:graphicImage library="images" name="excel2.png" />
+											<p:dataExporter type="xls" target="tblCorespList" fileName="correspListXls" postProcessor="#{registraturaGroupCoresp.postProcessXLSInclCorresp}"/>
+										</h:commandLink>
+								<ui:remove><!--
+										<h:commandLink id="pdf">
+											<h:graphicImage library="images" name="pdf.png" />
+											<p:dataExporter type="pdf" target="tblCorespList" fileName="correspListPdf" encoding="windows-1251"
+					        					preProcessor="#{registraturaGroupCoresp.preProcessPDFInclCorresp}" options="#{registraturaGroupCoresp.pdfOptions()}"/>
+									
+										</h:commandLink>
+
+										<h:commandLink id="csv">
+											<h:graphicImage library="images" name="csv.png" />
+											<p:dataExporter type="csv" target="tblCorespList" fileName="correspListCsv" encoding="CP1251" />
+										</h:commandLink>
+										--></ui:remove>
+									</div>
+								</f:facet>
+								
+								<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>
+
+								<p:column width="150" sortBy="#{row.a2}" headerText="#{labels['docu.corespondent']}">
+									<h:outputText styleClass="fas fa-building" rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+									<h:outputText styleClass="fas fa-user" rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+									<h:outputText value=" #{row[2]}" />											
+								</p:column>
+								
+								<p:column width="80" sortBy="#{row.a3}" headerText="#{ui_labels['general.eik']} / #{ui_labels['general.egn']}">																			
+									<h:outputText value="#{row[4]}" rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+									<h:outputText value="#{row[5]}" rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+								</p:column>
+								
+								<p:column width="120" sortBy="#{row.a9}" headerText="#{ui_labels['general.ekatte']}">										
+									<h:outputText value="#{row[8]} #{row[9]}"  title="#{row[7]}"/>
+									
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COUNTRIES, row[6], registraturaGroupCoresp.currentLang, registraturaGroupCoresp.groupCoresp.dateReg)}"
+  		                  							  rendered="#{row[6] ne registraturaGroupCoresp.countryBG}" title="#{row[7]}"/>		
+								</p:column>
+								
+								<p:column width="120" sortBy="#{row.a10}" headerText="#{ui_labels['general.ekatteObsh']}">										
+									<h:outputText value="#{row[10]}" />
+								</p:column>
+								
+								<p:column width="120" sortBy="#{row.a11}" headerText="#{ui_labels['general.ekatteObl']}">										
+									<h:outputText value="#{row[11]}" />
+								</p:column>
+								
+								<p:column width="25" exportable="false">
+									<p:commandButton icon="fas fa-trash" action="#{registraturaGroupCoresp.actionDeleteCorr(row[1])}" onclick="if(!confirm('#{beanMessages['refCorr.msgDelete']}'))return false;"
+										ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" update="formRegGroupCoresp:tblCorespList" />
+								</p:column>
+								
+							</p:dataTable>
+							</div>
+							
+							</h:panelGroup>							
+							
+							<!-- Включени участници от СЕОС -->	
+							<h:panelGroup rendered="#{registraturaGroupCoresp.groupCoresp.groupType eq OmbConstants.CODE_ZNACHENIE_REG_GROUP_TYPE_SEOS}">
+							
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12" jsf:rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">
+									
+										<h:outputText value="#{labels['regGrCoresp.inclUchSEOS']}" styleClass="form-label p-mr-3" />
+										
+										<p:remoteCommand name="cmdSelectUchSEOS" 
+												update="pRegGrCorespBasicData"
+												process="pRegGrCorespBasicData @this"
+												actionListener="#{registraturaGroupCoresp.actionSelectFromSEOS}" />
+										
+										<!-- избират се само служители, но ще се оправи като се промени навсякъде, където се избират служители -->
+										<ibg:selectManyModalA compType="2" maxResults="50"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_EGOV_ORGANISATIONS}"
+											dateClassif="#{now}" filtered="false" saveStateTree="false" showRadioBtn="true"
+											styleAutoComp="width:100%;" 
+											selectedCodes="#{registraturaGroupCoresp.groupCoresp.referentIds}"
+											selectedClassifs="#{registraturaGroupCoresp.scGrFromSEOSList}"
+											withBtnClear="false" onComplete="cmdSelectUchSEOS()"
+											update="formRegGroupCoresp:tblUchFromSEOS" isSelectNode="true"/>
+									
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12" jsf:rendered="#{registraturaGroupCoresp.groupCoresp.id != null}">		
+								<p:dataTable id="tblUchFromSEOS" var="row" value="#{registraturaGroupCoresp.uchFromSEOSList}" lazy="true"
+									rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+									paginatorAlwaysVisible="true" paginator="true">
+									
+									<f:facet name="{Exporters}">
+										
+										<div style="float: left">
+											<h:commandLink id="excel">
+												<h:graphicImage library="images" name="excel2.png" />
+												<p:dataExporter type="xls" target="tblUchFromSEOS" fileName="uchFromSEOSListXls" postProcessor="#{registraturaGroupCoresp.postProcessXLSInclFromSEOS}"/>
+											</h:commandLink>
+									<ui:remove> <!--
+											<h:commandLink id="pdf">
+												<h:graphicImage library="images" name="pdf.png" />
+												<p:dataExporter type="pdf" target="tblUchFromSEOS" fileName="uchFromSEOSListPdf"  encoding="windows-1251"
+					        					preProcessor="#{registraturaGroupCoresp.preProcessPDFInclFromSEOS}" options="#{registraturaGroupCoresp.pdfOptions()}"/>
+											</h:commandLink>
+
+											<h:commandLink id="csv">
+												<h:graphicImage library="images" name="csv.png" />
+												<p:dataExporter type="csv" target="tblUchFromSEOS" fileName="uchFromSEOSListCsv" encoding="CP1251" />
+											</h:commandLink>
+											--></ui:remove>
+										</div>
+									</f:facet>
+									
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+
+									<p:column width="100" sortBy="#{row.a2}" headerText="#{ui_labels['general.eik']}">											
+										<h:outputText value=" #{row[2]}" />
+									</p:column>
+									
+									<p:column width="*" sortBy="#{row.a3}" headerText="#{ui_labels['general.name']}">
+										<h:outputText value="#{row[3]}" />
+									</p:column>									
+									
+									<p:column width="230" sortBy="#{row.a4}" headerText="#{ui_labels['general.email']}">
+										<h:outputText value="#{row[4]}" />
+									</p:column>
+									
+									<p:column width="290" sortBy="#{row.a5}" headerText="#{labels['registratura.guid']}">
+										<h:outputText value="#{row[5]}" />
+									</p:column>
+									
+									<p:column width="30" exportable="false">
+										<p:commandButton icon="fas fa-trash" action="#{registraturaGroupCoresp.actionDeleteUchFromSEOS(row[1])}" onclick="if(!confirm('#{beanMessages['regGrSluj.msgDelete']}'))return false;"
+											ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" update="formRegGroupCoresp:tblUchFromSEOS" />
+									</p:column>
+									
+								</p:dataTable>
+								
+								</div>								
+							
+							</h:panelGroup>
+							
+							</div>
+
+					</h:panelGroup>
+					
+					</h:panelGroup>
+
+				</div>
+
+				<h:panelGroup id="dpCorrSearch">
+			
+					<p:dialog appendTo="@form"  closeOnEscape="true"
+					    header="#{labels['docu.titleExtSrchCoresp']}" 
+					    fitViewport="true"	
+					    style="min-height: 450px; min-width: 768px; max-width: 100%" 
+					    resizable="true"
+					    position="top"	
+						widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+						modal="true">
+						<div class="container #{guestPreferences.containerPosition}">	
+							<ibg:refCorrespSearch id="mCorrS1"
+								codeRef="#{registraturaGroupCoresp.codeCorresp}"
+								searchTxt="#{registraturaGroupCoresp.txtCorresp}"
+								dateClassif="#{registraturaGroupCoresp.groupCoresp.dateReg}"
+								modal="true" update="formRegGroupCoresp:refCorrInp formRegGroupCoresp:refCorr formRegGroupCoresp:tblCorespList"
+								onComplete="PF('mCorrS').hide();  cmdSelectCorresp()" />
+						</div>
+					</p:dialog>
+				</h:panelGroup>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

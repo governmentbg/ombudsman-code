@@ -1,0 +1,602 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+	
+	<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				 <f:viewAction action="#{userData.checkPageAccess(53)}" onPostback="false" />						
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/takeAwayAccess.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/takeAwayAccess.xhtml']}</li>
+	    </ui:define> 
+	    
+		
+	<ui:define name="content">
+	
+		<h:form id="formTakeAwayAccess">
+		
+			<div class="container #{guestPreferences.containerPosition}">
+			
+				<h:panelGroup id="panelForTakeOrRemoveAccess" layout="block" styleClass="margin-top">
+					
+					<div class="card">
+					
+					<ui:remove> <h5> <h:outputText value="#{labels['takeAwayAccess.takeAwayAndDeleteAccess']}"/> </h5> </ui:remove>
+					
+						<div  class="p-grid ui-fluid">
+						
+						<div class="p-grid p-col-12">
+						
+						<div class="p-col-4"> 
+							<h:outputText value="#{labels['takeAwayAccess.slujForTakeAwayAccess']}" styleClass="form-label req" />
+							<p:remoteCommand name="cmdSelectSlujForTakeAway" update="formTakeAwayAccess:userNameForTakeAway formTakeAwayAccess:pnlBtnAccess formTakeAwayAccess:pnlDeloSearch formTakeAwayAccess:pnlDocSearch formTakeAwayAccess:panelTblDoc formTakeAwayAccess:panelTblDelo"
+								partialSubmit="true" process="formTakeAwayAccess:userNameForTakeAway formTakeAwayAccess:pnlBtnAccess formTakeAwayAccess:pnlDeloSearch formTakeAwayAccess:pnlDocSearch formTakeAwayAccess:panelTblDoc formTakeAwayAccess:panelTblDelo @this"
+								actionListener="#{takeAwayAccess.actionSelectSlujForTakeAway}" />
+							<ibg:selectOneModalA id="takeAwayAccess" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+									dateClassif="#{takeAwayAccess.decodeDate}" filtered="false" isSelectNode="false"														
+									selectedCode="#{takeAwayAccess.codeTakeAwayAccess}" saveStateTree="true" 
+									header="#{labels['takeAwayAccess.slujForTakeAwayAccess']}" 
+									withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+									onComplete="cmdSelectSlujForTakeAway()" onClear="cmdSelectSlujForTakeAway()"/>	
+						</div>
+						
+						<div class="p-grid p-col-4 p-align-end" jsf:id="userNameForTakeAway"> 
+							<span style="padding-left:50px"></span> 
+							<h:outputText value="#{takeAwayAccess.userNameForTakeAway}" />								
+						</div>
+						
+						</div>
+						
+						<h:panelGroup id="pnlBtnAccess" layout="block" style="width: 100%;">
+						<h:panelGroup rendered="#{takeAwayAccess.codeTakeAwayAccess ne null}" >
+
+							<!--Бутони -->
+							<ui:remove>	<div class="p-grid p-col-12 ">
+									<div class="p-grid p-col-9">
+										<h:outputText value="#{labels['takeAwayAccess.deleteAccess']}: " styleClass="form-label"/>
+									</div>
+									<div class="p-grid p-col-3">
+										<p:commandButton id="btnDeleteAccess1" actionListener="#{takeAwayAccess.actionDeleteAccess}" update="pnlDeloSearch panelTblDelo pnlDocSearch panelTblDoc"
+											value="#{labels['takeAwayAccess.eraseAccess']}" icon="fas fa-times" styleClass="ui-button-danger"
+											onclick="if(!confirm('#{beanMessages['takeAwayAccess.SlujIsNotLeave']}'))return false;" rendered="#{takeAwayAccess.userLeave}"/>	
+											
+										<p:commandButton id="btnDeleteAccess2" actionListener="#{takeAwayAccess.actionDeleteAccess}" update="pnlDeloSearch panelTblDelo pnlDocSearch panelTblDoc"
+											value="#{labels['takeAwayAccess.eraseAccess']}" icon="fas fa-times" styleClass="ui-button-danger"
+											onclick="if(!confirm('#{beanMessages['takeAwayAccess.sureEraseAccess']}'))return false;" rendered="#{!takeAwayAccess.userLeave}"/>											
+										
+									</div>
+								</div> </ui:remove>
+								
+								<div class="p-grid p-col-12 p-nogutter ui-fluid">
+									<div class="p-grid p-col-9">
+										<h:outputText value="#{labels['takeAwayAccess.takeAwayOrRemoveForDela']}: " styleClass="form-label"/>
+									</div>
+									<div class="p-grid p-col-2">
+										<p:commandButton id="btnDeloSearch" actionListener="#{takeAwayAccess.selectDeloSearch}"
+											update="pnlDeloSearch panelTblDelo pnlDocSearch panelTblDoc"
+											icon="fas fa-search" value="#{labels['transferDeloDoc.dela']}" />
+									</div>
+									
+								</div>
+									
+								<div class="p-grid p-col-12 p-nogutter ui-fluid">
+
+									<div class="p-grid p-col-9">
+										<h:outputText value="#{labels['takeAwayAccess.takeAwayOrRemoveForDocs']}: " styleClass="form-label"/>
+									</div>
+									<div class="p-grid p-col-2">
+										<p:commandButton id="btnDocSearch" actionListener="#{takeAwayAccess.selectDocSearch}"
+											update="pnlDeloSearch panelTblDelo pnlDocSearch panelTblDoc"
+											icon="fas fa-search" value="#{labels['transferDeloDoc.doc']}" />
+									</div>
+								</div>
+						
+						</h:panelGroup>
+						
+						</h:panelGroup>
+						
+						</div> 
+					
+					</div>
+					
+					</h:panelGroup>
+					
+						<!--Филтър за търсене на дела/преписки-->	
+						<h:panelGroup id="pnlDeloSearch">
+						   <h:panelGroup rendered="#{takeAwayAccess.renderedDelo and takeAwayAccess.codeTakeAwayAccess ne null}">
+						   	   <br/>
+						   	   <div class="card" >
+														       							           
+							   <h5> <h:outputText value="#{labels['transferDeloDoc.delaSearch']}"  /> </h5>
+						
+							   <div  class="p-grid  ui-fluid" >
+								   <div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+										 <h:outputText value="#{labels['docu.deloRn']}" styleClass="form-label"/>
+										 <div class="ui-inputgroup"> 	
+											<p:inputText value="#{takeAwayAccess.deloSearch.rnDelo}" id="rnDelo"/>
+										    <p:focus id="focusRnDoc" for="rnDelo" />
+											 												 
+											 <p:selectBooleanButton id="rndEq" value="#{takeAwayAccess.deloSearch.rnDeloEQ}" 
+										      	    onLabel="Да"
+										    	    offLabel="Не"
+													title="#{labels['docu.deloSrchRegNom']}"  
+												    onIcon="fas fa-toggle-on"  
+													offIcon="fas fa-toggle-off" 
+												    styleClass="inputgroup-button">
+														<p:ajax update="@this rnDelo" partialSubmit="true"
+																process="@this rnDelo"/>			
+											</p:selectBooleanButton>				    	
+										</div>
+								</div>
+								
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+									 <p:selectOneMenu id="idPerR" value="#{takeAwayAccess.period}">
+					                        <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, takeAwayAccess.currentLang)}" 
+					                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					                        <p:ajax event="change" partialSubmit="true"
+					                        update="@this dateOtReg dateDoReg" listener="#{takeAwayAccess.changePeriod}"/>   
+					                 </p:selectOneMenu>
+								</div>
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">			
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									 <p:datePicker id="dateOtReg" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+							         	value="#{takeAwayAccess.deloSearch.deloDateFrom}">
+							         	<p:ajax event="change" update="idPerR" listener="#{takeAwayAccess.changeDate}"/>
+							         	<p:ajax event="dateSelect" update="idPerR" listener="#{takeAwayAccess.changeDate}"/>      
+							         </p:datePicker>
+								</div>
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">		
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoReg" pattern="dd.MM.yyyy" mask="true" showIcon="true"  locale="bg" 
+					         			    value="#{takeAwayAccess.deloSearch.deloDateTo}">
+					         			 	<p:ajax event="change" update="idPerR" listener="#{takeAwayAccess.changeDate}"/>   
+					         			 	<p:ajax event="dateSelect" update="idPerR" listener="#{takeAwayAccess.changeDate}"/>   
+						         	</p:datePicker>
+								</div>
+
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12  ui-fluid">
+									<p:selectOneRadio id="radioAccessDela" value="#{takeAwayAccess.radioAccessDela}" columns="2">
+										<f:selectItem itemLabel="#{labels['takeAwayAccess.DelaWithAccess']}" itemValue="1" />
+										<f:selectItem itemLabel="#{labels['takeAwayAccess.DelaNoAccess']}" itemValue="2" />											
+										<p:ajax event="change"  update="panelTblDelo" process="@this " listener="#{takeAwayAccess.actionChangeRadioAccessDela}"/>									
+									</p:selectOneRadio>
+								</div>
+
+							</div>	
+							<!-- разширени критерии.... -->				
+							<div class="title-group">
+								<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#srch-extended')">
+									<h:outputText value="#{ui_labels['search.extend']}"/>
+									<i class="fas fa-caret-right"></i>
+								</p:commandLink>
+							</div>
+							
+							<div class="p-grid ui-fluid" id="srch-extended"  style="display: none;">		
+										
+								<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+									<h:outputText value="#{labels['docu.status']}" styleClass="form-label"/>
+									<p:selectCheckboxMenu id="mSt"  style="width:100%"
+								    					  value="#{takeAwayAccess.deloSearch.statusArr}"  multiple="true" >				        
+							          			<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_STATUS, now, takeAwayAccess.currentLang)}" 
+					                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								  	</p:selectCheckboxMenu>
+								</div>
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+									<h:outputText value="#{labels['delo.periodStatus']}" styleClass="form-label"/>
+									 <p:selectOneMenu id="idPerRStat" value="#{takeAwayAccess.periodStat}">
+					                        <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, takeAwayAccess.currentLang)}" 
+					                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					                        <p:ajax event="change" partialSubmit="true"
+					                        update="@this dateOtRegStat dateDoRegStat" listener="#{takeAwayAccess.changePeriodStat}"/>   
+					                 </p:selectOneMenu>
+								</div>
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">			
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									 <p:datePicker id="dateOtRegStat" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+							         	value="#{takeAwayAccess.deloSearch.statusDateFrom}">
+							         	<p:ajax event="change" update="idPerRStat" listener="#{takeAwayAccess.changeDateStat}"/>
+							         	<p:ajax event="dateSelect" update="idPerRStat" listener="#{takeAwayAccess.changeDateStat}"/>      
+							         </p:datePicker>
+								</div>
+								
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">		
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoRegStat" pattern="dd.MM.yyyy" mask="true" showIcon="true"  locale="bg" 
+					         			    value="#{takeAwayAccess.deloSearch.statusDateTo}" >
+					         			 	<p:ajax event="change" update="idPerRStat" listener="#{takeAwayAccess.changeDateStat}"/>   
+					         			 	<p:ajax event="dateSelect" update="idPerRStat" listener="#{takeAwayAccess.changeDateStat}"/>   
+						         	</p:datePicker>
+								</div>
+			
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+									<h:outputText value="#{labels['docu.type']}" styleClass="form-label"/>
+									<p:selectCheckboxMenu id="mTp"   style="width:100%"
+								    					 value="#{takeAwayAccess.deloSearch.deloTypeArr}"   multiple="true" >				              
+							               
+							               <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_TYPE, now, takeAwayAccess.currentLang)}" 
+					                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					                   </p:selectCheckboxMenu>
+								</div>
+														
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label"/>
+									<p:inputText value="#{takeAwayAccess.deloSearch.deloName}" id="nameDelo" />
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									<h:outputText value="#{labels['delo.opisanie']}" styleClass="form-label"/>
+									<p:inputText value="#{takeAwayAccess.deloSearch.deloInfo}" id="otnosno" />
+								</div>
+								
+							</div>	
+							 
+								<div class="filter-buttons">
+									<p:commandButton id="btnSearchC1" actionListener="#{takeAwayAccess.actionSearchDelo}"
+										partialSubmit="true" update="panelTblDelo" icon="fas fa-search" value="#{ui_labels['general.search']}" styleClass="p-mr-3"/>
+									<p:defaultCommand target="btnSearchC1" scope="pnlDeloSearch"/>	
+										
+									 	 							 
+									<p:commandButton  id="btnClearC1" actionListener="#{takeAwayAccess.actionClearDelo}"
+										partialSubmit="true" process="@this pnlDeloSearch panelTblDelo" update="pnlDeloSearch panelTblDelo"
+										icon="fas fa-eraser"  	styleClass="ui-button-warning"
+									    value="#{ui_labels['general.clear']}" /> 	    								
+								</div>
+							
+						
+							</div>
+						</h:panelGroup>
+					
+					</h:panelGroup>
+					
+					<!--Филтър за търсене на документи-->	
+					<h:panelGroup id="pnlDocSearch">
+						   <h:panelGroup rendered="#{takeAwayAccess.renderedDoc and takeAwayAccess.codeTakeAwayAccess ne null}">
+						   	   <br/>
+						       <div class="card" >
+														       							           
+							   <h5> <h:outputText value="#{labels['docDestruction.docSearch']}"  /> </h5>
+							  
+								   <div  class="p-grid  ui-fluid p-align-end" >
+								   
+										<!--Регистрационен номер-->														
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+											<h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label"/>
+											<div class="ui-inputgroup">
+												<p:inputText value="#{takeAwayAccess.searchDoc.rnDoc}" id="rnDoc"/>
+												<p:focus id="focusDoc" for="rnDoc" />	
+												<p:selectBooleanButton id="rndE" value="#{takeAwayAccess.searchDoc.rnDocEQ}" 
+														onLabel="Да"
+														offLabel="Не"
+														title="#{labels['docu.docSrchRegNom']}" 
+														onIcon="fas fa-toggle-on"  
+														offIcon="fas fa-toggle-off" 
+														styleClass="inputgroup-button" >
+														<p:ajax update="@this rnDoc" partialSubmit="true"	process="@this rnDoc"/>			
+													</p:selectBooleanButton>
+											</div>
+										</div>
+										
+										<!--Период на регистрация-->	
+										<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+											<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+											<p:selectOneMenu id="idPerReg" value="#{takeAwayAccess.periodR}">
+											     <f:selectItem value="#{null}" itemValue="#{null}"/>
+											     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, takeAwayAccess.currentLang)}" 
+											         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+											     <p:ajax event="change" update="idPerR dateOtR dateDoR" listener="#{takeAwayAccess.changePeriodR}"/>   
+										    </p:selectOneMenu>
+									   </div>
+									   
+									   <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+											<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+											<p:datePicker id="dateOtR" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+												value="#{takeAwayAccess.searchDoc.docDateFrom}"  >
+												<p:ajax event="change" update="idPerReg" listener="#{takeAwayAccess.changeDateR}"/>
+												<p:ajax event="dateSelect" update="idPerReg" listener="#{takeAwayAccess.changeDateR}"/>      
+											 </p:datePicker>
+									  </div>
+																
+									  <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+											<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+											<p:datePicker id="dateDoR" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg" 
+												value="#{takeAwayAccess.searchDoc.docDateTo}"  >
+												<p:ajax event="change" update="idPerReg" listener="#{takeAwayAccess.changeDateR}"/>   
+												<p:ajax event="dateSelect" update="idPerReg" listener="#{takeAwayAccess.changeDateR}"/>   
+											</p:datePicker>												    
+									 </div>
+									 
+									 <!--Тип на документа-->															
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid ">					
+										<p:selectManyCheckbox value="#{takeAwayAccess.searchDoc.docTypeArr}" id="typeDoc"	immediate="true">										
+                        					<f:selectItems var="item" itemLabel="#{item.tekst}"
+										itemValue="#{item.code}"  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_TYPE, takeAwayAccess.decodeDate, takeAwayAccess.currentLang)}" />
+										</p:selectManyCheckbox>
+									</div>
+																			
+									<!--Вид на документа-->							
+									<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+										<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+										<ibg:selectManyModalA id="lstDocsVid" compType="2" maxResults="50"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+											dateClassif="#{takeAwayAccess.decodeDate}" filtered="false"
+											saveStateTree="false" showRadioBtn="false" 
+											selectedCodes="#{takeAwayAccess.searchDoc.docVidList}"
+											selectedClassifs="#{takeAwayAccess.docsVidClassif}"
+											styleAutoComp="width:100%;"
+											withBtnClear="true" /> 
+																
+									</div>
+									
+									<!--Регистър-->							 
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+										<h:outputText value="#{labels['docu.register']}" styleClass="form-label"/>
+										<h:panelGroup id="registerSource">
+											<ibg:selectManyModalA compType="2" maxResults="50" 
+												codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+												dateClassif="#{takeAwayAccess.decodeDate}" filtered="false"
+												selectedCode="#{takeAwayAccess.searchDoc.registerIdList}"
+												selectedClassifs="#{takeAwayAccess.docsRegistriClassif}"
+												specifics="#{takeAwayAccess.specificsRegisterSource}" sortByName="true"
+												saveStateTree="false" withBtnClear="true" showRadioBtn="false" 
+												styleAutoComp="width:100%;" />
+										</h:panelGroup>																	   
+									</div>
+									
+									<!--Наименование-->							
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+										<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label"/>
+										<p:inputText value="#{takeAwayAccess.searchDoc.docName}" id="nameDoc"/>													   
+									</div>
+									
+									<!--Доп.инф.-->
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+										<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label"/>
+										<p:inputText value="#{takeAwayAccess.searchDoc.docInfo}" id="dopInfo"/>												    
+									</div>
+									
+									<!--Валидност-->							 
+									<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+										<h:outputText value="#{labels['docu.valid']}" styleClass="form-label"/>
+										 <p:selectCheckboxMenu id="validnost" value="#{takeAwayAccess.searchDoc.validArr}" multiple="true">
+											 <f:selectItems var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+											 value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, takeAwayAccess.decodeDate, takeAwayAccess.currentLang)}"/> 
+										 </p:selectCheckboxMenu>												
+									</div>
+									
+									<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12  ui-fluid">
+									<p:selectOneRadio id="radioAccessDocs" value="#{takeAwayAccess.radioAccessDocs}" columns="2">
+										<f:selectItem itemLabel="#{labels['takeAwayAccess.DocsWithAccess']}" itemValue="1" />
+										<f:selectItem itemLabel="#{labels['takeAwayAccess.DocsNoAccess']}" itemValue="2" />	
+										<p:ajax event="change"  update="panelTblDoc" process="@this " listener="#{takeAwayAccess.actionChangeRadioAccessDocs}"/>								
+									</p:selectOneRadio>
+								</div>
+									
+											   
+								</div>
+								
+								<div class="filter-buttons">
+									<p:commandButton id="btnSearchDoc" actionListener="#{takeAwayAccess.actionSearchDoc}"
+										partialSubmit="true" update="panelTblDoc" icon="fas fa-search" value="#{ui_labels['general.search']}" styleClass="p-mr-3"/>
+									<p:defaultCommand target="btnSearchDoc" scope="pnlDocSearch"/>
+									
+									 
+									<p:commandButton  id="btnClearDoc" actionListener="#{takeAwayAccess.actionClearDoc}"
+										partialSubmit="true" process="@this pnlDocSearch panelTblDoc" update="pnlDocSearch panelTblDoc"
+										icon="fas fa-eraser"  	styleClass="ui-button-warning"
+									    value="#{ui_labels['general.clear']}" /> 	    								
+								</div>								
+							
+						</div>
+						
+						</h:panelGroup>
+				    
+				    </h:panelGroup>
+				
+			</div>	
+			
+			<!-- Дела/преписки резултат -->
+			<h:panelGroup id="panelTblDelo" layout="block" styleClass="margin-top">
+				<h:panelGroup layout="block" styleClass="card" rendered="#{takeAwayAccess.renderedDelo and takeAwayAccess.codeTakeAwayAccess ne null}">
+					<h:panelGroup id="panelTblToolbar">
+					
+						<div class="table-toolbar">
+							
+							<p:commandButton value="#{labels['takeAwayAccess.explicitТакеAccess']}" id="btnExplicitTakeDela" update="panelTblDelo" partialSubmit="true" onclick="if(!confirm('#{beanMessages['takeAwayAccess.sureDenyDeloAccess']}'))return false;"
+								rendered="#{(takeAwayAccess.radioAccessDela ne null and takeAwayAccess.radioAccessDela eq 1) and takeAwayAccess.deloSelectedAllM.size()>0}" process="@this panelTblDelo" actionListener="#{takeAwayAccess.actionExplicitТакеAccessDela}"
+								styleClass=" p-mr-2"/>
+							
+							<p:commandButton value="#{labels['takeAwayAccess.removeExplicitТакеAccess']}" id="btnRemoveExplicitTakeDela" update="panelTblDelo" partialSubmit="true" onclick="if(!confirm('#{beanMessages['takeAwayAccess.sureRemoveDeniedDeloAccess']}'))return false;"
+								rendered="#{(takeAwayAccess.radioAccessDela ne null and takeAwayAccess.radioAccessDela eq 2) and takeAwayAccess.deloSelectedAllM.size()>0}" process="@this panelTblDelo" actionListener="#{takeAwayAccess.actionRemoveExplicitТакеAccessDela}"/>
+							
+							<span class="p-mx-2" style="#{takeAwayAccess.deloSelectedAllM.size()>0?'':'display:none'}">
+								<span class="fas fa-ellipsis-v" />
+							</span>
+							
+							<h:outputText value="#{ui_labels['general.reportResult']} #{takeAwayAccess.deloList.rowCount}" styleClass="form-label"/>
+									
+							<span class=" p-mx-2" style="#{takeAwayAccess.deloSelectedAllM.size()>0?'':'display:none'}" >
+								<span class="fas fa-ellipsis-v" />
+							</span>
+							
+							<h:outputText value="#{labels['opis.brIzbr']}: #{takeAwayAccess.deloSelectedAllM.size()}" rendered="#{takeAwayAccess.deloSelectedAllM.size()>0}" styleClass="form-label" id="brSel"/>
+							
+						</div>
+				  </h:panelGroup>
+				  <p:dataTable id="tbltransferDeloDoc" var="row" value="#{takeAwayAccess.deloList}" lazy="true" 	
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}"
+						emptyMessage="#{takeAwayAccess.deloList eq null ? '' : labels['docu.deloSrchEmptyMsg']}" 
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="false" paginator="true"
+						rowSelectMode="checkbox"
+						selection="#{takeAwayAccess.deloSelectedTmp}" >
+						
+					<p:ajax event="toggleSelect"	 	 listener="#{takeAwayAccess.onRowSelectAll}" process="@this" update=" formTakeAwayAccess:panelTblToolbar"/>
+					<p:ajax event="rowSelectCheckbox"	 listener="#{takeAwayAccess.onRowSelect}"   process="@this"  update=" formTakeAwayAccess:panelTblToolbar"/>
+					<p:ajax event="rowUnselectCheckbox"  listener="#{takeAwayAccess.onRowUnselect}" process="@this"  update=" formTakeAwayAccess:panelTblToolbar"/>
+					<p:ajax event="page" listener="#{takeAwayAccess.onPageUpdateSelected}" />
+					
+							
+					<p:column selectionMode="multiple" style="width:30px;text-align:center;"/>	
+										
+				  	<p:column  style="text-align: center" width="30" rendered="false">
+						<f:facet name="header">
+				               #{labels['general.No-symbol']}  
+				         </f:facet>
+						<h:outputText value="#{idx + 1}" />
+					</p:column>	
+					
+					
+					<p:column width="170" sortBy="#{row.a1}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.deloRn']}" style="margin-left:-8px" />										  
+						</f:facet>
+						<h:outputText value="#{row[1]}"  title="id: #{row[0]}"/> 
+					</p:column>
+					<p:column width="110" sortBy="#{row.a2}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.dateDoc']}" style="margin-left:-8px" />									  
+						</f:facet>
+						<h:outputText value="#{row[2]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{takeAwayAccess.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+					<p:column width="*" sortBy="#{row.a6}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.nameDelo']}" style="margin-left:-8px" />										  
+						</f:facet>
+						<h:outputText value="#{row[6]}" />
+					</p:column>
+					<p:column width="150" sortBy="#{row.a4}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.status']}" style="margin-left:-8px"/>									  
+						</f:facet>
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[4], takeAwayAccess.currentLang, now)}"/>
+					</p:column>
+					<p:column width="50" sortBy="#{row.a3}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.type']}" style="margin-left:-8px"/>									  
+						</f:facet>
+						
+						<h:panelGroup rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-book" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[3], takeAwayAccess.currentLang, now)}"></i>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{row[3] ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-folder" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[3], takeAwayAccess.currentLang, now)}"></i>
+						</h:panelGroup>
+						
+					</p:column>
+				</p:dataTable>
+				</h:panelGroup>	
+				
+			</h:panelGroup>	
+			
+			<!-- Документи резултат -->
+			<h:panelGroup id="panelTblDoc" layout="block" styleClass="margin-top">
+				<h:panelGroup layout="block" styleClass="card" rendered="#{takeAwayAccess.renderedDoc and takeAwayAccess.codeTakeAwayAccess ne null}">
+					<h:panelGroup id="panelTblToolbarDoc">
+					
+						<div class="table-toolbar">
+						
+							<p:commandButton value="#{labels['takeAwayAccess.explicitТакеAccess']}" id="btnExplicitTakeDocs" update="panelTblDoc" partialSubmit="true" onclick="if(!confirm('#{beanMessages['takeAwayAccess.sureDenyDocAccess']}'))return false;"
+								rendered="#{(takeAwayAccess.radioAccessDocs ne null and takeAwayAccess.radioAccessDocs eq 1) and takeAwayAccess.docSelectedAllM.size()>0}" process="@this panelTblDoc" actionListener="#{takeAwayAccess.actionExplicitТакеAccessDocs}"
+								styleClass=" p-mr-2"/>
+														
+							<p:commandButton value="#{labels['takeAwayAccess.removeExplicitТакеAccess']}" id="btnRemoveExplicitTakeDocs" update="panelTblDoc" partialSubmit="true" onclick="if(!confirm('#{beanMessages['takeAwayAccess.sureRemoveDeniedDocAccess']}'))return false;"
+								rendered="#{(takeAwayAccess.radioAccessDocs ne null and takeAwayAccess.radioAccessDocs eq 2) and takeAwayAccess.docSelectedAllM.size()>0}" process="@this panelTblDoc" actionListener="#{takeAwayAccess.actionRemoveExplicitТакеAccessDocs}"/>							
+							
+							<span class=" p-mx-2" style="#{takeAwayAccess.docSelectedAllM.size()>0?'':'display:none'}">
+								<span class="fas fa-ellipsis-v" />
+							</span>
+							
+							<h:outputText value="#{ui_labels['general.reportResult']} #{takeAwayAccess.docsList.rowCount}" styleClass="form-label"/>
+																			
+							<span class=" p-mx-2" style="#{takeAwayAccess.docSelectedAllM.size()>0?'':'display:none'}" >
+								<span class="fas fa-ellipsis-v" />
+							</span>
+							
+							<h:outputText value="#{labels['opis.brIzbr']}: #{takeAwayAccess.docSelectedAllM.size()}" rendered="#{takeAwayAccess.docSelectedAllM.size()>0}" styleClass="form-label" id="brSelDoc"/>
+							
+						</div>
+				  </h:panelGroup>
+				  <p:dataTable id="tbltransferDoc" var="row" value="#{takeAwayAccess.docsList}" lazy="true" 	
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}"
+						emptyMessage="#{takeAwayAccess.docsList eq null ? '' : labels['docu.docSrchEmptyMsg']}" 
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+						rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="false" paginator="true"
+						rowSelectMode="checkbox"
+						selection="#{takeAwayAccess.docSelectedTmp}" >
+											
+					<p:ajax event="toggleSelect"	 	 listener="#{takeAwayAccess.onRowSelectAllDoc}" process="@this" update=" formTakeAwayAccess:panelTblToolbarDoc"/>
+					<p:ajax event="rowSelectCheckbox"	 listener="#{takeAwayAccess.onRowSelectDoc}"   process="@this"  update=" formTakeAwayAccess:panelTblToolbarDoc"/>
+					<p:ajax event="rowUnselectCheckbox"  listener="#{takeAwayAccess.onRowUnselectDoc}" process="@this"  update=" formTakeAwayAccess:panelTblToolbarDoc"/>
+					<p:ajax event="page" listener="#{takeAwayAccess.onPageUpdateSelectedDoc}" />
+							
+					<p:column selectionMode="multiple" style="width:30px;text-align:center;"/>	
+										
+				  	<p:column  style="text-align: center" width="30" rendered="false">
+						<f:facet name="header">
+				               #{labels['general.No-symbol']}  
+				         </f:facet>
+						<h:outputText value="#{idx + 1}" />
+					</p:column>	
+					
+					
+					<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+							<h:outputText value="#{row[1]}"  />								    
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+							<h:outputText value="#{row[4]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{takeAwayAccess.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column width="*" styleClass="col200" sortBy="#{row.a6}" headerText="#{labels['docu.otnosno']}">
+							<h:outputText value="#{row[6]}"  />								    
+						</p:column>
+						
+						<p:column width="*" styleClass="col200" sortBy="#{row.a8}" headerText="#{labels['docList.idvaOtAvtori']}">
+							<h:outputText rendered="#{row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}" value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REFERENTS, row[8], takeAwayAccess.currentLang, now)}"/>					    
+							<h:outputText rendered="#{row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN or row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}" value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], takeAwayAccess.currentLang, now)}"/>
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], takeAwayAccess.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], takeAwayAccess.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="150" sortBy="#{row.a5}" headerText="#{labels['docu.register']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, row[5], takeAwayAccess.currentLang, now)}"/>					    
+						</p:column>
+					</p:dataTable>
+				</h:panelGroup>	
+				
+			</h:panelGroup>	
+		
+		</h:form>
+	</ui:define>
+</ui:composition>

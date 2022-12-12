@@ -1,0 +1,270 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                template="#{(isView eq 1) ? '/template/templateView.xhtml' : '/template/template.xhtml'}">
+    	
+    <ui:param name="pageTitle" value="#{isView == null ? ( isNew eq 1 ? navTexts['/pages/taskNew.xhtml'] : navTexts['/pages/docEdit.xhtml'] ) : taskEdit.nomTask}" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+    	
+   	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+	</f:metadata>
+
+	<ui:define name="viewname">		
+		<li>
+	       	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" 
+	       				   rendered="#{navigation.navPath.size()>1 and isNew ne 1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>
+			<h:outputText value="#{navTexts['/pages/taskNew.xhtml']}" rendered="#{isNew eq 1 and isView ne 1}"/>
+			<h:outputText value="#{navTexts['/pages/taskEdit.xhtml']}" rendered="#{isNew ne 1 and isView ne 1}"/> 
+			<h:outputText value="#{navTexts['/pages/taskView.xhtml']}" rendered="#{isView eq 1}"/> 
+		</li>
+	
+	</ui:define>
+	
+
+	<ui:define name="content">
+	
+	    <h:form id="taskEditForm">
+	    	<div class="card">	
+		    	<h:panelGroup rendered="#{taskEdit.accDoc ne null}" layout="block" >
+						#{labels['docu.titleDocNotFound']}   #{labels['task.notAccessDoc']} 
+				</h:panelGroup>
+		    		
+		    	<h:panelGroup rendered="#{taskEdit.accDoc eq null}" >	
+					<h:panelGroup id="taskNew">
+						
+						<div class="p-grid ui-fluid" jsf:id="dpcPanel" jsf:rendered="#{isNew eq 1}">
+							<div class="p-col-fixed" style="width:240px">
+							
+							<div style="height: 1.4em;" ></div>	
+								<ui:remove><!-- 
+								<p:selectBooleanButton id="tskWithDoc"  rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)}"
+										value="#{taskEdit.taskWithDoc}"
+										offLabel="#{labels['docu.newTask1']}"
+										offIcon="fas fa-square" 
+										onLabel="#{labels['docu.newTask2']}"
+										onIcon="fas fa-check-square">
+										<p:ajax process="dpcPanel @this" update="dpcPanel  compTask panelTblT"
+											 listener="#{taskEdit.actionChangeWithDoc}"/>
+								</p:selectBooleanButton> --></ui:remove>
+							<p:selectBooleanCheckbox id="tskWithDoc"  rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)}" styleClass="form-label" 
+									value="#{taskEdit.taskWithDoc}"
+								    itemLabel="#{labels['docu.newTask2']}" >		
+								    <p:ajax process="dpcPanel @this" update="dpcPanel  compTask panelTblT"
+											 listener="#{taskEdit.actionChangeWithDoc}"/>				 
+							</p:selectBooleanCheckbox>
+															
+							</div>
+				    		<div class="p-col-6 p-md-4 p-lg-2" jsf:id="rnDoc" jsf:rendered="#{taskEdit.taskWithDoc}">
+								<h:outputText value="#{labels['docDoc.regNum']}" styleClass="form-label" />
+								<div class="ui-inputgroup">
+									<p:inputText id="vrN1" style=" display:inline-block;" disabled="true"
+										value="#{taskEdit.rnDoc}">
+									</p:inputText>
+		
+									<p:commandButton id="btnIn" icon="fas fa-search" style="width:40px"
+									 	rendered="#{taskEdit.idDoc == null}"
+										actionListener="#{taskEdit.actionSearchDocBtn(true)}"
+										partialSubmit="true" process="dpcPanel docPG  @this"  
+										title="#{labels['docDoc.searchDoc']}">
+									</p:commandButton>
+		
+								</div>							
+							</div>
+							<div class="p-col-6 p-md-4 p-lg-2" jsf:id="dateDoc" jsf:rendered="#{taskEdit.taskWithDoc}">
+								<h:outputText value="#{labels['docDoc.dateDoc']}" styleClass="form-label"/>
+							
+								<p:inputText value="#{taskEdit.dateDoc}" readonly="true" id="dDoc">
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskEdit.timeZone}"/>
+								</p:inputText>
+							
+							</div>
+						</div>
+			     	
+						<p:confirmDialog id="cmdConfirm" appendTo="@form" widgetVar="confirmWV"
+							closeOnEscape="true"  modal="true"
+							resizable="false" responsive="true"
+							header="#{ui_labels['general.comfirmation']}"
+							message="#{labels['docu.findDocMsg1']} #{taskEdit.rnFullDoc}. #{labels['docu.findDocMsg2']}">
+				
+							<div class="p-col-12 p-md-12 p-lg-12 cc-right">
+								<p:commandButton id="btnConfSave" styleClass="btn-save"
+									icon="fas fa-check" value="#{ui_labels['general.yes']}"
+									action="#{taskEdit.actionConfirmDoc}" partialSubmit="true" oncomplete="PF('confirmWV').hide();"
+									process="dpcPanel compTask @this" update="compTask dpcPanel docPG panelTblT" />
+								<p:commandButton value="#{ui_labels['general.no']}" onclick="PF('confirmWV').hide();"
+									icon="fas fa-times" action="#{taskEdit.cancel(true)}" 
+									process="dpcPanel compTask @this" update="compTask dpcPanel docPG panelTblT" />
+									<p:focus for="btnConfSave" id="fYes"></p:focus>
+							</div>
+						</p:confirmDialog>
+					</h:panelGroup>
+								
+					
+		    		
+			    <ui:remove>	<!-- Списък задачи към документ--> </ui:remove>
+			    	<h:panelGroup id="panelTblT" >
+						<div  class="title-group" jsf:rendered="#{taskEdit.idDoc ne null}">
+							<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#taskEditForm:doc-taskdata')">
+								<h:outputText value="#{labels['tasks.listDoc']} #{taskEdit.rnFullDoc}"/>
+							
+						  		<p:link ajax="false" href="#{taskEdit.actionGotoViewDoc()}" target="_blank" title="#{labels['general.view']}"> <i class="fas fa-eye"> </i> </p:link>
+						  		
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>	
+						<div jsf:id="doc-taskdata"  jsf:rendered="#{taskEdit.idDoc ne null}">
+							
+							<p:dataTable id="tblTasksList" var="row" value="#{taskEdit.tasksList}" lazy="true" 	
+								rowIndexVar="idx" sortMode="single" reflow="true" scrollable="true"
+								emptyMessage="#{labels['docu.taskListEmpty']}"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+								rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+								paginatorAlwaysVisible="false" paginator="true">				
+								
+						
+								<p:column style="text-align: center" width="50" exportable="false" >
+									
+										<p:commandButton id="btnChTask"  
+										    title="#{ui_labels['general.edit']}"									
+										    action="#{taskEdit.actionSelectTask(row)}"					
+										    partialSubmit="true" 
+										    process="@this taskEditForm:compTask"
+											update="taskEditForm:compTask"
+											icon="fas fa-edit" 
+											onclick="highlightElement(this ,'tr');"/>							
+								
+								</p:column> 
+								
+								<p:column width="90" sortBy="#{row.a1}">
+									<f:facet name="header">
+										 <h:outputText value="#{labels['tasks.nomer']}" />
+									</f:facet>
+									<h:outputText value="#{row[1]}"  />
+								</p:column>
+								
+								<p:column width="150" sortBy="#{row.a2}" >
+									<f:facet name="header">
+										 <h:outputText value="#{labels['tasks.vid']}"  />
+									</f:facet>
+								    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[2],  taskEdit.currentLang, now)}" />		   						    
+								</p:column>
+								<p:column width="110" sortBy="#{row.a5}" >
+									<f:facet name="header">
+										 <h:outputText value="#{labels['tasks.assign']}" />									  
+									</f:facet>  
+									<h:outputText value="#{row[5]}"  >	
+											<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{taskEdit.timeZone}"/>
+									</h:outputText>	
+								    
+								</p:column>
+								<p:column width="110" sortBy="#{row.a4}">
+									<f:facet name="header">
+										 <h:outputText value="#{labels['tasks.srok']}" />									  
+									</f:facet>  
+									<h:outputText value="#{row[4]}"  >	
+											<f:convertDateTime pattern="#{taskEdit.srokPattern}" timeZone="#{taskEdit.timeZone}"/>
+									</h:outputText>	
+								    
+								</p:column>
+				
+								<p:column width="100" sortBy="#{row.a3}">
+									<f:facet name="header">
+										 <h:outputText value="#{labels['task.statusData']}" />									  
+									</f:facet>  
+								    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[3], taskEdit.currentLang, now)}  "/>
+								</p:column>
+									
+								<p:column width="160"  sortBy="#{row.a15}" headerText="#{labels['taskList.emplStatus']}">
+									<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[15], taskEdit.currentLang, now)} "> </h:outputText>
+								</p:column>
+								
+								
+								<p:column width="*"  >
+									<f:facet name="header">
+										 <h:outputText value="#{labels['dashboard.mnenieKomentar']}" />									  
+									</f:facet>  
+									<h:outputText value="#{taskEdit.titleInfo(row[10], row[9])}" />	
+														    
+								</p:column>
+								
+								<p:column width="*" >
+									<f:facet name="header">
+										 <h:outputText value="#{labels['admStruct.employees']}" />									  
+									</f:facet>
+									<h:outputText value="#{labels['tasks.assignCode']}:" styleClass="form-label"></h:outputText> 
+									<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[8], taskEdit.currentLang, now)} "> </h:outputText>
+									<h:outputText value="#{labels['tasks.exec']}:" styleClass="form-label"></h:outputText>	
+									<h:outputText value=" #{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[6],  taskEdit.currentLang, now)}"/>
+								</p:column>
+								
+								<p:column width="*"  >
+									<f:facet name="header">
+										 <h:outputText value="#{labels['task.dopInfo']}" />									  
+									</f:facet>  
+									<h:outputText value="#{row[11]}" />	
+														    
+								</p:column>
+								<p:column style="text-align: center" width="50" exportable="false" >
+									<f:facet name="header">
+										 <i class="fas fa-link" title="#{labels['tasks.delDocReq']}"></i>								  
+									</f:facet>
+									<p:button  icon="fas fa-eye" href="docView.xhtml?faces-redirect=true" target="_blank" 
+									           title="#{labels['tasks.delDocReq']} N: #{row[12]} / #{row[13]}" 
+							  				   rendered="#{row[14] != null}" >
+							  				   
+							  				   <f:param name="idObj" value="#{row[14]}"/>
+							  		</p:button>		
+								
+								</p:column> 
+								
+								
+							</p:dataTable>
+						
+						</div>
+				   	</h:panelGroup>
+			 
+			    	<h:panelGroup id="compTask" >	
+			    		<p:remoteCommand name="cmdRefreshTaskList" update="taskEditForm:tblTasksList taskEditForm:taskNew"
+							partialSubmit="true" process="@this" ignoreAutoUpdate="true"
+							actionListener="#{taskEdit.actionRefreshTaskList}" />
+							
+			  			<ibg:taskData id="compTaskId" 
+			  					   rendered="#{(taskEdit.taskWithDoc) ? (taskEdit.idDoc ne null) : true}" 
+			  			 		   idTask="#{taskEdit.idTask}" idDoc="#{taskEdit.idDoc}" dateDoc="#{taskEdit.dateDoc}"
+					  			   taskProcess="1"  modal="false"  onComplete="cmdRefreshTaskList()" update="taskEditForm:tblTasksList taskEditForm:taskNew"
+					  			   readonly="#{isView eq 1 }"/>
+			
+					</h:panelGroup>
+			 	</h:panelGroup>
+		    </div>
+	
+			<h:panelGroup id="docPG">
+				<p:remoteCommand name="hideModal" process="dpcPanel compTask @this" update="dpcPanel  compTask panelTblT"
+								 partialSubmit="true" actionListener="#{taskEdit.actionHideModal}"  />
+		
+				<p:dialog appendTo="@form" position="top" widgetVar="mDoc" header="Избор на документ"
+					fitViewport="true" responsive="true" resizable="true"
+					closeOnEscape="true"  onHide="hideModal()"
+					id="modalDoc" modal="true">
+		
+					<ibg:compDocSearch id="docSearchT" searchRnDoc="#{taskEdit.rnDoc}" searchDocS="#{taskEdit.docObj}"
+						idRegistratura="#{taskEdit.registraturaId}"
+						buttonConfirmLabel="#{ui_labels['general.save']}"
+						onComplete="PF('mDoc').hide();" />
+				</p:dialog>
+		
+			</h:panelGroup>
+			
+		</h:form>
+	
+	</ui:define>
+</ui:composition>

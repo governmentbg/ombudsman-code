@@ -1,0 +1,239 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:c="http://java.sun.com/jstl/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"	> 
+	  
+	  
+
+<cc:interface componentType="compDeloSearch">
+   		  
+   <cc:attribute name="searchDeloS"	       	 type="java.lang.Object"  shortDescription="връща дело/преписка (SearchDelo)" deafult="null" />
+   <cc:attribute name="searchRnDelo"	     type="java.lang.Object"  shortDescription="номер на преписка/дело за търсене" deafult="null" />
+   <cc:attribute name="idRegistratura"	     type="java.lang.Integer" shortDescription="id на регистратура" deafult="null" />
+   <cc:attribute name="dateClassif"   		 type="java.util.Date"    shortDescription="Дата, към която да се заредят класификации и за разкодиране. По подразбиране - днешна дата." />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="Полета, които трябва да се обновят" />
+   <cc:attribute name="readonly"       		 type="java.lang.Boolean" shortDescription="Само за разглеждане" default="false" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+   <cc:attribute name="selectedDeloList"	 type="java.util.List"	  shortDescription="Списък от избраните значения като обект DeloSearch - само, ако multi=true" />
+   <cc:attribute name="multi"       		 type="java.lang.Boolean" shortDescription="Позволява множествен избор" default="false" />
+   <cc:attribute name="idDoc"	     		 type="java.lang.Integer" shortDescription="id на документ" deafult="null" />
+   <cc:attribute name="idDeloDoc"	    	 type="java.lang.Integer" shortDescription="id на текущата преписка" deafult="null" />
+   <cc:attribute name="idProtocol"	   	     type="java.lang.Integer" shortDescription="id на текущат протокол, към който е връзката" deafult="null" />
+   <cc:attribute name="typeDelo"	   	     type="java.lang.Integer" shortDescription="тип на преписка" deafult="null" />
+   <cc:attribute name="notIncluded"	   	     type="java.lang.Boolean" shortDescription="Дали да се изключи от списъка преписката ако е вложена(false=включва се, true- не се включва)" deafult="false" />
+   <cc:attribute name="notInTip"	   	     type="java.lang.Integer" shortDescription="Дали да изключи подадения тип за търсене" deafult="null" />
+   <cc:attribute name="buttonConfirmLabel"   type="java.lang.String"  shortDescription="Лабел - на бутона за потвърждение. Default=Потвърждение" default="Потвърждение" />
+   <cc:attribute name="buttonConfirmTitle"   type="java.lang.String"  shortDescription="Подсказка - на бутона за потвърждение. Default=Потвърждаване на избраните документи" default="Потвърждаване на избраните документи" />
+   <cc:attribute name="addDeloAccess"        type="java.lang.Boolean" shortDescription="Включва и преписките, до които потребителя има изричен достъп, без значение на Регистратурата" default="false" />
+</cc:interface>
+
+<cc:implementation>
+
+ <f:event type="preRenderComponent" listener="#{cc.initDeloSearch(true)}" /> 
+ 
+
+	<div jsf:id="panelFilterDelo" class="container #{guestPreferences.containerPosition}" jsf:rendered="#{cc.showMe}"
+	  onkeypress="if(event.keyCode == 13) {event.preventDefault();  document.getElementById('#{cc.clientId}:btnSearchC1').click();}">										
+  	
+
+	 <div class="card"> 
+		<div  class="p-grid  ui-fluid" >
+			<div class="p-col-6 p-md-5 p-lg-3" >
+				 <h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label"/>
+				 <div class="ui-inputgroup"> 	
+					<p:inputText value="#{cc.deloSearch.rnDelo}" id="rnDelo"/>
+				    <p:focus id="focusRnDoc" for="#{cc.clientId}:rnDelo" />
+					 												 
+					 <p:selectBooleanButton id="rndEq" value="#{cc.deloSearch.rnDeloEQ}" 
+				      	    onLabel="#{ui_labels['general.yes']}"
+				    	    offLabel="#{ui_labels['general.no']}"
+							title="#{labels['docu.deloSrchRegNom']}" 
+						    onIcon="fas fa-toggle-on"  
+							offIcon="fas fa-toggle-off" 
+						    styleClass="inputgroup-button">
+								<p:ajax update="@this #{cc.clientId}:rnDelo" partialSubmit="true"
+										process="@this #{cc.clientId}:rnDelo"/>			
+					</p:selectBooleanButton>				    	
+				</div>
+			</div>
+			<div class="p-col-6 p-md-5 p-lg-3" >
+				<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+				 <p:selectOneMenu id="idPerR" value="#{cc.periodR}" height="250">
+                        <f:selectItem value="#{null}" itemValue="#{null}"/>
+                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, cc.lang)}" 
+                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+                        <p:ajax event="change" partialSubmit="true"
+                        update="@this #{cc.clientId}:dateOtReg #{cc.clientId}:dateDoReg" listener="#{cc.changePeriodR}"/>   
+                 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-6 p-md-5 p-lg-2" >
+				<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				 <p:datePicker id="dateOtReg" mask="true" showIcon="true"  locale="bg"  pattern="dd.MM.yyyy"
+		         	value="#{cc.deloSearch.deloDateFrom}">
+		         	<p:ajax event="change" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>
+		         	<p:ajax event="dateSelect" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>      
+		         </p:datePicker>
+			</div>
+			
+			<div class="p-col-6 p-md-5 p-lg-2" >
+				<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				<p:datePicker id="dateDoReg" mask="true" showIcon="true"  locale="bg" pattern="dd.MM.yyyy"
+         			    value="#{cc.deloSearch.deloDateTo}" >
+         			 	<p:ajax event="change" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>   
+         			 	<p:ajax event="dateSelect" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>   
+	         	</p:datePicker>
+			</div>
+			<div class="p-col-6 p-md-5 p-lg-3">
+				<h:outputText value="#{labels['docu.type']}" styleClass="form-label"/>
+				<p:selectCheckboxMenu id="mTp"   disabled="#{cc.attrs.typeDelo ne null}"
+			    					 value="#{cc.deloSearch.deloTypeArr}"   multiple="true" >				              
+		               <f:selectItems value="#{cc.typeList}"/>
+                </p:selectCheckboxMenu>
+			</div>				
+			<div class="p-col-6 p-md-5 p-lg-3">
+				<h:outputText value="#{labels['docu.status']}" styleClass="form-label"/>
+				<p:selectCheckboxMenu id="mSt"
+			    					  value="#{cc.deloSearch.statusArr}"  multiple="true" >				        
+		          <f:selectItems value="#{cc.statusList}"/>
+			  	</p:selectCheckboxMenu>
+			</div>
+		</div>	
+		
+				
+		
+		<div class="filter-buttons">
+			<p:commandButton id="btnSearchC1" 						
+			    actionListener="#{cc.actionSearchDelo}"
+				partialSubmit="true" 
+				process="@this  #{cc.clientId}:panelFilterDelo" 
+				update="#{cc.clientId}:panelTblDelo" 
+				icon="fas fa-search"  
+				value="#{ui_labels['general.search']}" styleClass="p-mr-3"/>
+			
+			   
+				 
+			<p:commandButton 					    
+				id="btnClearC1" 
+				actionListener="#{cc.actionClearDelo}"
+				partialSubmit="true"
+				process="@this  #{cc.clientId}:panelFilterDelo" 
+				update="#{cc.clientId}:panelFilterDelo"
+				icon="fas fa-eraser"  	styleClass="ui-button-warning"
+			    value="#{ui_labels['general.clear']}"	title="#{ui_labels['general.titleClear']}"  /> 	    
+				
+		</div>
+   
+	</div>
+
+    <h:panelGroup id="panelTblDelo" >
+			
+		  <div class="table-toolbar"  jsf:id="tbTbl" jsf:rendered="#{cc.attrs.multi and cc.deloList!=null}">
+				<p:commandButton icon="fas fa-check"   value="#{cc.attrs.buttonConfirmLabel}"
+					id="btnSelConfirm"  disabled="#{cc.deloSelectedAllM.size() eq 0}"
+					process="#{cc.attrs.update} @this"
+					update="#{cc.attrs.update} #{cc.clientId}:panelFilterDelo"
+					actionListener="#{cc.actionConfirmSelected}"							
+					title="#{cc.attrs.buttonConfirmTitle}"  >
+						<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+						message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>
+				
+				<span class="fas fa-ellipsis-v p-mx-2" />
+				
+				<h:outputText value="#{ui_labels['general.brSelected']}: #{cc.deloSelectedAllM.size()}"  styleClass="form-label" id="brSel"/>
+				
+		  </div>
+		
+		  <p:dataTable id="tblDeloList" var="row" value="#{cc.deloList}" lazy="true" 	rendered="#{cc.deloList!=null}"
+				rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}"
+				emptyMessage="#{cc.deloList eq null ? '' : labels['docu.deloSrchEmptyMsg']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rows="5" rowsPerPageTemplate="5,15,20" paginatorPosition="bottom"
+				paginatorAlwaysVisible="false" paginator="true"
+				rowSelectMode="checkbox"
+				selection="#{cc.deloSelectedTmp}" sortBy="#{row.a2}" >
+				
+			<p:ajax event="toggleSelect"	 	 listener="#{cc.onRowSelectAll}" process="@this" update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="rowSelectCheckbox"	 listener="#{cc.onRowSelect}"   process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="rowUnselectCheckbox"  listener="#{cc.onRowUnselect}" process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="page" listener="#{cc.onPageUpdateSelected}" />
+			
+					
+			<p:column selectionMode="multiple" style="width:30px;text-align:center;" 
+				  rendered="#{cc.attrs.multi}"/>	
+								
+		  	<p:column  style="text-align: center" width="30" rendered="false">
+				<f:facet name="header">
+		               #{labels['general.No-symbol']}  
+		         </f:facet>
+				<h:outputText value="#{idx + 1}" />
+			</p:column>	
+			
+			<p:column style="text-align: center" width="40" exportable="false" rendered="#{!cc.attrs.multi}" >
+			
+				<p:commandButton id="btnChDelo" 
+				    title="#{ui_labels['general.choise']}"									
+				    action="#{cc.actionModalSelectDelo(row)}"					
+				    partialSubmit="true" 
+				    process="#{cc.attrs.update}  #{cc.clientId}:panelFilterDelo @this"
+					update="#{cc.attrs.update}  #{cc.clientId}:panelFilterDelo"
+					icon="fas fa-hand-point-down" styleClass="btn-normal"/>	
+															
+			</p:column>
+
+			<p:column width="150" sortBy="#{row.a1}">
+				<f:facet name="header">
+					 <h:outputText value="#{labels['repDoc.regnom']}"  />										  
+				</f:facet>
+				<h:outputText value="#{row[1]}"  title="id: #{row[0]}"/> 
+			</p:column>
+			<p:column width="110" sortBy="#{row.a2}">
+				<f:facet name="header">
+					 <h:outputText value="#{labels['docu.dateDoc']}" />									  
+				</f:facet>
+				<h:outputText value="#{row[2]}">	
+					<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+				</h:outputText>									    
+			</p:column>
+			<p:column style="width:100%" styleClass="col200" sortBy="#{row.a4}">
+				<f:facet name="header">
+					 <h:outputText value="#{labels['docu.nameDelo']}"/>										  
+				</f:facet>
+				<h:outputText value="#{row[4]}" />				
+			</p:column>
+			<p:column width="90" rendered="#{cc.nastrWithTom}">
+				<f:facet name="header">
+					 <h:outputText value="#{labels['delo.brToms']}"/>										  
+				</f:facet>
+				<h:outputText value="#{row[11]}" rendered="#{row[10] eq OmbConstants.CODE_ZNACHENIE_DA}"/>
+			</p:column>
+			<p:column width="130" sortBy="#{row.a3}">
+				<f:facet name="header">
+					 <h:outputText value="#{labels['docu.status']}" />									  
+				</f:facet>
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[3], cc.lang, now)}"/>
+			</p:column>
+			<p:column width="30" style="text-align: center" sortBy="#{row.a8}" >				
+				<h:panelGroup rendered="#{row[8] eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+					<i class="fas fa-book" 
+					title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[8], cc.lang, now)}"></i>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{row[8] ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+					<i class="fas fa-folder" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[8], cc.lang, now)}"></i>
+				</h:panelGroup>
+			</p:column>
+		</p:dataTable>
+			
+		
+	</h:panelGroup>	
+
+	
+	</div>
+</cc:implementation>
+	
+</ui:composition>

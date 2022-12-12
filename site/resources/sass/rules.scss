@@ -1,0 +1,165 @@
+.lr {
+    background-color: $white;
+    color: $black;
+    // font-size: 1.4rem;
+    .site-navbar-top {
+        background-image: none;
+    }
+
+    .search-group {
+        input {
+            border: 1px solid $main_dark_grey;
+        }
+
+        .btn {
+            border: 1px solid $main_dark_grey;
+            color: $white;
+            background-color: $main_dark_grey;
+        }
+    }
+
+    .m-h-4 {
+        color: $black;
+        background-color: $white;
+
+        .h-border {
+            border-right: none;
+        }
+
+        .h-img {
+            vertical-align: top;
+            // -webkit-filter: opacity(99%);
+            // filter: opacity(99%);
+
+            filter: invert(100%);
+            &:hover {
+                filter: invert(100%);
+            }
+        }
+
+        a {
+            color: $black !important;
+            padding: 1.5em 1.2em;
+
+            &:hover {
+                text-decoration: none !important;
+
+                color: lighten($black, 15%) !important;
+            }
+        }
+    }
+
+    .m-accent {
+        background-color: $white;
+
+        // margin-bottom: 3em;
+    }
+
+    .m-accent-2 {
+        background-color: $white;
+        padding: 2em 3em;
+    }
+
+    .m-acc {
+        &.m-border {
+            @media only screen and (max-device-width: 992px) {
+                border-bottom: solid 1px $main_dark_grey;
+            }
+            @media only screen and (min-device-width: 993px) {
+                border-right: solid 1px $main_dark_grey;
+            }
+        }
+
+        .content-box {
+            text-transform: uppercase;
+            text-align: center;
+            padding: 2em 3em 0.5em 3em;
+            // min-height: 30px;
+            color: $black;
+
+            .icon {
+                // color: lighten($main_grey, 22%);
+                // color: lighten($main_orange, 38%);
+                color: $pure-white;
+                margin-bottom: 1.5em;
+                font-size: $font-lg * 2.7;
+            }
+
+            .img-box {
+                filter: invert(100%);
+                &:hover {
+                    // -webkit-filter: opacity(80%);
+                    filter: invert(100%);
+                }
+            }
+        }
+        a {
+            color: $black !important;
+
+            &:hover {
+                text-decoration: none !important;
+
+                color: lighten($black, 15%) !important;
+            }
+        }
+    }
+
+    .m-ev-title,
+    .common-title {
+        color: $black;
+    }
+
+    .footer {
+        // position: absolute;
+
+        background-color: $main_dark_grey;
+
+        a {
+            color: darken($white, 2%);
+
+            &:hover {
+                text-decoration: none !important;
+                color: darken($main_light_grey-3, 0%) !important;
+                // font-weight: 800;
+            }
+        }
+
+        .footer-body {
+            a {
+                &:hover {
+                    text-decoration: none !important;
+                    color: darken($main_light_grey-3, 0%) !important;
+                }
+            }
+        }
+
+        .media-links {
+            .badge {
+                background: $white;
+                border-radius: 50%;
+                padding: 6px 4px 4px 6px;
+                color: $main_dark_grey;
+                margin-right: 5px;
+                font-weight: 200;
+                font-size: $font-md * 1.3;
+                &:hover {
+                    // text-decoration: none !important;
+                    color: $main_dark_grey;
+                    // background-color: lighten($main_blue2, 8%);
+                }
+            }
+
+            a {
+                color: $main_dark_grey !important;
+                // padding: 5px 7px 4px 6px;
+                padding-right: 3px;
+
+                &:hover {
+                    text-decoration: none !important;
+                    color: darken($main_light_grey-3, 50%) !important;
+                    // background-color: $main_light_blue;
+                }
+            }
+        }
+    }
+}

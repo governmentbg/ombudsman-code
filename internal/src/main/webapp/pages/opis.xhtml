@@ -1,0 +1,241 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+               	xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/template/template.xhtml">
+                
+    <ui:define name="title">Опис на том</ui:define>
+    <ui:define name="viewname">
+       <li>
+        	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+        <li><i class="fas fa-angle-right"></i></li>
+        <li>#{navTexts['/pages/deloListOpis.xhtml']}</li>
+        
+    </ui:define>
+
+    <ui:define name="content">
+    
+		 <f:metadata>
+			<!-- 	<f:viewAction action="#{userData.checkPageAccess(1053)}" onPostback="false" /> -->
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		 </f:metadata>
+	   
+  		<h:form id="opisForm" >
+  		<p:tooltip/>
+  		
+   			<p:outputPanel id="panelData" styleClass="data-panel">
+
+<ui:remove>		<div class="p-grid">
+					<div class="p-col-12 p-md-6 p-lg-3">A</div>
+					<div class="p-col-12 p-md-6 p-lg-3">B</div>
+					<div class="p-col-12 p-md-6 p-lg-3">C</div>
+					<div class="p-col-12 p-md-6 p-lg-3">D</div>
+				</div>
+</ui:remove>		<div class="p-grid p-align-center">
+					<div class=" p-col-12 p-md-6 p-lg-4" > 
+						<h:outputText value="#{labels['repDoc.regnom']}"  />
+						<div class="ui-inputgroup"> 	
+							<p:inputText id="regNomer" value="#{opis.delo.rnDelo}" 
+							   style=" display:inline-block;" disabled="true"
+							   >
+							</p:inputText>	
+						</div> 
+		      		</div>
+	 		 	 	<div class=" p-col-12 p-md-6 p-lg-4 " > 	
+						<h:outputText value="#{labels['opis.tomNomer']}"  />
+						<div class="ui-inputgroup" > 
+							<p:selectOneMenu id="tomNomDoc" value="#{opis.zaTomId}" style="width: 30%;">
+								<f:selectItem />
+								<f:selectItems value="#{opis.tomList}" />
+							</p:selectOneMenu>
+							<p:tooltip id="toolTipFade" for="tomNomDoc" 
+								value="#{labels['opis.selectNnaTom']}" position="right"/>							
+						
+						</div>
+			      	</div>
+<ui:remove> 		 	 	<div class=" p-col-12 p-md-6 p-lg-4" > 	
+						<h:outputText value="#{labels['delo.tomNomer']}"  />
+						<div class="ui-inputgroup"> 
+							<p:inputText id="tomNomDoc" value="#{opis.zaTomId}" 
+									   style=" display:inline-block;"
+									   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+							</p:inputText>
+							<p:tooltip id="toolTipFade" for="tomNomDoc" 
+								value="Въведете N на том за който искате опис" position="right"/>							
+						</div>
+			      	</div>
+</ui:remove>		 		 	 	
+	 		 	 	
+	 		 	 	<div class=" p-col-12 p-md-6 p-lg-4" > 	
+						<h:outputText value="#{labels['docu.dateDoc']}"  />
+							<div class="ui-inputgroup"> 
+								<p:datePicker id="regDate" showIcon="true" size="12"
+										pattern="dd.MM.yyyy"  
+										mask="true" value="#{opis.delo.deloDate}"
+										disabled="true" readonly="true" />
+							</div>
+			      	</div>
+				<div class="filter-buttons">
+							<h:outputText value="#{opis.sp}"  />
+			      	
+							<p:commandButton id="btnSearchC1" 						
+							    actionListener="#{opis.actionSearch}"
+								partialSubmit="true" 
+								process="@this  panelData" 
+								update="panelData opisTom"
+								icon="fas fa-search"  
+								value="#{ui_labels['general.search']}" styleClass="p-mr-3"/>
+							    
+								 
+							<p:commandButton 					    
+								id="btnClearC1" 
+								actionListener="#{opis.actionClear}"
+								partialSubmit="true"
+								process="@this  panelData" 
+								update="panelData tomNomDoc"
+								icon="fas fa-eraser"  	styleClass="ui-button-warning p-mr-3"
+							    value="#{ui_labels['general.clear']}"	title="#{ui_labels['general.titleClear']}" /> 	    
+		
+		
+							
+<ui:remove>							 
+							<p:commandButton 	
+								rendered="#{opis.opList.size()>0}"				    
+								id="btnStr" 
+								actionListener="#{opis.actionStranicirane}"
+								partialSubmit="true"
+								process="@this  panelData" 
+								update="panelData tomNomDoc"
+								icon="fas fa-eraser"  	styleClass="ui-button-warning"
+							    value="Добави колoна странициране"	title="Добави колoна странициране"  /> 	    
+</ui:remove>	
+				</div>
+
+
+
+
+			</div>
+ 
+ 				<div class="p-grid p-col-12 p-nogutter" >
+				
+					<p:dataTable id="opisTom" var="row" value="#{opis.opList}"  rendered="#{opis.opList.size()>0}"
+						rowIndexVar="idx" sortMode="single" reflow="true"  draggableRows="true"
+						emptyMessage="#{labels['opis.noDocInToms']}."
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="true" paginator="true">				
+ 					<p:ajax event="rowReorder" listener="#{opis.onRowReorder}"  update="opisTom"/>							 
+					<p:ajax event="sort"  listener="#{opis.sort}"    update="opisTom" />
+
+						<f:facet name="{Exporters}">
+							<div style="float: left">
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="opisTom" fileName="opisTomXls" postProcessor="#{opis.postProcessXLS}"/>
+								</h:commandLink>
+								 <ui:remove><!-- 
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									<p:dataExporter type="pdf"  target="opisTom" fileName="opisTomPdf" 	 encoding="windows-1251"
+					        			 preProcessor="#{opis.preProcessPDF}" options="#{opis.pdfOptions()}"/>	
+								</h:commandLink>	
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="opisTom" fileName="opisTomCsv" encoding="CP1251" />
+								</h:commandLink> --></ui:remove>
+							</div>
+						</f:facet>
+
+					  	<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>	
+<ui:remove>				<p:column width="100"  sortBy="#{row.id}">
+							<f:facet name="header">
+								 <h:outputText value="Id"  />
+							</f:facet>
+						    <h:outputText value="#{row.id}" />		   						    
+						</p:column>
+</ui:remove>				<p:column width="130"   id="qw" >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['opis.docTom']}"  />
+							</f:facet>
+						    <h:outputText value="#{row.docTom}" />		   						    
+						</p:column>
+			
+						
+						<p:column width="100"    >
+						
+							<f:facet name="header">
+								 <h:outputText value="#{labels['repDoc.regnom']}"  />
+							</f:facet>
+						    <h:outputText value="#{row.regNomer}" />		   						    
+						</p:column>
+						
+						<p:column width="100"  >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.dateDoc']}" />									  
+							</f:facet>  
+							<h:outputText value="#{row.dataReg}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{opis.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						
+						<p:column width="*"   >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docDoc.otnosno']}" />									  
+							</f:facet>  
+						    <h:outputText value="#{row.otnosno}"/>
+						</p:column>
+
+						<p:column width="200"  >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.deloInpDate']}" />
+							</f:facet>
+							<h:outputText value="#{row.dataVl}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{opis.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+
+						<p:column width="100"    style="text-align: center">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.brLista']}" />									  
+							</f:facet> 
+						    	<h:outputText value="#{row.brLista}" style="center"/>
+						</p:column>
+
+						<p:column width="100"   style="text-align: center"  rendered="#{opis.hasStranici}">
+				<ui:remove>			<f:facet name="header">
+								<p:commandButton 	
+									id="btnStr1" 
+									actionListener="#{opis.actionStranicirane}" value="#{labels['opis.listiOtDo']}"
+									update="opisTom"							 
+							      > 	
+								 </p:commandButton>
+								  <p:tooltip id="tooltip" for="btnStr1" value="Подрежда страници от-до" />								  
+							</f:facet> 
+				</ui:remove>
+							<f:facet name="header">
+								 <h:outputText value="#{labels['opis.listiOtDo']}" />									  
+							</f:facet> 
+				
+						    	<h:outputText value="#{row.tekStr}" style="center"/>
+						</p:column>
+						 
+					</p:dataTable>
+				      	 			
+						
+				</div>
+ 
+ 
+    		</p:outputPanel>
+    
+        </h:form>  
+    </ui:define>
+
+</ui:composition>

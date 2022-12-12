@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+	<f:view locale="#{environment.language}">
+	    <h:head>
+	        <f:facet name="first">
+	            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+	            <meta name="apple-mobile-web-app-capable" content="yes" />
+	            <link rel="apple-touch-icon" sizes="57x57" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-57x57.png"></link>
+	            <link rel="apple-touch-icon" sizes="60x60" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-60x60.png"></link>
+	            <link rel="apple-touch-icon" sizes="72x72" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-72x72.png"></link>
+	            <link rel="apple-touch-icon" sizes="76x76" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-76x76.png"></link>
+	            <link rel="apple-touch-icon" sizes="114x114" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-114x114.png"></link>
+	            <link rel="apple-touch-icon" sizes="120x120" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-120x120.png"></link>
+	            <link rel="apple-touch-icon" sizes="144x144" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-144x144.png"></link>
+	            <link rel="apple-touch-icon" sizes="152x152" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-152x152.png"></link>
+	            <link rel="apple-touch-icon" sizes="180x180" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-180x180.png"></link>
+	            <link rel="icon" type="image/png" sizes="192x192"  href="#{request.contextPath}/resources/mirage-layout/images/favicon/android-icon-192x192.png"></link>
+	            <link rel="icon" type="image/png" sizes="32x32" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-32x32.png"></link>
+	            <link rel="icon" type="image/png" sizes="96x96" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-96x96.png"></link>
+	            <link rel="icon" type="image/png" sizes="16x16" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-16x16.png"></link>
+	            <link rel="manifest" href="#{request.contextPath}/resources/mirage-layout/manifest.json"></link>
+	            <meta name="msapplication-TileColor" content="#ffffff"></meta>
+	            <meta name="msapplication-TileImage" content="#{request.contextPath}/resources/mirage-layout/images/favicon/ms-icon-144x144.png"></meta>
+	            <meta name="theme-color" content="#ffffff"></meta>
+	        </f:facet>
+	        
+	        <title><ui:insert name="title">template view</ui:insert></title>
+	        <h:outputScript name="js/layout.js" library="mirage-layout"/>
+       		<h:outputScript name="js/prism.js" library="mirage-layout"/>
+	        
+	        <h:outputScript name="js/notifications.js" />
+	        
+	        <ui:insert name="head"/>
+	    </h:head>
+	
+	    <h:body>
+	    	<ui:insert name="metadata"/>
+	    	
+	        <div class="layout-wrapper view-template #{guestPreferences.layoutConfig}">
+	            <p:tooltip/>
+	            
+	            
+	            <div class="layout-main">
+	            	<ui:include src="./topbarView.xhtml" />
+	                <div class="layout-content">
+	                	<p:messages id="messagesGl" showDetail="true" closable="true">
+				  			 <p:autoUpdate />
+				  		</p:messages>
+	                    <ui:insert name="content"/>
+	                </div>
+	                
+	                <ui:include src="./footer.xhtml" />
+	                
+	                
+	            </div>
+	        </div>
+	        
+	        <p:ajaxStatus style="width:32px;height:32px;position:fixed;right:7px;bottom:7px;z-index: 1000002">
+	           <f:facet name="start">
+	               <i class="fas fa-circle-notch fa-spin ajax-loader" aria-hidden="true"></i>
+	           </f:facet>
+	
+	           <f:facet name="complete">
+	               <h:outputText value="" />
+	           </f:facet>
+	        </p:ajaxStatus>
+	        
+	       
+	        <ui:remove>
+	         <!-- global confirmDialog
+	        <h:form>
+			<p:confirmDialog id="confirmDialog" global="true" showEffect="fade" hideEffect="fade">
+		        <div class="p-grid">
+		            <div class="p-col-12 filter-buttons">
+		               <div class="left">
+		                  <p:commandButton value="#{ui_labels['general.da']}" type="button" styleClass="ui-confirmdialog-yes"  icon="fas fa-check" />
+		               </div>
+		               <div class="right">
+		                  <p:commandButton value="#{ui_labels['general.ne']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+		               </div>
+		            </div>
+		        </div>
+	    	</p:confirmDialog>
+	        </h:form> -->
+	        </ui:remove>
+	        
+	        <h:outputStylesheet name="css/primeicons.css" library="mirage-layout" />
+        	<h:outputStylesheet name="css/primeflex.min.css" library="mirage-layout" />
+	        <h:outputStylesheet name="css/#{guestPreferences.layout}.css" library="mirage-layout" />
+	        <h:outputStylesheet name="css/all.css" library="font-awesome" />
+	        <h:outputStylesheet name="css/delo.css" />
+	        
+	        <h:outputScript library="js" name="scripts.js"/>
+	        
+	    </h:body>
+	</f:view>
+</html>

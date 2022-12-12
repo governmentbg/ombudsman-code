@@ -1,0 +1,246 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+						
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/grantedRightsReport.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">   
+	        <li>#{navTexts['/pages/grantedRightsReport.xhtml']}</li>
+	    </ui:define> 
+	    
+	    <ui:define name="head">
+		    <script type="text/javascript">
+			    function doOnClick() {
+			    	document.getElementById("idLinkTable").click();
+			    }
+			</script>
+		</ui:define>
+    
+		<ui:define name="content">	
+		
+			<style type="text/css">
+				.ui-autocomplete-token-label {
+					white-space: normal;
+				}
+				
+				body .ui-autocomplete.ui-autocomplete-multiple .ui-autocomplete-multiple-container .ui-autocomplete-token {
+					max-width: 96%;
+					margin-top: 2px;
+					margin-bottom: 2px;
+				}
+			</style>
+		
+			<h:form id="rightsForm">	
+ 			
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilter" >
+						<div class="card">
+							<div class="p-grid ui-fluid p-align-end">	
+													   
+							   <!--Служител-->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+
+									<h:outputText value="#{labels['refDeleg.employee']}" styleClass="form-label"/>
+														
+									<ibg:selectManyModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+									id="empl" dateClassif="#{grantedRightsReport.decodeDate}" filtered="false" 	isSelectNode="false"												
+									selectedCodes="#{grantedRightsReport.userSearch.codeRefList}" saveStateTree="true"
+									withBtnClear="true" compType="2" styleAutoComp=""  selectedClassifs="#{grantedRightsReport.selectedEmplClassif}"/>	
+						 						 		 
+							  </div>	
+							  <div class="p-col-12">
+							  
+							   	<p:dataTable id="tableRights" var="row" value="#{grantedRightsReport.rightsList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+									emptyMessage="#{ui_labels['general.norows']}" reflow="true" 
+									
+									rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"  paginator="false">
+														  		       	
+	
+								<p:column width="10"  headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+								
+		
+								<p:column  headerText="#{labels['grantedRights.right']}" width="300px">
+									<h:outputText value="#{row[5]}" />
+						
+								</p:column>
+				
+								<p:column   headerText="#{labels['grantedRights.granted']}">
+								
+								
+											
+									<ibg:selectManyModalA id="lstGranted" compType="2" maxResults="50"
+										codeClassif="#{row[0]}" 																
+										dateClassif="#{grantedRightsReport.decodeDate}" filtered="false"
+										saveStateTree="false"  
+										selectedCodes="#{row[1]}"
+										selectedClassifs="#{row[3]}"
+										styleAutoComp="width:100%;" 
+										withBtnClear="true"/> 
+										
+									
+								</p:column>
+				
+								<p:column headerText="#{labels['grantedRights.notGranted']}">
+									<ibg:selectManyModalA id="lstNotGranted" compType="2" maxResults="50"
+										codeClassif="#{row[0]}" 																
+										dateClassif="#{grantedRightsReport.decodeDate}" filtered="false"
+										saveStateTree="false" 
+										selectedCodes="#{row[2]}"
+										selectedClassifs="#{row[4]}"
+										styleAutoComp="width:100%;"
+										withBtnClear="true" /> 
+									
+								</p:column>
+																	
+																																											
+								</p:dataTable>
+							 </div>
+							 						 															
+						</div>
+							
+						<div class="filter-buttons" >
+									<p:commandButton id="btnSearch" icon="fas fa-search" action="#{grantedRightsReport.actionSearch}" oncomplete="doOnClick();"
+									update="rightsForm:panelRezult" value="#{labels['general.search']}"  styleClass="p-mr-3"/>	
+									<a id="idLinkTable" href="#panelRezultAnch" style="display:none"></a>																													
+									<p:defaultCommand target="btnSearch"/>
+									
+									<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+											id="btnClear" update="panelFilter panelRezult" partialSubmit="true"
+											process="@this panelFilter panelRezult" actionListener="#{grantedRightsReport.actionClearFilter}"
+							 				styleClass="ui-button-warning" /> 									
+						</div>
+					</div>	
+				</h:panelGroup>		
+			
+				
+				<a id="panelRezultAnch"/>
+				<h:panelGroup id="panelRezult"  layout="block" styleClass="margin-top" >
+					<h:panelGroup layout="block" styleClass="card" rendered="#{grantedRightsReport.grantedRightsList!=null}">
+								        																														
+						<div class="table-toolbar">
+							<h:outputText value="#{ui_labels['general.reportResult']} #{grantedRightsReport.grantedRightsList.rowCount}" styleClass="form-label" />
+						</div>
+								
+							<p:dataTable id="tableResult" var="row" value="#{grantedRightsReport.grantedRightsList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+									emptyMessage="#{ui_labels['general.norows']}" reflow="true" rendered="#{!grantedRightsReport.onlyNotGiven}" 
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+									
+								<f:facet name="{Exporters}">
+							
+						            <div style="float:left">
+							            <h:commandLink id="excel"  rendered="#{grantedRightsReport.grantedRightsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+							        			<h:graphicImage library="images" name="excel2.png" />
+							        			<p:dataExporter type="xls" target="tableResult" fileName="rightsList"	
+							        			postProcessor="#{grantedRightsReport.postProcessXLS}" />
+							    		</h:commandLink>
+							<ui:remove>
+							    		<h:commandLink id="pdf"  rendered="#{grantedRightsReport.grantedRightsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+							        	 	  <h:graphicImage library="images" name="pdf.png" />
+							        	 	  <p:dataExporter type="pdf"  target="tableResult" fileName="rightsList"	 encoding="windows-1251"
+					        								    preProcessor="#{grantedRightsReport.preProcessPDF}" options="#{grantedRightsReport.pdfOptions()}"/>	
+							        	 	
+							    		</h:commandLink> 
+							 </ui:remove> 
+						            </div>
+						       	</f:facet>	
+								<p:column width="15"  headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+																				
+								<p:column  sortBy="#{row.a5}" headerText="#{labels['refDeleg.employee']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[0], grantedRightsReport.currentLang, grantedRightsReport.decodeDate)}" />
+									
+								</p:column>
+								<p:column  sortBy="#{row.a6}" headerText="#{labels['grantedRights.appointed']}">
+									<h:outputText value="#{row[6]}" />
+								</p:column>
+								
+								<p:column  sortBy="#{row.a1}" headerText="#{labels['grantedRights.right']}">
+									
+									<h:outputText  value="#{systemData.getNameClassification(row[1],grantedRightsReport.currentLang)}" />
+								</p:column>
+								
+								<p:column  sortBy="#{row.a2}" headerText="#{labels['grantedRights.givenRight']}">
+									<h:outputText value="#{systemData.decodeItem(row[1], row[2], grantedRightsReport.currentLang, now)}" />
+									
+								</p:column>
+								
+								<p:column  sortBy="#{row.a3}" headerText="#{labels['dvijenie.nachin']}">
+									
+									<h:outputText value="#{row[3]}" />
+								</p:column>
+				
+								<p:column  sortBy="#{row.a4}" headerText="#{labels['grantedRights.resFromGroups']}">
+									
+									<h:outputText value="#{row[4]}" />
+								</p:column>
+						
+																																											
+							</p:dataTable>
+							
+							<p:dataTable id="tableResult2" var="row" value="#{grantedRightsReport.grantedRightsList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+									emptyMessage="#{ui_labels['general.norows']}" reflow="true" rendered="#{grantedRightsReport.onlyNotGiven}"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+									
+								<f:facet name="{Exporters}">
+							
+						            <div style="float:left">
+							            <h:commandLink id="excel"  rendered="#{grantedRightsReport.grantedRightsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+							        			<h:graphicImage library="images" name="excel2.png" />
+							        			<p:dataExporter type="xls" target="tableResult2" fileName="rightsList"	
+							        			postProcessor="#{grantedRightsReport.postProcessXLS}" />
+							    		</h:commandLink>
+							<ui:remove>
+							    		<h:commandLink id="pdf"  rendered="#{grantedRightsReport.grantedRightsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+							        	 	  <h:graphicImage library="images" name="pdf.png" />
+							        	 	  <p:dataExporter type="pdf"  target="tableResult2" fileName="rightsList"  encoding="windows-1251"
+					        								    preProcessor="#{grantedRightsReport.preProcessPDF}" options="#{grantedRightsReport.pdfOptions()}"/>
+							    		</h:commandLink> 
+							</ui:remove>  
+						            </div>
+						       	</f:facet>	
+						       	
+								<p:column width="15"  headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+																				
+								<p:column  sortBy="#{row.a2}" headerText="#{labels['refDeleg.employee']}">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[0], grantedRightsReport.currentLang, now)}" />
+									
+								</p:column>
+								<p:column  sortBy="#{row.a3}" headerText="#{labels['grantedRights.appointed']}">
+									
+									<h:outputText value="#{row[3]}" />
+									
+								</p:column>
+								
+	
+																																											
+							</p:dataTable>
+														
+						
+					</h:panelGroup>
+				</h:panelGroup>																							
+					
+			
+																
+							
+		</h:form>
+	</ui:define>
+</ui:composition>

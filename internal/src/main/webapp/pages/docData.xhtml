@@ -1,0 +1,213 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  
+                xmlns:c="http://java.sun.com/jstl/core">
+
+
+	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+			
+	</f:metadata>
+
+<p:tooltip escape="false" hideEvent="mouseout click"/>
+	
+	
+<h:form id="docForm" >
+		
+		<p:remoteCommand name="reloadDocDataFile"    update="docForm:tabsDoc:filesDoc:files-tbl"   action="#{docData.reloadDocDataFile}"   autoRun="false" />	
+	
+		<h:panelGroup rendered="#{docData.document eq null}" layout="block" >
+			#{labels['docu.titleDocNotFound']} 
+		</h:panelGroup>
+	
+		<!-- Бутон с данни за регистрация - модален за журнала-->
+		<h:panelGroup id="pRegInfo">
+		
+	 		<ibg:compObjAudit id="a2" idObj="#{docData.document.id}" 
+				 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}"
+				 	identInfo="#{docData.rnFullDocAudit}" 	/>
+	
+		</h:panelGroup>
+		<c:if test="#{docData.docVidInclude eq docData.inclRegular}">
+
+			<p:tabView id="tabsDoc" dynamic="true" cache="true" rendered="#{docData.document ne null}" >
+			  	<p:ajax event="tabChange" listener="#{docData.onTabChange}" update="tabsDoc" partialSubmit="true" />
+			
+				<p:tab title="#{labels['docu.documentTab']}" id="tabMain">
+					<ui:include src="docDataReg.xhtml" />		     		
+				</p:tab>
+	
+				<p:tab title="#{labels['docu.tasks']}" id="tabTasks" disabled="#{docData.document.id eq null}">
+					<ui:include src="docDataTasks.xhtml" />  
+		    	</p:tab>		
+	
+				<p:tab title="#{labels['docu.dvijenie']}" id="tabDvig" disabled="#{docData.document.id eq null}">
+	 				<ui:include src="docDataDvijenia.xhtml" />
+				</p:tab>		
+				
+				<p:tab title="#{labels['docu.vraz']}" id="tabVraz" disabled="#{docData.document.id eq null}">
+					<ui:include src="docDataVrazki.xhtml" />  
+	 			</p:tab>
+	
+				<p:tab title="#{labels['docu.prepTab']}" id="tabPrep" disabled="#{docData.document.id eq null}">
+					 <ui:include src="docDataPrep.xhtml" />   
+				</p:tab>
+		<ui:remove><!-- 		
+				<p:tab title="#{labels['docu.prilojTab']}" id="tabPriloj" disabled="#{docData.document.id eq null}">
+					 <ui:include src="docDataPrilojenia.xhtml" />   
+				</p:tab>
+				
+				<p:tab title="#{docData.membersTab}" rendered="#{docData.membersTab ne null and docData.membersTab ne ''}" id="tabMembers" disabled="#{docData.document.id eq null}">
+					 <ui:include src="docDataMembers.xhtml" />   
+				</p:tab>
+			 --></ui:remove>	
+			</p:tabView>
+
+		</c:if>
+		
+		<c:if test="#{docData.docVidInclude eq docData.inclComplaint}">
+		<!-- Жалба -->
+			<p:tabView id="tabsDoc" dynamic="true" cache="true" rendered="#{docData.document ne null}" >
+			  	<p:ajax event="tabChange" listener="#{docData.onTabChange}" update="tabsDoc" partialSubmit="true" />
+			
+				<p:tab title="#{labels['docu.documentTab']}" id="tabMain">
+					<ui:include src="docDataRegComplaint.xhtml" />		     		
+				</p:tab>
+		<ui:remove><!-- 
+				<p:tab title="#{labels['docu.tasks']}" id="tabTasks" rendered="#{docData.document.id ne null}">
+					<ui:include src="docDataTasks.xhtml" />  
+		    	</p:tab>	 --></ui:remove>	
+	
+				<p:tab title="#{labels['docu.dvijenie']}" id="tabDvig" rendered="#{docData.document.id ne null}">
+	 				<ui:include src="docDataDvijenia.xhtml" />
+				</p:tab>		
+				
+				<p:tab title="#{labels['docu.vraz']}" id="tabVraz" rendered="#{docData.document.id ne null}">
+					<ui:include src="docDataVrazki.xhtml" />  
+	 			</p:tab>
+	
+				<p:tab title="#{labels['docu.prepTab']}" id="tabPrep" rendered="#{docData.document.id ne null}">
+					 <ui:include src="docDataPrep.xhtml" />   
+				</p:tab>
+		<ui:remove><!-- 				
+				<p:tab title="#{labels['docu.prilojTab']}" id="tabPriloj" rendered="#{docData.document.id ne null}">
+					 <ui:include src="docDataPrilojenia.xhtml" />   
+				</p:tab>
+				
+				<p:tab title="#{docData.membersTab}" rendered="#{docData.membersTab ne null and docData.membersTab ne ''}" id="tabMembers" disabled="#{docData.document.id eq null}">
+					 <ui:include src="docDataMembers.xhtml" />   
+				</p:tab>
+			 --></ui:remove>		
+			</p:tabView>
+
+		</c:if>
+		
+	
+		<c:if test="#{docData.docVidInclude eq docData.inclNpm or docData.docVidInclude eq docData.inclSamosez}">
+		<!-- НПМ или самосезиране-->
+			<p:tabView id="tabsDoc" dynamic="true" cache="true" rendered="#{docData.document ne null}" >
+			  	<p:ajax event="tabChange" listener="#{docData.onTabChange}" update="tabsDoc" partialSubmit="true" />
+			
+				<p:tab title="#{labels['docu.documentTab']}" id="tabMain">
+					<ui:include src="docDataRegSpec.xhtml" />		     		
+				</p:tab>
+		<ui:remove><!-- 	
+				<p:tab title="#{labels['docu.tasks']}" id="tabTasks" rendered="#{docData.document.id ne null}">
+					<ui:include src="docDataTasks.xhtml" />  
+		    	</p:tab>		
+	 --></ui:remove>	
+				<p:tab title="#{labels['docu.dvijenie']}" id="tabDvig" rendered="#{docData.document.id ne null}">
+	 				<ui:include src="docDataDvijenia.xhtml" />
+				</p:tab>		
+				
+				<p:tab title="#{labels['docu.vraz']}" id="tabVraz" rendered="#{docData.document.id ne null}">
+					<ui:include src="docDataVrazki.xhtml" />  
+	 			</p:tab>
+	
+				<p:tab title="#{labels['docu.prepTab']}" id="tabPrep" rendered="#{docData.document.id ne null}">
+					 <ui:include src="docDataPrep.xhtml" />   
+				</p:tab>
+		<ui:remove><!-- 				
+				<p:tab title="#{labels['docu.prilojTab']}" id="tabPriloj" rendered="#{docData.document.id ne null}">
+					 <ui:include src="docDataPrilojenia.xhtml" />   
+				</p:tab>
+				
+				<p:tab title="#{docData.membersTab}" rendered="#{docData.membersTab ne null and docData.membersTab ne ''}" id="tabMembers" disabled="#{docData.document.id eq null}">
+					 <ui:include src="docDataMembers.xhtml" />   
+				</p:tab>
+			 --></ui:remove>		
+			</p:tabView>
+
+		</c:if>
+		
+	
+
+
+	
+	<ui:remove><!-- Отказ от регистрация - e-mail --></ui:remove> 	 
+	<h:panelGroup id="modalRejectIdp">
+		<p:dialog appendTo="@form" width="650px"
+		    header="#{labels['docu.titleRejectDoc']}" 
+		    fitViewport="true" closeOnEscape="true"
+		    style="margin-top:50px !important"
+			widgetVar="modalReject" dynamic="true" id="modalRejectId" 
+			modal="true" >	
+			  
+			<div class="p-grid  ui-fluid">				
+				<div class=" p-col-12">
+					<h:outputText value="#{labels['docu.txtRejected']}"  styleClass="form-label req" />
+				  	<p:message id="errMsgR"  	
+					    for="txtReject" showDetail="true" showSummary="true" escape="false">
+		      			<p:autoUpdate/>
+	      			</p:message>
+					<p:inputTextarea value="#{docData.textReject}" id="txtReject" rows="2" />
+				</div>
+			
+			</div>
+			<f:facet name="footer">		
+				<p:commandButton value="#{ui_labels['general.cancel']}" icon="fas fa-save" id="btmSaveRject"
+					partialSubmit="true"
+					process="txtReject  @this" 
+					actionListener="#{docData.actionReject}">
+				</p:commandButton>
+			</f:facet>		
+		</p:dialog>	 		
+	</h:panelGroup>
+	
+		<ui:remove><!-- Темплейти на документи --></ui:remove> 	 
+	<h:panelGroup id="pDocTemplate">
+		<p:dialog appendTo="@form" width="650px"
+		    header="#{labels['docVidSettings.shablonVidDoc']}" 
+		    fitViewport="true" closeOnEscape="true"
+		    style="margin-top:50px !important"
+			widgetVar="modalDocTml" dynamic="true" id="modalDocTmlId" 
+			modal="true" >	
+
+				<div class="list-container ">
+					<p:repeat varStatus="rkv" value="#{docData.templatesList}" var="file" id="fileList21" >
+						<h:panelGroup styleClass="file-list" layout="block" id="lis1">						
+						
+							<p:commandLink ajax="true" partialSubmit="true" update="@this docForm:tabsDoc:panelFl"  process="@this"
+							   action="#{docData.loadFilesFromTemplate(file)}" title="Прикачи към документа" id="btnF1">
+								<div class="file-details">
+									<span class="filename">#{file.filename}</span>									
+								</div>
+							</p:commandLink>						
+					
+					   </h:panelGroup>
+					</p:repeat>
+				</div>
+						
+		</p:dialog>
+	</h:panelGroup>
+	
+</h:form>
+
+
+
+
+</ui:composition>

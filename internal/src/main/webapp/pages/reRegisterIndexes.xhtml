@@ -1,0 +1,108 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				<f:viewAction action="#{userData.checkPageAccess(28)}" onPostback="false" />				
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/reRegisterIndexes.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/reRegisterIndexes.xhtml']}</li>
+	    </ui:define> 
+	    
+		
+	<ui:define name="content">
+     
+		<h:form id="indexesForm">
+		       
+			<div class="container #{guestPreferences.containerPosition}">
+			<h:panelGroup id="panelTable"  styleClass="card" layout="block">																	        
+				
+				<p:toolbar  id="tbPanelTab">
+					<f:facet name="left" >	
+						<p:selectOneRadio id="radioValid" value="#{reRegisterIndexes.radioValid}"   columns="2">
+							 <f:selectItem itemLabel="#{labels['regIndexes.validIndPrev']}"    itemValue="1" />
+							 <f:selectItem itemLabel="#{labels['regIndexes.otherValidInd']}"  itemValue="2"/>	
+							 <p:ajax event="change"  update="indexesForm:panelTable"
+							 	process="@this " listener="#{reRegisterIndexes.actionSearch}"/>						     
+						</p:selectOneRadio>
+												
+					</f:facet>
+					<f:facet name="right">
+					
+						<p:commandButton icon="fas fa-save"  action="#{reRegisterIndexes.actionSave}" value="#{labels['regIndexes.regSelected']}">		
+						
+						</p:commandButton>
+						
+						<p:commandButton widgetVar="hiddenButton" style="display:none" actionListener="#{reRegisterIndexes.save}" update="indexesForm:panelTable">
+								<p:confirm message="#{beanMessages['reRegisterIndexes.confSave']}" icon="fas fa-exclamation-triangle" /> 
+						</p:commandButton>
+					
+					</f:facet>
+				</p:toolbar>
+				
+																																				
+	   				<!--Таблица с индекси на номенклатурни дела -->
+					<p:dataTable rendered="#{reRegisterIndexes.radioValid!=null}" id="tblIndexes" var="row" value="#{reRegisterIndexes.schemaList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+						emptyMessage="#{ui_labels['general.norows']}" rowKey="#{row[0]}" selection="#{reRegisterIndexes.selectedIndexes}" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="20" rowsPerPageTemplate="5,15,20,25,30" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+	
+									<p:ajax event="toggleSelect"	 	 listener="#{reRegisterIndexes.onRowSelectAll}" process="@this" />
+									<p:ajax event="rowSelectCheckbox"	 listener="#{reRegisterIndexes.onRowSelect}"   process="@this" />
+									<p:ajax event="rowUnselectCheckbox"  listener="#{reRegisterIndexes.onRowUnselect}" process="@this" />
+									<p:ajax event="page" listener="#{reRegisterIndexes.onPageUpdateSelected}" />
+									
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+				
+									<p:column selectionMode="multiple" width="10"/>
+  				
+									<p:column width="50" sortBy="#{row.a1}" headerText="#{labels['register.prefix']}">								
+										<h:outputText value="#{row[1]}" />
+									</p:column>
+				
+									<p:column width="90" sortBy="#{row.a2}" headerText="#{labels['refCorr.nameUL']}">
+										<h:outputText value="#{row[2]}" />
+									</p:column>
+										
+									<p:column width="70" sortBy="#{row.a6}" headerText="#{labels['docSchema.validFrom']}">
+										<h:outputText value="#{row[6]}" />
+											
+									</p:column>
+										
+									<p:column width="70" sortBy="#{row.a7}" headerText="#{labels['docSchema.validTo']}">
+										<h:outputText value="#{row[7]}" />										
+											
+									</p:column>		
+																						
+									<p:column width="120" sortBy="#{row.a3}" headerText="#{labels['docSchema.complMethod']}">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOM_DELO_PRIKL, row[3], reRegisterIndexes.currentLang, now)}" />										
+									</p:column>		
+												
+									<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docSchema.termStore']}">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_SHEMA_PERIOD, row[4], reRegisterIndexes.currentLang, now)}" /> 							
+									</p:column>
+										
+									<p:column width="70" sortBy="#{row.a5}" headerText="#{labels['docSchema.years']}" >
+										<h:outputText value="#{row[5]}" />											
+									</p:column>								
+																
+						</p:dataTable>
+																					
+				</h:panelGroup>																				
+			</div>				
+		</h:form>
+	</ui:define>
+</ui:composition>

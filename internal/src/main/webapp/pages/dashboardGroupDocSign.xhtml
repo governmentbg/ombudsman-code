@@ -1,0 +1,189 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />					
+		</f:metadata>
+		
+		<h:outputScript  name="js/indexSignerM.js"/>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/dashboardGroupDocSign.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li><p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>#{navTexts['/pages/dashboardGroupDocSign.xhtml']}</li>
+	</ui:define>
+	
+	<ui:define name="head"> 
+	
+	<style>
+	
+		.ui-datatable-empty-message {
+		    color: red !important;
+		}
+	
+	</style>
+	
+	</ui:define>
+	
+	<ui:define name="content">
+
+		<h:form id="formGroupDocSign">
+			<p:remoteCommand  name="completeSignFile" action="#{dachboardGroupDocSign.actionSignComplete}" />
+			<div class="#{guestPreferences.containerPosition}">
+
+				<div class="card">
+
+					<p:toolbar>	
+						<f:facet name="left">
+							<p:commandButton action="#{dachboardGroupDocSign.actionMarkAll}" value="#{labels['dashboardGroupSign.markAll']}"  
+							title="Маркира всички файлове" update="formGroupDocSign"/>
+							<p:commandButton action="#{dachboardGroupDocSign.actionUnmarkAll}" value="#{labels['dashboardGroupSign.unmarkAll']}"  
+							title="Размаркирамаркира всички файлове" styleClass="p-ml-2" update="formGroupDocSign"/>
+						
+							
+							<p:commandButton icon="fas fa-file-signature" value="#{labels['dashboardGroupSign.docElSign']}" action="#{dachboardGroupDocSign.actionCheckSelFile}"
+								 title="Подписва всички маркирани файлове" 
+								 styleClass="ui-button-success p-ml-2"		 update="formGroupDocSign" process="@this formGroupDocSign" partialSubmit="true" />
+							
+						    <p:commandButton widgetVar="hiddenSign" id="btnSign" style="display:none" actionListener="#{dachboardGroupDocSign.actionSignBnt}" update="formGroupDocSign" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['dashboardGroupSign.sureGrDocsSign']}" icon="fas fa-exclamation-triangle" /> 
+							</p:commandButton>
+							
+							
+						</f:facet>
+					</p:toolbar>
+
+					<h:panelGroup id="tableDocs"  layout="block" styleClass="margin-top"> 
+					
+					<div class="p-grid ui-fluid" jsf:id="rezolPanel">
+					 		
+					 		<div class="p-col-12 p-md-6 p-lg-4 p-xl-2">
+					 			<h:outputText value="#{labels['docu.dateDoc']}" styleClass="form-label req" />
+					 			<p:datePicker id="exeDat" showOn="button" pattern="dd.MM.yyyy" mask="true" value="#{dachboardGroupDocSign.realEnd}"/>	
+					 		</div>
+					 		<div class="p-col-12 p-md-6 p-lg-8 p-xl-10">
+					 			<h:outputText value="#{labels['dashboardGroupSign.mnenieGrPodpis']}" styleClass="form-label req" />
+					 			<p:selectOneMenu id="opinion" value="#{dachboardGroupDocSign.endOpinion}"  >
+									<f:selectItem value="#{null}" itemValue="#{null}"/>
+									<f:selectItems value="#{dachboardGroupDocSign.opinionLst}" var="item" itemLabel="#{item.tekst}" itemValue="#{item.code}" />
+									<p:ajax event="change" update="formGroupDocSign:rezolPanel" listener="#{dachboardGroupDocSign.actionChangeOpinion}"/>
+								</p:selectOneMenu>		
+					 		</div>
+					 		<div class="p-col-12 ">
+						 	    <h:outputText value="#{labels['tasks.comment']}" styleClass="form-label #{dashboard.forCompetence?' req':''}" id="labelComment"/>
+						   		<p:inputTextarea value="#{dachboardGroupDocSign.statusComments}" rows="3" id="comentar"/>
+					   		</div>
+					 </div>
+			
+					<p:dataTable var="row" rowIndexVar="rkv" value="#{dachboardGroupDocSign.docsForSign}" 
+				    	paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}" rowKey="#{row[0]}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" emptyMessage="#{ui_labels['general.norows']}">
+						
+						<f:facet name="header">
+						 	#{labels['dashboardGroupSign.docsForSign']}
+						</f:facet>
+						
+						 <p:headerRow  groupBy="#{row[0]}" expandable="true" >				        	
+				            <p:column>
+				            	<h:outputText value="#{labels['dashboard.document']}"/>
+				                <h:outputText value=" #{row[1]} / " />
+				                <h:outputText value="#{row[2]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dachboardGroupDocSign.timeZone}"/>
+								</h:outputText>	
+								<ui:remove><!-- 
+								 <p:link ajax="false" href="#{dachboardGroupDocSign.actionGotoViewDoc(row[0])}" target="_blank"> (#{labels['general.view']} <i class="fas fa-eye"> </i>) </p:link>
+								  --></ui:remove>	
+				            </p:column>
+				            <p:column>
+				            	<h:outputText value="#{labels['general.otnosno']}: " />
+				            	<h:outputText value="#{row[3]} " />
+				            </p:column>
+				        </p:headerRow>
+				        	
+						<p:column colspan="2">
+
+								<p:dataTable id="filesList" value="#{dachboardGroupDocSign.selFiles[dachboardGroupDocSign.castLong(row[0])]}" emptyMessage="#{labels['dashboardGroupSign.noFileList']}"   
+									var="file" rowIndexVar="idx" rowKey="#{file.id}" sortMode="single" reflow="true">
+
+									<p:column width="25" exportable="false"  style="text-align:center" >
+										<p:selectBooleanCheckbox value="#{dachboardGroupDocSign.selectFiles[dachboardGroupDocSign.castLong(file.id)]}" >
+											<p:ajax event="change" update="formGroupDocSign" partialSubmit="true" process="@this formGroupDocSign" listener="#{dachboardGroupDocSign.addDocIdOnSelFile(dachboardGroupDocSign.castLong(row[0]))}"/>
+										</p:selectBooleanCheckbox>
+	                           		</p:column>
+	                           		<p:column headerText="#{ui_labels['doc.official']}" width="100">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, file.official, dachboardGroupDocSign.currentLang, now)}" />
+									</p:column>
+	                           		<p:column width="10" exportable="false"  style="text-align:center">
+	                           			<i class="#{file.signed eq OmbConstants.CODE_ZNACHENIE_DA ? 'fas fa-award' : ''}" />
+	                           		</p:column>
+									
+									<p:column headerText="#{ui_labels['general.filename']}" >																				
+										<p:commandLink ajax="false" action="#{dachboardGroupDocSign.download(file)}" id="btnDownload" >
+											<div class="file-details">
+												<h:outputText value="#{file.filename}" />								
+											</div>
+										</p:commandLink>
+									</p:column>
+									<ui:remove><!-- 
+									<p:column headerText="#{ui_labels['files.prednaznachenie']}" width="150">									
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_FILE_PURPOSE, file.filePurpose, dachboardGroupDocSign.currentLang, now)}" />
+									</p:column> --></ui:remove>
+									
+									<ui:remove><!-- 
+									<p:column headerText="#{ui_labels['files.typeDocFile']}" width="150">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID_ATTACH, file.fileType, dachboardGroupDocSign.currentLang, now)}" />
+									</p:column>
+ 										--></ui:remove>
+								</p:dataTable>
+
+						</p:column>
+
+						</p:dataTable>				
+						
+					</h:panelGroup>					
+					
+				</div>
+
+			</div>
+
+		
+		
+		<p:dialog appendTo="@form" header="#{ui_labels['general.elSigns']}"	width="800px" height="200px" responsive="true" onShow="createCertList('formGroupDocSign','selectSign' ,completeSignFile)"
+			fitViewport="true" closeOnEscape="true"  style="margin-top:50px !important" widgetVar="elSignsPanelM" dynamic="false" id="еlSignsPanelM"  modal="true" visible="false">
+				<div style ="position: absolute; width: 94%; min-height:95%;  visibility: visible; z-index:9999;" jsf:id="panelprogress">
+					<div style="padding: 8%; padding-left:50%; background-color: rgba(255, 255, 255, 0.5); ">
+						<i class="fas fa-spinner fa-spin" style="font-size:50px; "></i>
+					</div>
+				</div> 	
+				<p:outputPanel id="sign_content">
+				
+				</p:outputPanel>
+				<p:outputPanel id="sign_content_noSignModul" style =" visibility: hidden;">
+					<div class="overview-box-text">
+						<h5> Не е намерена програмата за сканиране! </h5>
+					</div>
+					<h:outputText value="Моля,пуснете или рестартирайте програмата." escape="false"/> 
+					<br/>
+					<h:outputText value="Ако я нямате инсталирана може да я свалите от тук:" escape="false"/> 
+					<p:link href="#{request.requestURL.substring(0, request.requestURL.length() - request.requestURI.length())}/IBGCommonSoftware/IndexSignerManagerSetup32.exe" target="_blank">( <i class="fas fa-download"></i> сваляне)</p:link>
+	
+				</p:outputPanel>
+		</p:dialog>
+		
+		</h:form>
+	</ui:define>
+
+</ui:composition>

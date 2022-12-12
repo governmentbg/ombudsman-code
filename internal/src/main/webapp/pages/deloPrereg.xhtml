@@ -1,0 +1,149 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	template="/template/template.xhtml">
+
+	<ui:param name="pageTitle"
+		value="#{navTexts['/pages/docPreregList.xhtml']}" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+
+	<ui:define name="viewname">
+		<li><p:commandLink title="#{ui_labels['general.back']}"
+				action="#{navigation.goBack()}"
+				rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink></li>
+		<li><h:panelGroup id="pTitle">
+				<h:outputText value="#{navTexts['/pages/deloPrereg.xhtml']}" />
+			</h:panelGroup></li>
+	</ui:define>
+
+
+	<ui:define name="content">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:viewAction action="#{userData.checkPageAccess(27)}"
+				onPostback="false" />
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />
+		</f:metadata>
+
+		<h:form id="deloPreregForm">
+
+			<h:panelGroup id="deloPreregPanel" layonachinut="block"
+				rendered="#{deloPrereg.delo.id!=null}">
+				<p:toolbar id="tbpDeloPrereg" styleClass="options-toolbar">
+					<f:facet name="left">
+						<p:commandButton icon="fas fa-save"
+							value="#{ui_labels['general.save']}" id="btnSaveDeloPrereg"
+							partialSubmit="true" update="@form"
+							title="#{labels['delo.saveTitle']}"
+							actionListener="#{deloPrereg.actionSavePrereg}">
+						</p:commandButton>
+					</f:facet>
+				</p:toolbar>
+
+				<h:panelGroup id="mainPanelDeloPrereg">
+
+					<div class="title-group">
+						<p:commandLink class="extended-search-toggle expanded"
+							onclick="toggleSection(this, '#delo-regdataPrereg')">
+							<h:outputText value="#{labels['registratura.basicData']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+
+					<div id="delo-regdataPrereg" class="p-grid">
+						<!-- рег.номер -->
+						<h:panelGroup id="regnDeloPrereg"
+							styleClass="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 " layout="block">
+							<h:outputText value="#{labels['repDoc.regnom']}"
+								styleClass="form-label req" />
+							<div class="ui-inputgroup">
+								<p:inputText id="regNomerPrereg"
+									value="#{deloPrereg.delo.rnDelo}"
+									style=" display:inline-block;"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+								</p:inputText>
+							</div>
+						</h:panelGroup>
+
+						<!-- дата рег.номер -->
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ">
+							<h:outputText value="#{labels['docu.dateDoc']}"
+								styleClass="form-label req" />
+							<div class="ui-inputgroup">
+								<p:datePicker id="regDatedeloPrereg" showIcon="true" size="12" locale="bg"
+									pattern="dd.MM.yyyy" mask="true"
+									value="#{deloPrereg.delo.deloDate}">
+								</p:datePicker>
+							</div>
+						</div>
+
+						<!-- тип -->
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2">
+							<h:outputText value="#{labels['docu.type']}"
+								styleClass="form-label req" />
+							<div class="ui-inputgroup">
+								<p:selectOneMenu value="#{deloPrereg.delo.deloType}"
+									id="typeDeloPrereg" disabled="#{deloPrereg.delo.id!=null}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems
+										value="#{deloPrereg.typeList}" 
+										var="clPer" itemLabel="#{clPer.tekst}"
+										itemValue="#{clPer.code}" />
+								</p:selectOneMenu>
+							</div>
+						</div>
+						
+						<!-- статус -->
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2">
+							<h:outputText value="#{labels['docu.status']}"
+								styleClass="form-label req" />
+							<div class="ui-inputgroup">
+								<p:selectOneMenu value="#{deloPrereg.delo.status}"
+									id="statusDeloPrereg" disabled="#{deloPrereg.delo.id!=null}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems
+										value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_STATUS, now, deloBean.currentLang)}"
+										var="clPer" itemLabel="#{clPer.tekst}"
+										itemValue="#{clPer.code}" />
+								</p:selectOneMenu>
+							</div>
+						</div>
+
+						<!-- наименование -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-10 p-xl-10">
+							<h:outputText value="#{labels['docu.nameDelo']}"
+								styleClass="form-label" />
+							<div class="ui-inputgroup">
+								<p:inputText id="naimenovaniePrereg"
+									disabled="#{deloPrereg.delo.id!=null}"
+									value="#{deloPrereg.delo.deloName}" style="width:95%"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+								</p:inputText>
+							</div>
+						</div>
+
+						<!-- относно -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-10 p-xl-10">
+							<h:outputText value="#{labels['docu.otnosno']}"
+								styleClass="form-label" />
+							<div class="ui-inputgroup">
+								<p:inputText id="otnosnoPrereg"
+									disabled="#{deloPrereg.delo.id!=null}"
+									value="#{deloPrereg.delo.deloInfo}" style="width:95%"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+								</p:inputText>
+							</div>
+						</div>
+
+					</div>
+				</h:panelGroup>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>

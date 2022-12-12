@@ -1,0 +1,363 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+	
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				 <f:viewAction action="#{userData.checkPageAccess(44)}" onPostback="false" />						
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/taskScheduleList.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/taskScheduleList.xhtml']}</li>
+	    </ui:define> 
+	    
+		
+	<ui:define name="content">
+	
+		<h:form id="taskForm">
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+				<h:panelGroup id="panelFilterTasks" >
+					<div class="card ">
+					
+						<div  class="p-grid  ui-fluid p-align-end" >
+						
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['taskSchedule.regPeriod']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="regPeriod" value="#{taskScheduleList.regPeriod}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TASK_PERIOD, now, taskScheduleList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					               
+				         		 </p:selectOneMenu>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 "  >
+			            		<p:selectOneRadio value="#{taskScheduleList.valid}" id="validRadio">
+			            			<f:selectItem itemLabel="#{labels['regList.valid']}" itemValue="1" />
+			            			<f:selectItem itemLabel="#{labels['registratura.inactive']}" itemValue="2" />
+			            			<f:selectItem itemLabel="#{labels['deloList.noMatter']}" itemValue="3" />
+			            		</p:selectOneRadio>
+							</div>
+							
+							<!--Регистрационен номер на документ-->														
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+							<h:outputText value="#{labels['docDoc.regNum']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{taskScheduleList.rnDoc}" id="rnDoc"/>
+								<p:selectBooleanButton id="rndEq" value="#{taskScheduleList.rnDocEQ}" 
+										onLabel="#{ui_labels['general.yes']}"
+										offLabel="#{ui_labels['general.no']}"
+										title="#{labels['docu.docSrchRegNom']}" 
+										onIcon="fas fa-toggle-on"  
+										offIcon="fas fa-toggle-off" 
+										styleClass="inputgroup-button" >
+										<p:ajax update="@this rnDoc" partialSubmit="true"	process="@this rnDoc"/>			
+									</p:selectBooleanButton>
+							</div>
+						</div>
+						
+																		
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['taskSchedule.periodValid']}"  styleClass="form-label"/>
+				            	<p:selectOneMenu id="perValid" value="#{taskScheduleList.period}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, taskScheduleList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                <p:ajax event="change" update="taskForm:perValid taskForm:validFrom taskForm:validTo" listener="#{taskScheduleList.changePeriod}"/>   
+				         		 </p:selectOneMenu>
+							</div>
+			
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="validFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+						         	value="#{taskScheduleList.validFrom}" styleClass="form-control" >
+						         	<p:ajax event="change" update="taskForm:perValid" listener="#{taskScheduleList.changeDate}"/>
+						         	<p:ajax event="dateSelect" update="taskForm:perValid" listener="#{taskScheduleList.changeDate}"/>      
+						        </p:datePicker>	
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								 <p:datePicker id="validTo" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+						         	value="#{taskScheduleList.validTo}" styleClass="form-control" >
+						         	<p:ajax event="change" update="taskForm:perValid" listener="#{taskScheduleList.changeDate}"/>
+						         	<p:ajax event="dateSelect" update="taskForm:perValid" listener="#{taskScheduleList.changeDate}"/>      
+						         </p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+								<h:outputText  value="#{labels['taskSchedule.nomer']}"  styleClass="form-label"/>	
+								 <p:inputNumber  decimalPlaces="0" value="#{taskScheduleList.id}" id="nomer" /> 			
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+						        <h:outputText  value="#{labels['taskSchedule.periodNextReg']}"  styleClass="form-label"/>
+				            	<p:selectOneMenu id="perReg" value="#{taskScheduleList.periodNextReg}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, taskScheduleList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                <p:ajax event="change" update="taskForm:perReg taskForm:regFrom taskForm:regTo" listener="#{taskScheduleList.changePeriodReg}"/>   
+				         		 </p:selectOneMenu>
+							</div>
+			
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="regFrom" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+						         	value="#{taskScheduleList.nextRegFrom}" styleClass="form-control" >
+						         	<p:ajax event="change" update="taskForm:perReg" listener="#{taskScheduleList.changeDateReg}"/>
+						         	<p:ajax event="dateSelect" update="taskForm:perReg" listener="#{taskScheduleList.changeDateReg}"/>      
+						        </p:datePicker>	
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">
+					             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								 <p:datePicker id="regTo" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+						         	value="#{taskScheduleList.nextRegTo}" styleClass="form-control" >
+						         	<p:ajax event="change" update="taskForm:perReg" listener="#{taskScheduleList.changeDateReg}"/>
+						         	<p:ajax event="dateSelect" update="taskForm:perReg" listener="#{taskScheduleList.changeDateReg}"/>      
+						         </p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+							</div>
+												
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['taskSchedule.vidZad']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="taskType" value="#{taskScheduleList.taskType}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TASK_VID, now, taskScheduleList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					               
+				         		 </p:selectOneMenu>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-8 p-xl-8">
+						        <h:outputText  value="#{labels['docu.dopInfo']}"  styleClass="form-label"/>
+					        	<p:inputText value="#{taskScheduleList.taskInfo}" id="dopInfo" /> 
+						    </div>
+						    
+						    <!--Служител-->						
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+								<h:outputText value="#{labels['taskSchedule.empl']}" styleClass="form-label"/>
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+									id="employee" dateClassif="#{taskScheduleList.decodeDate}" filtered="false" isSelectNode="false"														
+									selectedCode="#{taskScheduleList.codeRef}" saveStateTree="true" update="taskForm:roles" sortByName="false"
+									withBtnClear="true" compType="2" styleAutoComp="" />	
+							</div>
+						
+							<!--Който е-->							
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-7 p-xl-7 ">
+								<h:outputText value="#{labels['docList.whichIs']}" styleClass="form-label"/>	
+								<p:selectOneRadio value="#{taskScheduleList.codeRole}" id="roles" unselectable="true" disabled="#{taskScheduleList.codeRef eq null}"	immediate="true">
+									<f:selectItem  itemValue="#{OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_ASSIGN}"
+									itemLabel="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_REF_ROLE, OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_ASSIGN, taskScheduleList.currentLang, now)}" />
+									
+									
+									<f:selectItem   itemValue="#{OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_CONTROL}"
+									itemLabel="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_REF_ROLE, OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_CONTROL, taskScheduleList.currentLang, now)}" />
+									
+									<f:selectItem   itemValue="#{OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_EXEC}"
+									itemLabel="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_REF_ROLE, OmbConstants.CODE_ZNACHENIE_TASK_REF_ROLE_EXEC, taskScheduleList.currentLang, now)}" />
+									
+								</p:selectOneRadio>
+							</div> 
+							
+							<!--Звено на изпълнителя на задачата-->						
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+								<h:outputText value="#{labels['taskSchedule.zveno']}" styleClass="form-label"/>
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+									id="zveno" dateClassif="#{taskScheduleList.decodeDate}" filtered="false" 														
+									selectedCode="#{taskScheduleList.zveno}" saveStateTree="true" sortByName="false"
+									withBtnClear="true" compType="2" styleAutoComp="" />	
+							</div>
+						  
+						  	<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+						  		<h:outputText value="#{labels['taskSchedule.position']}" styleClass="form-label"/>														
+								
+								<p:selectOneMenu id="position" value="#{taskScheduleList.position}" >
+						            <f:selectItem itemValue="" />      
+						            <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_POSITION, now, taskScheduleList.currentLang)}" 
+								  var="pos" itemLabel="#{pos.tekst}" itemValue="#{pos.code}" />
+						         
+					        	</p:selectOneMenu>	
+					        														
+				
+							</div>
+						</div> 
+						
+						<div class="filter-buttons">
+			
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"							    
+							id="btnSearch" update="panelTblTasks" partialSubmit="true"
+							process="@this panelFilterTasks" actionListener="#{taskScheduleList.actionSearch}" styleClass="p-mr-3" /> 
+						<p:defaultCommand target="btnSearch"/>
+											
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"							    
+							id="btnClear" update="panelTblTasks panelFilterTasks" partialSubmit="true"
+							process="@this" actionListener="#{taskScheduleList.actionClear}" styleClass="ui-button-warning" /> 
+					</div> 
+					</div>
+							
+				</h:panelGroup>
+			</div>	
+			
+			<!-- Резултат -->
+			<h:panelGroup id="panelTblTasks" layout="block" styleClass="card margin-top">
+				
+
+				   <div class="table-toolbar">
+						<p:commandButton id="newBtn" icon="fas fa-plus" ajax="false" action="taskSchedule.jsf" value="#{labels['delo.newButton']}"
+						   styleClass="ui-button-success"/> 
+						<h:panelGroup rendered="#{taskScheduleList.taskList != null}" >
+							<span class="fas fa-ellipsis-v  p-mx-2" />
+							
+							<h:outputText value="#{ui_labels['general.reportResult']} #{taskScheduleList.taskList.rowCount}" styleClass="form-label"/>
+						</h:panelGroup>
+				  </div>
+						
+				  
+				  <p:dataTable id="tblTaskShedule" var="row" value="#{taskScheduleList.taskList}" lazy="true" rendered="#{taskScheduleList.taskList != null}" 	
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}" emptyMessage="#{labels['doc.listEmptyMsg']}"		
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="true" paginator="true">
+						
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{taskScheduleList.taskList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblTaskShedule" fileName="taskShedule"	
+					        			postProcessor="#{taskScheduleList.postProcessXLS}" />
+					    		</h:commandLink>
+					<ui:remove><!-- 
+					    		<h:commandLink id="pdf"  rendered="#{taskScheduleList.taskList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        	 	  <h:graphicImage library="images" name="pdf.png" />
+					        	 	  <p:dataExporter type="pdf"   target="tblTaskShedule" fileName="taskShedule" encoding="windows-1251"
+					        			 preProcessor="#{taskScheduleList.preProcessPDF}" options="#{taskScheduleList.pdfOptions()}"/>
+					    		</h:commandLink> 
+					   --></ui:remove>
+				            </div>
+				       	</f:facet>	
+					
+								
+				  	<p:column width="10" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+					</p:column>	
+					
+					<p:column  width="30" exportable="false">	
+						<p:commandButton   icon="fas fa-edit" action="taskSchedule.jsf" ajax="false" title="#{ui_labels['general.edit']}">	
+							<f:param name="idObj" value="#{row[0]}"/>
+						</p:commandButton>					
+					</p:column>
+					
+					<p:column width="50" sortBy="#{row.a0}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.id']}" />									  
+						</f:facet>
+						
+						<h:outputText value="#{row[0]}" />
+					</p:column>
+					
+					
+					
+					<p:column width="130" sortBy="#{row.a1}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.period']}"  />										  
+						</f:facet>  
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_PERIOD, row[1], taskScheduleList.currentLang, now)}"/> 
+					</p:column>
+					<p:column width="100" sortBy="#{row.a2}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.validFrom']}"  />									  
+						</f:facet>
+						<h:outputText value="#{row[2]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskScheduleList.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+					
+					<p:column width="110" sortBy="#{row.a3}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.validTo']}"  />									  
+						</f:facet>
+						<h:outputText value="#{row[3]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskScheduleList.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+					
+					<p:column width="80" sortBy="#{row.a4}">
+						<f:facet name="header"> 
+							 <h:outputText  value="#{labels['regList.valid']}"/>										  
+						</f:facet>
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[4], taskScheduleList.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="140" sortBy="#{row.a5}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.nextDate']}"/>									  
+						</f:facet>
+						
+						<h:outputText value="#{row[5]}">	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskScheduleList.timeZone}"/>
+						</h:outputText>	
+					</p:column>
+					
+					<p:column width="120" sortBy="#{row.a6}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['taskSchedule.vidZad']}" />									  
+						</f:facet>
+						
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[6], taskScheduleList.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="*" sortBy="#{row.a7}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['task.dopInfo']}" />									  
+						</f:facet>
+						
+						<h:outputText value="#{row[7]}" />
+					</p:column>
+					
+					<p:column width="*" sortBy="#{row.a8}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['admStruct.employees']}" />									  
+						</f:facet>
+						
+						<h:outputText value="#{labels['tasks.assignCode']}:" rendered="#{row[8]!=null}" styleClass="form-label"></h:outputText> 
+						<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[8], taskScheduleList.currentLang, now)} "> </h:outputText>
+						<h:outputText value="#{labels['taskSchedule.exec']}:" rendered="#{row[10]!=null}" styleClass="form-label"></h:outputText>	
+						<h:outputText value=" #{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], taskScheduleList.currentLang, now)}"  ></h:outputText>
+					</p:column>
+					
+					<p:column width="*" sortBy="#{row.a11}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['users.zveno']}" />									  
+						</f:facet>
+						
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[11], taskScheduleList.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a12}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['regGrSluj.position']}" />									  
+						</f:facet>
+						
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row[12], taskScheduleList.currentLang, now)}" />
+					</p:column>
+									
+				</p:dataTable>
+			</h:panelGroup>	
+	
+		</h:form>
+	</ui:define>
+</ui:composition>

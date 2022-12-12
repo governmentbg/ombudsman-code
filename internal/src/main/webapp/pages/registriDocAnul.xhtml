@@ -1,0 +1,243 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components"
+				template="/template/template.xhtml">
+
+	<ui:define name="title">#{navTexts['/pages/registriDocAnul.xhtml']}</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:importConstants type="com.ib.system.SysConstants" />
+		</f:metadata>
+		
+		
+		<p:log rendered="false" />
+		<p:tooltip escape="false" hideEvent="mouseout click" />
+
+		<h:form id="formRegisterDocAnul">
+			<h:panelGroup id="pG" layout="block">
+				<div id="reg" class="card">	
+					<div class="p-grid ui-fluid p-align-left">
+					
+						<!-- Избор регистратура -->
+						<div  class="p-col-12 p-md-4">	
+							<ui:remove><div class="form-label req">#{labels['regData.registratura']}</div> 
+								<h:outputText value="#{registriAnul.selRegistraturaT}" />	</ui:remove>						
+							
+							<ui:remove><p:selectOneMenu value="#{registriAnul.selRegistratura}" id="registratura" styleClass="#{registriAnul.hasMessages('registratura') ? 'invalid': ''}">
+				 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+		                        <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTRATURI, now, registriAnul.currentLang)}" 
+		                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+		                     	<p:ajax event="change" update="formRegisterDocAnul" process="@all" 
+							   			 partialSubmit="true" listener="#{registriAnul.actionLoadSelected()}"/>		
+							</p:selectOneMenu>						 
+							<p:message for="registratura" display="text" style="color:#ffffff; background:none; border:0px">
+								<p:autoUpdate/>
+							</p:message></ui:remove>									
+						</div>
+						
+						<div class="p-col-12  p-md-6" >
+							
+	        					<div class="form-label req">#{labels['registerAnul.tipNulirane']}</div> 
+			        			<p:selectOneRadio id="console" value="#{registriAnul.tipAlg}" unselectable="false" layout="responsive" columns="2" >
+			        			    <f:selectItem itemLabel="#{labels['registerAnul.algIndexStep']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}" />
+						            <f:selectItem itemLabel="#{labels['registerAnul.algIndexVidDoc']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_ALG_VID_DOC}" />
+						            <p:ajax event="change" update=":formRegisterDocAnul" process="@all" 
+							   				 partialSubmit="true" listener="#{registriAnul.actionLoadSelected()}"/>	
+						        </p:selectOneRadio>
+					        
+				        </div>
+		
+					</div>
+					
+					
+					<p:toolbar styleClass="margin-bottom" id="tbPanelAnul" >		
+						<f:facet name="left">
+							<p:commandButton icon="fas fa-save" action="#{registriAnul.actionAnulSelRegisters}" update="dtRegistriA dtRegistriAHD panelTblToolbar panelTblToolbar1" 
+								value="#{labels['registerAnul.izbrani']}" title="#{labels['registerAnul.izbraniTitle']}"  onclick="if(!confirm('#{beanMessages['register.questionNull']}'))return false;"
+								disabled="#{!((registriAnul.selectedRegisters.size()>0 and registriAnul.registriListA.size()>0 and registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP) or (registriAnul.selectedRegistersHD.size()>0 and registriAnul.registriListAHD.size()>0 and registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_VID_DOC))}"/>
+							
+
+						</f:facet>	
+						<ui:remove><f:facet name="right">
+							<p:commandButton icon="fas fa-save" action="#{registriAnul.actionAnulAllRegisters}" update="dtRegistriA dtRegistriAHD panelTblToolbar panelTblToolbar1" value="#{labels['registerAnul.allRegistrs']}" title="#{labels['registerAnul.allRegistrsTitle']}"   onclick="if(!confirm('#{beanMessages['register.questionNull']}'))return false;"/>
+						</f:facet>	</ui:remove>
+					</p:toolbar>
+					
+					<h:panelGroup id="panelTblToolbar" rendered="#{registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}">
+						<div class="table-toolbar" >
+							<h:outputText value="#{ui_labels['general.reportResult']} #{registriAnul.registriListA.size()}" styleClass="form-label" rendered="#{registriAnul.registriListA.size()>0}"/>
+							<span class=" p-mx-2"  />
+							<h:outputText value="#{labels['opis.brIzbr']}: #{registriAnul.selectedRegisters.size()}"  styleClass="form-label" rendered="#{registriAnul.selectedRegisters.size()>0}"/>
+						</div>
+					</h:panelGroup>
+						
+					<br />	
+					<div  class="p-grid ui-fluid">	
+						<!-- За регистри за документи с алг. Индекс и стъпка -->	
+						<p:dataTable id="dtRegistriA" var="row" value="#{registriAnul.registriListA}" rowIndexVar="idx" 
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records" 
+							selection="#{registriAnul.selectedRegisters}" rowKey="#{row[0]}" rendered="#{registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}" 
+							paginatorTemplate="{CurrentPageReport} {RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="#{registriAnul.registriListA != null and registriAnul.registriListA.size() > 0}">
+							
+							<f:facet name="{Exporters}">
+					
+								<div style="float: left">
+									
+									<h:commandLink id="excel">
+										<h:graphicImage library="images" name="excel2.png" />
+										<p:dataExporter type="xls" target="dtRegistriA" fileName="regAnulXls" postProcessor="#{registriAnul.postProcessXLS}" selectionOnly="#{registriAnul.selectedRegisters != null and registriAnul.selectedRegisters.size()>0}" />
+									</h:commandLink>
+							<ui:remove>	<!-- 
+									<h:commandLink id="pdf">
+										<h:graphicImage library="images" name="pdf.png" />
+										<p:dataExporter type="pdf" target="dtRegistriA" fileName="regAnulPdf" encoding="windows-1251"
+														selectionOnly="#{registriAnul.selectedRegisters != null and registriAnul.selectedRegisters.size()>0}"
+					        							preProcessor="#{registriAnul.preProcessPDF}" options="#{registriAnul.pdfOptions()}"/>
+								
+									</h:commandLink>
+			
+									<h:commandLink id="csv">
+										<h:graphicImage library="images" name="csv.png" />
+										<p:dataExporter type="csv" target="dtRegistriA" fileName="regAnulCsv" encoding="CP1251" selectionOnly="#{registriAnul.selectedRegisters != null and registriAnul.selectedRegisters.size()>0}" />
+									</h:commandLink>
+						 -->	</ui:remove>		
+								</div>
+							
+							</f:facet>
+							
+							<p:ajax event="toggleSelect" update=":formRegisterDocAnul:pG"/>
+							<p:ajax event="rowSelectCheckbox"	update=":formRegisterDocAnul:pG"/>/>
+							<p:ajax event="rowUnselectCheckbox" update=":formRegisterDocAnul:pG"/>
+							
+							<p:column selectionMode="multiple"  style="width:16px;text-align:center;" id="selReg" exportable="false"/>
+
+							<p:column width="9"  headerText="#{labels['registerAnul.porNom']}" style="text-align:center;">
+								<h:outputText value="#{row[9]}" />
+							</p:column>
+			
+							<p:column width="150" sortBy="#{row[2]}" headerText="#{labels['register.naim']}" exportable="true">
+								<h:outputText value="#{row[2]}" style="text-align:left;"/>
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row[3]}" headerText="#{labels['register.tipReg']}" >
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, row[3], registerData.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="110" sortBy="#{row[8]}" headerText="#{labels['register.alg']}" style="text-align:center;">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ALG, row[8], registriAnul.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="40" headerText="#{labels['register.begNum']}" style="text-align:center;">
+								<h:outputText value="#{row[10]}" style="text-align:right;"/>
+							</p:column>
+							
+							<p:column width="15"  headerText="#{labels['register.step']}" style="text-align:center;">
+								<h:outputText value="#{row[11]}" />
+							</p:column>
+							
+							<p:column width="40" headerText="#{labels['register.actNum']}" style="text-align:center;">
+								<h:outputText value="#{row[12]}" />
+							</p:column>
+			
+							
+							<ui:remove><p:column width="60" sortBy="#{row[6]}" headerText="#{labels['register.tipDoc']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], registriAnul.currentLang, now)}" />
+							</p:column>
+			
+							<p:column width="80" sortBy="#{row[3]}" headerText="#{labels['register.tipReg']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, row[3], registriAnul.currentLang, now)}" />
+							</p:column>
+
+							<p:column width="30" sortBy="#{row[4]}" headerText="#{labels['register.active']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[4], registriAnul.currentLang, now)}" />
+							</p:column></ui:remove>
+			
+						</p:dataTable>
+						
+						
+						<!-- За регистри за документи с алг. Индекс по вид документи -->
+						<h:panelGroup id="panelTblToolbar1" rendered="#{registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_VID_DOC}">
+				
+						<div class="table-toolbar">
+							<h:outputText value="#{ui_labels['general.reportResult']} #{registriAnul.registriListAHD.size()}" styleClass="form-label" rendered="#{registriAnul.registriListAHD.size()>0}"/>
+							<span class=" p-mx-2"  />
+							<h:outputText value="#{labels['opis.brIzbr']}: #{registriAnul.selectedRegistersHD.size()}"  styleClass="form-label" rendered="#{registriAnul.selectedRegistersHD.size()>0}"/>
+						</div>
+						
+						</h:panelGroup>
+							
+
+						<p:dataTable id="dtRegistriAHD" var="row" value="#{registriAnul.registriListAHD}" rowIndexVar="idxHD" 
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" 
+							selection="#{registriAnul.selectedRegistersHD}" rowKey="#{row[0]}" rendered="#{registriAnul.tipAlg==OmbConstants.CODE_ZNACHENIE_ALG_VID_DOC}"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="#{registriAnul.registriListAHD != null and registriAnul.registriListAHD.size() > 0}">
+								
+							<f:facet name="{Exporters}">
+					
+								<div style="float: left">
+									
+									<h:commandLink id="excel1">
+										<h:graphicImage library="images" name="excel2.png" />
+										<p:dataExporter type="xls" target="dtRegistriAHD" fileName="regAnulXls" postProcessor="#{registriAnul.postProcessXLS}" selectionOnly="#{registriAnul.selectedRegistersHD != null and registriAnul.selectedRegistersHD.size()>0}" />
+									</h:commandLink>
+					<ui:remove><!-- 												
+									<h:commandLink id="pdf1">
+										<h:graphicImage library="images" name="pdf.png" />
+										<p:dataExporter type="pdf" target="dtRegistriAHD" fileName="regAnulPdf" encoding="windows-1251"
+												selectionOnly="#{registriAnul.selectedRegistersHD != null and registriAnul.selectedRegistersHD.size()>0}"
+			        							preProcessor="#{registriAnul.preProcessPDF}"  options="#{registriAnul.pdfOptions()}"/>
+									</h:commandLink>
+			
+									<h:commandLink id="csv1">
+										<h:graphicImage library="images" name="csv.png" />
+										<p:dataExporter type="csv" target="dtRegistriAHD" fileName="regAnulCsv" encoding="CP1251" selectionOnly="#{registriAnul.selectedRegistersHD != null and registriAnul.selectedRegistersHD.size()>0}"/>
+									</h:commandLink>
+								 --></ui:remove>
+								</div>
+							
+							</f:facet>
+
+							<p:ajax event="toggleSelect" update=":formRegisterDocAnul:pG"/>
+							<p:ajax event="rowSelectCheckbox"	update=":formRegisterDocAnul:pG"/>/>
+							<p:ajax event="rowUnselectCheckbox" update=":formRegisterDocAnul:pG"/>
+							
+							<p:column selectionMode="multiple"  style="width:16px;text-align:center;" id="selReg1" exportable="false"/>
+							
+							<p:column width="160" sortBy="#{row[2]}" headerText="#{labels['docu.register']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, row[2], registriAnul.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row[1]}" headerText="#{labels['docVidSetting.typeDoc']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[1], registriAnul.currentLang, now)}" />							
+							</p:column>
+
+							<p:column width="80" headerText="#{labels['docu.procedura']}">
+								<h:outputText value="" />
+							</p:column>
+				
+							<p:column width="30" headerText="#{labels['register.actNum']}" style="text-align:center;">
+								<h:outputText value="#{row[3]}" />
+							</p:column>
+			
+						</p:dataTable>
+			
+					</div>
+
+			
+				</div>
+			</h:panelGroup>
+		
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

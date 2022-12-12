@@ -1,0 +1,132 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/redefineAccess.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+        <li>#{navTexts['/pages/redefineAccess.xhtml']}</li>        
+    </ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(51)}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="formRedefAccess">
+			
+			<h:panelGroup id="panelRedefAccess" layout="block">
+
+					<div class="container #{guestPreferences.containerPosition}">						
+						
+						<h:panelGroup id="panelInclSluj" layout="block" >
+								
+								<div id="basicData" class="card">
+								
+								<h5> <h:outputText value="#{labels['redefineAccess.btnRedefineAccess']}"/> </h5>  
+								 
+								 <div class="p-grid ui-fluid">
+
+								<!-- Служители за преопределяне на достъпа -->
+								<div class="p-grid p-col-12 p-nogutter" >
+									
+									<div class="p-col-9 ui-inputgroup"> 
+										<h:outputText value="#{labels['redefineAccess.SlujForRedefine']}" styleClass="form-label p-mr-3" />
+										
+										<p:remoteCommand name="cmdSelectSluj" 
+												update="panelInclSluj"
+												process="panelInclSluj @this"
+												actionListener="#{redefineAccess.actionSelectSluj}" />
+																				
+										<ibg:selectManyModalA id="refList" compType="1" maxResults="50"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"											
+											filtered="false" saveStateTree="false" showRadioBtn="true"
+											styleAutoComp="width:100%;" valueLoadBtn="#{labels['regGrSluj.choiceSluj']}"
+											selectedClassifs="#{redefineAccess.scReferentsList}"
+											withBtnClear="false" onComplete="cmdSelectSluj()"
+											update="formRedefAccess:tblSlujList" isSelectNode="false"/>									
+									</div>	
+								
+									<div class="p-col-3 p-align-end ui-fluid" style="display: flex;">
+										
+										<p:commandButton icon="fas fa-sync-alt" actionListener="#{redefineAccess.actionRedefineAccess}" 
+											value="#{labels['redefineAccess.btnRedefineAccess']}" update="formRedefAccess:tblSlujList formRedefAccess:result" partialSubmit="true" />								
+									</div>
+									
+									<h:outputText value="#{ui_labels['general.reportResult']} #{redefineAccess.slujList.size()} " styleClass="form-label" id="result" style="margin-right:10px; flex-grow:1;white-space: nowrap;"/>										
+								
+								<p:dataTable id="tblSlujList" var="row" value="#{redefineAccess.slujList}" 
+									rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+									paginatorAlwaysVisible="true" paginator="true">
+									
+									<f:facet name="{Exporters}">
+										
+										<div style="float: left" jsf:rendered="#{redefineAccess.slujList.size() > 0}">
+											<h:commandLink id="excel">
+												<h:graphicImage library="images" name="excel2.png" />
+												<p:dataExporter type="xls" target="tblSlujList" fileName="slujListXls" postProcessor="#{redefineAccess.postProcessXLSInclSluj}"/>
+											</h:commandLink>
+							<ui:remove><!-- 
+											<h:commandLink id="pdf">
+												<h:graphicImage library="images" name="pdf.png" />
+												<p:dataExporter type="pdf" target="tblSlujList" fileName="slujListPdf" encoding="windows-1251"
+					        						preProcessor="#{redefineAccess.preProcessPDFInclSluj}" options="#{redefineAccess.pdfOptions()}"/>
+											</h:commandLink>
+
+											<h:commandLink id="csv">
+												<h:graphicImage library="images" name="csv.png" />
+												<p:dataExporter type="csv" target="tblSlujList" fileName="slujListCsv" encoding="CP1251" />
+											</h:commandLink>
+											 --></ui:remove>
+										</div>
+									</f:facet>
+									
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+
+									<p:column width="200" headerText="#{labels['refDeleg.employee']}">											
+										<h:outputText value="#{row[1]}" />
+									</p:column>
+									
+									<p:column width="150" headerText="#{labels['users.zveno']} / #{labels['regGrSluj.position']}">
+										<h:outputText value="#{row[2]}" />
+									</p:column>									
+									
+									<p:column width="150" headerText="#{labels['refDeleg.user']}">
+										<h:outputText value="#{row[3]}" />
+									</p:column>
+									
+									<p:column width="20" exportable="false">
+										<p:commandButton icon="fas fa-trash" action="#{redefineAccess.actionDeleteSluj(row[0])}" onclick="if(!confirm('#{beanMessages['regGrSluj.msgDelete']}'))return false;"
+											ajax="false" styleClass="ui-button-danger" update="formRedefAccess:tblSlujList" />
+									</p:column>
+									
+								</p:dataTable>
+								
+								</div>
+
+							</div>
+							
+							</div>
+
+						</h:panelGroup>
+						
+					</div>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

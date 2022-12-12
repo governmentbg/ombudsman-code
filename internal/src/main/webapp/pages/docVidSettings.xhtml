@@ -1,0 +1,335 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<!--Основни данни за регистратурата-->
+<h:panelGroup id="panelTab4" layout="block">
+
+	<div class="title-group">	
+		<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#docVidSetList')">
+		<h:outputText value="#{labels['docVidSetting.typesDocs']}" />
+		
+		<ui:remove>
+			<h:outputText value="#{labels['docVidSetting.typesDocs']} #{labels['registraturaData.to']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, docVidSettings.idReg, docVidSettings.currentLang, now)}" />
+		</ui:remove>	
+			<i class="fas fa-caret-right"></i>
+		</p:commandLink>
+	</div>
+
+	<div id="docVidSetList" class="p-grid p-col-12 ui-fluid">
+
+		<p:dataTable id="tblDocVidSetList" var="row" value="#{docVidSettings.dvSettingsList}" rowIndexVar="idx" lazy="true"
+			emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+			paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+			rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+			<f:facet name="{Exporters}">
+				
+				<div style="float: left">
+					
+					<h:commandLink id="excel">
+						<h:graphicImage library="images" name="excel2.png" />
+						<p:dataExporter type="xls" target="tblDocVidSetList" fileName="docVidSettingsXls" postProcessor="#{docVidSettings.postProcessXLS}"/>
+					</h:commandLink>
+<ui:remove><!-- 
+					<h:commandLink id="pdf">
+						<h:graphicImage library="images" name="pdf.png" />
+						 <p:dataExporter type="pdf" target="tblDocVidSetList" fileName="docVidSettingsPdf"	 encoding="windows-1251"
+					        			 preProcessor="#{docVidSettings.preProcessPDF}" options="#{docVidSettings.pdfOptions()}"/>	
+				
+					</h:commandLink>
+
+					<h:commandLink id="csv">
+						<h:graphicImage library="images" name="csv.png" />
+						<p:dataExporter type="csv" target="tblDocVidSetList" fileName="docVidSettingsCsv" encoding="CP1251" />
+					</h:commandLink> --></ui:remove>
+				
+				</div>
+			
+			</f:facet>
+
+			<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+				<h:outputText value="#{idx + 1}" />
+			</p:column>
+
+			<p:column width="20" exportable="false">
+				<h:panelGroup id="btnEditSett">
+					<p:commandButton icon="fas fa-edit" action="#{docVidSettings.actionEdit(row[0])}" ajax="true" styleClass="btn-new" 
+					update="formRegistratura:tabsRegistraturi:p4BasicData" />
+				</h:panelGroup>
+			</p:column>
+
+			<p:column width="150" sortBy="#{row.a1}" headerText="#{labels['docVidSetting.typeDoc']}">
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[1], docVidSettings.currentLang, now)}" />							
+			</p:column>
+
+			<p:column width="150" sortBy="#{row.a2}" headerText="#{labels['docu.register']}">
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, row[2], docVidSettings.currentLang, now)}" />
+			</p:column>
+
+			<ui:remove> <p:column width="250" headerText="#{labels['docVidSetting.procedureStarts']}">			
+				<h:outputText value="#{labels['docVidSetting.procDefIn']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROCEDURI, row[4], docVidSettings.currentLang, now)}" rendered="#{row[4] ne null}"/>
+				<div jsf:rendered="#{row[5] ne null}"></div>
+				<h:outputText value="#{labels['docVidSetting.procDefOwn']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROCEDURI, row[5], docVidSettings.currentLang, now)}" rendered="#{row[5] ne null}"/>
+				<div jsf:rendered="#{row[6] ne null}"></div>
+				<h:outputText value="#{labels['docVidSetting.procDefWork']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROCEDURI, row[6], docVidSettings.currentLang, now)}" rendered="#{row[6] ne null}"/>
+			</p:column> </ui:remove>
+
+			<p:column width="50" sortBy="#{row.a3}" headerText="#{labels['register.actNum']}">
+				<h:outputText value="#{row[3]}" />
+			</p:column>
+
+		</p:dataTable>
+
+	</div>
+
+	
+	<p:toolbar styleClass="margin-bottom" id="tbPanelTab4">
+		<f:facet name="left">					
+			<p:commandButton icon="fas fa-edit" action="#{docVidSettings.actionNew}" update="formRegistratura:tabsRegistraturi:p4BasicData" value="#{labels['docVidSetting.newTypeDoc']}" styleClass="ui-button-success" />
+		</f:facet>				
+	</p:toolbar>
+	
+	<div jsf:id="p4BasicData">
+	
+	<h:panelGroup rendered="#{docVidSettings.showDataForDocVidSet}">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataDocVidSet')">
+				<h:outputText value="#{labels['regData.docVidSettings']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="basicDataDocVidSet">	
+		
+			<p:toolbar styleClass="margin-bottom" id="tbTab2DocVidSet">
+				<f:facet name="left">
+					<p:commandButton icon="fas fa-save" action="#{docVidSettings.actionSave}" update="formRegistratura:tabsRegistraturi:panelTab4" value="#{ui_labels['general.save']}" />
+				</f:facet>
+				<f:facet name="right">
+					<h:panelGroup id="pRegInfoDocVidSettings" rendered="#{docVidSettings.dvSetting.id != null}">
+						<ibg:compObjAudit idObj="#{docVidSettings.dvSetting.id}" 
+									 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC_VID_SETT}"
+									 	identInfo="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, docVidSettings.dvSetting.docVid, docVidSettings.currentLang, now)}"/>
+					</h:panelGroup>	
+					<p:commandButton icon="fas fa-times" action="#{docVidSettings.actionDelete}" update="formRegistratura:tabsRegistraturi:panelTab4" value="#{ui_labels['general.delete']}" rendered="#{docVidSettings.dvSetting.id ne null}" styleClass="ui-button-danger"  onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/> 
+				</f:facet>
+			</p:toolbar>
+			
+			<div class="p-grid ui-fluid p-align-center">
+			
+			<!-- Вид документ -->
+			<div  class=" p-col-12 p-md-5">								
+				<h:outputText value="#{labels['docu.vid']}" styleClass="form-label req" />
+				<p:remoteCommand name="cmdChangeVidDoc" update="formRegistratura:tabsRegistraturi:p4BasicData"
+					partialSubmit="true" process="formRegistratura:tabsRegistraturi:p4BasicData @this"
+					actionListener="#{docVidSettings.actionChangeVidDoc}" />
+				<ibg:selectOneModalA id="typeDoc" readonly="#{docVidSettings.dvSetting.id ne null}" 
+					codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}"
+					dateClassif="#{now}" filtered="false" minQueryLength="2"
+					selectedCode="#{docVidSettings.dvSetting.docVid}"
+					styleAutoComp="width:99%;" saveStateTree="true"
+					header="#{labels['docVidSetting.typeDoc']}"
+					withBtnClear="true" compType="2" onComplete="cmdChangeVidDoc()" />
+			</div>
+												
+			<!-- Регистър -->
+			<div class="p-col-12 p-md-5">	
+				<h:outputText value="#{labels['docu.register']}" styleClass="form-label" />	
+				<p:selectOneMenu value="#{docVidSettings.dvSetting.registerId}" id="registri" filterMatchMode="contains" filter="true">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{docVidSettings.registriList}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                     		<p:ajax event="change" listener="#{docVidSettings.actionChangeRegister}" update="formRegistratura:tabsRegistraturi:panelFieldsForReg"/>
+				</p:selectOneMenu>						
+			</div>
+			
+			<!-- Инициира преписка -->
+			<div class="p-col-12 p-md-2" >	
+				<h:outputText value="#{labels['docVidSetting.createDelo']}" styleClass="form-label" />
+				<div class="ui-inputgroup" > 						
+				<p:selectBooleanButton id="initCorresp" value="#{docVidSettings.createDelo}" 
+					onLabel="#{ui_labels['general.yes']}" onIcon="fas fa-check"
+					offLabel="#{ui_labels['general.no']}" offIcon="fas fa-times"
+					styleClass="btn-normal" >							
+				</p:selectBooleanButton>
+				</div>		
+			</div>
+			
+			 <div jsf:id="panelFieldsForReg" class="p-grid p-col-12 ui-fluid ui-inputgroup">
+			
+				<h:panelGroup rendered="#{docVidSettings.registerAlg eq OmbConstants.CODE_ZNACHENIE_ALG_VID_DOC}">
+					
+					<!-- Индекс -->
+					<div  class=" p-col-12 p-md-2" >								
+						<h:outputText value="#{labels['register.prefix']}" styleClass="form-label"/>
+						<p:inputText value="#{docVidSettings.dvSetting.prefix}" id="prefixDVS" />						
+					</div>
+					
+					<!-- Начален № -->
+					<div  class=" p-col-12 p-md-2">								
+						<h:outputText value="#{labels['register.begNum']}" styleClass="form-label req"/>
+						<p:inputNumber value="#{docVidSettings.dvSetting.begNomer}"  min="0" decimalPlaces="0" id="begNumDVS" style="display:inline-block;"/>
+					</div>
+					
+					<!-- Достигнат № -->
+					<div  class=" p-col-12 p-md-2">								
+						<h:outputText value="#{labels['register.actNum']}" styleClass="form-label req"/>
+						<p:inputNumber value="#{docVidSettings.dvSetting.actNomer}"  min="0" decimalPlaces="0" id="actNumDVS" style="display:inline-block;"/>
+					</div>
+					
+					<!-- Стъпка -->
+					<div  class=" p-col-12 p-md-1">								
+						<h:outputText value="#{labels['register.step']}" styleClass="form-label req"/>
+						 <p:spinner id="stepDVS" value="#{docVidSettings.dvSetting.step}" />
+					</div>
+				
+				</h:panelGroup>
+				
+			</div>
+			
+			 <ui:remove> <div jsf:id="panelProcDef" class="p-grid p-col-12 ui-fluid ui-inputgroup">
+					
+				<!-- Стартира процедура: за входящ документ -->
+				<div class="p-col-12 p-md-3" jsf:rendered="#{docVidSettings.dvSetting.registerId eq null or docVidSettings.viewProcDefIn}">	
+					<h:outputText value="#{labels['docVidSetting.procedureStarts']}: #{labels['docVidSetting.procDefIn']}" styleClass="form-label" />	
+					<p:selectOneMenu value="#{docVidSettings.dvSetting.procDefIn}" id="procDefIn" >
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+	                    <f:selectItems value="#{docVidSettings.proceduriListDefIn}"  var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+					</p:selectOneMenu>						
+				</div>
+				
+				<!-- Стартира процедура: за работен документ -->
+				<div class="p-col-12 p-md-3" jsf:rendered="#{docVidSettings.dvSetting.registerId eq null or docVidSettings.viewProcDefWork}">	
+					<h:outputText value="#{labels['docVidSetting.procedureStarts']}: #{labels['docVidSetting.procDefWork']}" styleClass="form-label" />	
+					<p:selectOneMenu value="#{docVidSettings.dvSetting.procDefWork}" id="procDefWork" >
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+	                    <f:selectItems value="#{docVidSettings.proceduriListDefWork}"  var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+					</p:selectOneMenu>						
+				</div>
+				
+				<!-- Стартира процедура: за собствен документ -->
+				<div class="p-col-12 p-md-3" jsf:rendered="#{docVidSettings.dvSetting.registerId eq null or docVidSettings.viewProcDefOwn}">	
+					<h:outputText value="#{labels['docVidSetting.procedureStarts']}: #{labels['docVidSetting.procDefOwn']}" styleClass="form-label" />	
+					<p:selectOneMenu value="#{docVidSettings.dvSetting.procDefOwn}" id="procDefOwn" >
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+	                    <f:selectItems value="#{docVidSettings.proceduriListDefOwn}"  var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+					</p:selectOneMenu>						
+				</div>
+				
+				<!-- Характер на специализиран документ -->
+				<div class="p-col-12 p-md-3" jsf:rendered="#{docVidSettings.docHarList.size() > 0}">	
+					<h:outputText value="#{labels['docVidSettings.characterSpecDoc']}" styleClass="form-label" />	
+					<p:selectOneMenu value="#{docVidSettings.dvSetting.docHar}" id="docHar">
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>	 				
+	                    <f:selectItems value="#{docVidSettings.docHarList}" 
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                     	<p:ajax event="change" update="formRegistratura:tabsRegistraturi:panelProcDef" />
+                     </p:selectOneMenu>
+                     <p:tooltip id="tooltipDopInfo" for="docHar" value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_CHARACTER_SPEC_DOC, docVidSettings.dvSetting.docHar, docVidSettings.currentLang, now)}" my="right center" at="left center"/>
+				</div>
+				
+			</div> </ui:remove>
+			
+			<!-- Поддържа се списък с участници в документа -->
+			<ui:remove> <div class="p-col-12 p-md-4" jsf:rendered="#{docVidSettings.settingMembers ne null and docVidSettings.settingMembers eq OmbConstants.CODE_ZNACHENIE_DA}">
+				<div class="ui-inputgroup">				
+				<p:selectBooleanCheckbox value="#{docVidSettings.memberActive}" itemLabel="#{labels['docVidSettings.memberActive']}" styleClass="form-label" > 
+			 	 	 <p:ajax event="change" update="formRegistratura:tabsRegistraturi:p4BasicData" listener="#{docVidSettings.actionShowHideMemberActive}"/>
+			 	 </p:selectBooleanCheckbox>
+			 	 </div>
+			</div>
+			
+			<!-- Име на списъка с участници в документа -->
+			<div class="p-col-12 p-md-8" jsf:rendered="#{docVidSettings.memberActive}" >	
+				<h:outputText value="#{labels['docVidSettings.nameMemberList']}" styleClass="form-label" />	
+				<p:inputText id="nameMember" value="#{docVidSettings.dvSetting.membersTab}" />		
+			</div> </ui:remove>
+			
+			<!-- Забележка -->
+			<div class="p-col-12">	
+				<h:outputText value="#{labels['docu.note']}" styleClass="form-label" />	
+				<p:inputText id="docuNote" value="#{docVidSettings.dvSetting.docVidInfo}" />		
+			</div>
+			
+			<!-- Индекс на номенклатурно дело за съхранение на документ от този вид -->
+			<div class="p-col-12 p-md-6">	
+				<h:outputText value="#{labels['docVidSetting.shemaId']}" styleClass="form-label" />	
+				<p:selectOneMenu value="#{docVidSettings.dvSetting.shemaId}" id="shemaId" styleClass="#{docVidSettings.hasMessages('shemaId') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_SHEMA, now, docVidSettings.currentLang)}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>							
+			</div>	
+			
+			<!-- Регистратура за заявка за деловодна регистрация -->
+			<ui:remove> <div class="p-col-12 p-md-6">	
+				<h:outputText value="#{labels['docVidSetting.regOfficDocThisType']}" styleClass="form-label" />	
+				<p:selectOneMenu value="#{docVidSettings.dvSetting.forRegId}" id="forRegId" >
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTRATURI, now, docVidSettings.currentLang)}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>                       		
+				</p:selectOneMenu>						
+			</div>
+			
+			<!-- УРИ на вид документ -->
+			<div class="p-col-12 p-md-6">	
+				<h:outputText value="#{labels['docVidSettings.docVidUri']}" styleClass="form-label" />	
+				<p:inputText id="docVidUri" value="#{docVidSettings.dvSetting.docVidUri}" />		
+			</div>
+			
+			<!-- УРИ на приложение за визуализация и/или за редактиране -->
+			<div class="p-col-12 p-md-6">	
+				<h:outputText value="#{labels['docVidSettings.prilUri']}" styleClass="form-label" />	
+				<p:inputText id="prilUri" value="#{docVidSettings.dvSetting.prilUri}" />		
+			</div>
+			
+			<!-- Овластено лице, което може да подписва този вид документ -->					
+			<div class="p-col-12 p-md-6">
+				<h:outputText value="#{labels['docVidSetting.personSign']}" styleClass="form-label" />
+				<p:selectOneMenu value="#{docVidSettings.dvSetting.emplPosition}" id="emplPosition" styleClass="#{docVidSettings.hasMessages('emplPosition') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_POSITION, now, docVidSettings.currentLang)}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>							
+			</div>
+			
+			<!-- Начин на обработка на документ -->
+			<div class="p-col-12 p-md-6">	
+				<h:outputText value="#{labels['docVidSetting.docProceed']}" styleClass="form-label" />	
+				<p:selectOneMenu value="#{docVidSettings.dvSetting.docVidOka}" id="docVidOka" styleClass="#{docVidSettings.hasMessages('docVidOka') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_PROCEED, now, docVidSettings.currentLang)}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>							
+			</div> </ui:remove>
+			
+			<!-- Файлове - saveFirst="#{registraturaData.registratura.id == null}"-->
+			<div class="p-col-12  p-md-12">
+			<p:remoteCommand name="cmdChangeFiles" update="@this"
+					partialSubmit="true" process="@this"
+					actionListener="#{docVidSettings.actionChangeFiles}" />						
+			<ibg:compFileUpload listObj="#{docVidSettings.filesList}" headerLabel="#{labels['docVidSettings.shablonVidDoc']}"
+				codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC_VID_SETT}" header="false"
+				idObj="#{docVidSettings.dvSetting.id}"	btnLabel="#{labels['docVidSetting.newShablon']}"		
+				autoSave="true" saveFirst="#{docVidSettings.dvSetting.id == null}"
+				id="shablons" display="list" onComplete="cmdChangeFiles()"
+				dragDropSupport="true"/>	
+			</div>
+			
+			</div>
+			
+		</div>
+						
+	</h:panelGroup>	
+	
+	</div>
+
+</h:panelGroup>
+
+</ui:composition>

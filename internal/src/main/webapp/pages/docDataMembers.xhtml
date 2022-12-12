@@ -1,0 +1,158 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+	<style type="text/css">    	
+		#docForm\:tabsDoc\:empl\:dialogButton {
+			display: none;
+		}
+    </style> 
+
+	<h:panelGroup id="tdPanel7" layout="block"  >
+	
+	<f:event type="preRenderComponent" listener="#{docDataMembers.initTab}" /> 
+		
+		<h:panelGroup id="tdPanel" >
+			<div  class="title-group">
+				<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:tabsDoc:membersList')">
+					<h:outputText value="#{labels['docMembers.membersInDoc']} #{docDataMembers.rnFullDoc}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>	
+								
+			<div jsf:id="membersList">
+			
+				<div  class="p-grid p-align-end">
+						<div class="p-col-12 p-lg-3 p-md-4 p-sm-5 ui-fluid">
+							<h:outputText value="#{labels['docMembers.roleMember']}" styleClass="form-label"/>
+					 		<p:selectOneMenu id="roleRefList" value="#{docDataMembers.role}" autoWidth="false">
+					 		 	<f:selectItem value="#{null}" itemValue="#{null}"/>
+							    <f:selectItems  value="#{docDataMembers.roleList}" var="role" itemLabel="#{role.label}" itemValue="#{role.value}" />
+							      
+						    </p:selectOneMenu>
+						</div>
+						
+						<div class="p-col-12 p-lg-9 p-md-8 p-sm-7">
+							<!-- Служител -->
+							
+							<p:remoteCommand name="cmdChangeEmpl" update="docForm:tabsDoc:tdPanel"
+									partialSubmit="true" process="docForm:tabsDoc:tdPanel @this"
+									actionListener="#{docDataMembers.actionSelectEmpl()}" />
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" titleLoadBtn="#{labels['refDeleg.employee']}"
+								id="empl" dateClassif="#{docDataMembers.decodeDate}" filtered="false" isSelectNode="false"
+								selectedCode="#{docDataMembers.selectedEmp}" saveStateTree="false"
+								withBtnClear="false" compType="1" onComplete="cmdChangeEmpl()"/>
+			
+							<p:commandButton value="Служител" icon="fas fa-user" onclick="$('#docForm\\:tabsDoc\\:empl\\:dialogButton').click()" />
+							
+							<!-- Кореспондент -->
+							<p:commandButton icon="fas fa-list-ul" partialSubmit="true" process="docForm:tabsDoc:tdPanel @this" 
+							update="docForm:tabsDoc:tdPanel" oncomplete="PF('dialog-koresp').show();" value="#{labels['docu.corespondent']}" />
+							
+							<p:commandButton id="btnCorrNew"
+										
+										rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)}"
+										icon="fas fa-plus" partialSubmit="true" 
+										process="docForm:tabsDoc:tdPanel @this"
+										update="docForm:tabsDoc:tdPanel"
+									    style="width: 34px;"
+										oncomplete="PF('mCorrNew').show();"
+										title="#{labels['docu.refCorrNew']}" />
+						
+							</div>
+				 </div> 
+					
+				<p:dataTable id="tblMembersList" var="row" value="#{docDataMembers.membersList}" lazy="false" 	
+					rowIndexVar="idx" sortMode="single" reflow="true" 
+					emptyMessage=""  scrollable="true" editable="true" 
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+					paginatorAlwaysVisible="false" paginator="true">
+					
+					<p:ajax event="rowEdit" immediate="true" resetValues="true" update="@this" listener="#{docDataMembers.actionSave}" />			
+						
+					<p:column width="20" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+					</p:column>		
+								 
+					  <p:column headerText="#{labels['docMembers.member']}">			        
+			               <h:outputText value="#{row.refText}" />
+				       </p:column>
+			
+					
+					   <p:column headerText="#{labels['docMembers.role']}">
+				           <p:cellEditor>
+			                <f:facet name="output"><h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_MEMBER_ROLES,row.roleRef,docDataMembers.currentLang,docDataMembers.decodeDate)}" /></f:facet>
+			                <f:facet name="input">
+			               
+				                <p:selectOneMenu id="roleRef" value="#{row.roleRef}" >	
+				                	 <f:selectItem value="#{null}" itemValue="#{null}"/>							    
+								     <f:selectItems  value="#{docDataMembers.roleList}" var="role" itemLabel="#{role.label}" itemValue="#{role.value}" />								      
+							    </p:selectOneMenu>
+		  
+						    </f:facet>
+			            </p:cellEditor>
+				       </p:column>
+				       
+				       <p:column style="text-align: center" width="20" >
+							<p:rowEditor />
+					   </p:column>
+			
+					   <p:column width="30" >
+					      <f:facet name="header">
+						      <p:commandButton icon="fas fa-trash" action="#{docDataMembers.actionDeleteAll()}" rendered="#{docDataMembers.membersList.size()>1}"
+									onclick="if(!confirm('#{labels['general.confirm']}'))return false;" update="docForm:tabsDoc:tdPanel" ajax="false" title="#{ui_labels['general.deleteAll']}" styleClass="ui-button-danger">												
+							  </p:commandButton>
+					      </f:facet>
+							<p:commandButton icon="fas fa-trash" action="#{docDataMembers.actionDelete(row)}" 
+								onclick="if(!confirm('#{labels['general.confirm']}'))return false;" update="docForm:tabsDoc:tdPanel" ajax="false" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger">												
+							</p:commandButton>
+						</p:column>
+				</p:dataTable>
+			
+			</div>
+	    </h:panelGroup>
+			  
+	</h:panelGroup>
+	
+	<p:dialog appendTo="@form" widgetVar="dialog-koresp" closeOnEscape="true" header="#{labels['docu.titleExtSrchCoresp']}" 
+		    fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="top"
+		    modal="true" dynamic="true">
+	    <div jsf:id="dialogKoresp" class="container #{guestPreferences.containerPosition}">
+
+			<ibg:refCorrespSearch id="searchCoresp" 
+				codeRef="#{docDataMembers.selectedCoresp}"
+				dateClassif="#{docDataMembers.decodeDate}" modal="true" 
+				onComplete="PF('dialog-koresp').hide(); korespEnter();"/>
+			<p:remoteCommand name="korespEnter" action="#{docDataMembers.actionSelectCoresp}"
+				partialSubmit="true" process="@this"
+				update="docForm:tabsDoc:tdPanel"/>
+	
+		</div>
+	</p:dialog>
+	
+	<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{labels['docu.titleEditCoresp']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrNew" dynamic="true" id="modalCorrNew" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+					<p:remoteCommand name="corespEnter" action="#{docDataMembers.actionSelectCoresp}"
+						partialSubmit="true" process="@this"
+						update="docForm:tabsDoc:tdPanel"/>
+			 		<ibg:refCorrespData id="btnCorrDNew" 
+						 codeRef="#{docDataMembers.selectedCoresp}"					
+						 dateClassif="#{docDataMembers.decodeDate}"
+						 modal="true"				
+						 onComplete = "PF('mCorrNew').hide(); corespEnter();" />
+			</div>		
+	 		
+	</p:dialog>	
+</ui:composition>

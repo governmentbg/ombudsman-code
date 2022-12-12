@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+	
+	<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />										
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/deloStorageList.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">
+
+			<li>
+				<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+					<i class="fas fa-caret-left" />
+				</p:commandLink>
+			</li>
+	
+			<li>#{navTexts['/pages/deloStorageList.xhtml']}</li>
+
+		</ui:define>
+			    
+	    <ui:define name="head">
+	    
+			<style type="text/css">
+			
+			    .ui-datatable .ui-datatable-data > tr.red {
+			        border-color: #F28686;
+			        background-color: #FFFFFF !important;
+			    }
+			    
+			    .white {
+			        background-color: #FFFFFF !important;
+			    }
+			    
+			    .ui-rowgroup-header.ui-datatable-headerrow.ui-widget-header td {
+				    border-bottom: 0;
+				}
+				
+			</style>
+				
+		</ui:define>
+	
+	<ui:define name="content">
+	
+		<h:form id="storageForm">
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+				<h:panelGroup id="panelStorage" layout="block" styleClass="margin-top">
+					<div class="card ">
+						<p:toolbar >
+							<f:facet name="left" >						
+								<p:commandButton id="btnSave" actionListener="#{deloStorageBean.actionSave}" 
+									partialSubmit="true" update="tableDelo panelStorage" icon="fas fa-save" value="#{ui_labels['general.save']}"/>
+							
+								<p:commandButton widgetVar="hiddenButton" style="display:none" actionListener="#{deloStorageBean.save}"
+									update="tableDelo panelStorage">
+									<p:confirm message="#{beanMessages['deloStorage.confSave']}" icon="fas fa-exclamation-triangle" /> 
+								</p:commandButton>
+							</f:facet>
+							<f:facet name="right">
+								<p:commandButton  id="btnClear" actionListener="#{deloStorageBean.actionClear}"
+									partialSubmit="true" process="@this tableDelo" update="tableDelo storageForm:btnClear storageForm:btnInput" disabled="#{deloStorageBean.disableButtons}"
+									icon="fas fa-eraser"  	styleClass="ui-button-warning" value="#{labels['deloStorage.removeData']}" > 
+									<p:confirm message="#{beanMessages['deloStorage.confClear']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>		  
+							</f:facet>
+						</p:toolbar>
+						
+						<div  class="p-grid  ui-fluid p-align-end" >
+													
+							<!--Помещение-->								
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['deloList.room']}" styleClass="form-label" />
+								<p:inputText value="#{deloStorageBean.room}" id="room" />
+							</div>								
+							
+							<!--Шкаф-->
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['deloList.shkaf']}" styleClass="form-label" />
+								<p:inputText value="#{deloStorageBean.shkaf}" id="shkaf"/>
+							</div>
+							
+							<!--Стелаж-->
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['deloList.stillage']}" styleClass="form-label" />
+								<p:inputText value="#{deloStorageBean.stillage}" id="stillage" />
+							</div>
+							
+							<!--Кутия-->
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['deloList.box']}" styleClass="form-label" />
+								<p:inputText value="#{deloStorageBean.box}" id="box" />
+							</div>
+							
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+								
+								<p:commandButton value="#{labels['deloStorage.input']}" id="btnInput" update="tableDelo panelStorage" partialSubmit="true" 
+									process="@this panelStorage tableDelo" actionListener="#{deloStorageBean.actionInput}" disabled="#{deloStorageBean.disableButtons}">
+									<p:confirm message="#{beanMessages['deloStorage.pleaseConfInsert']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+							</div>			
+																							
+						</div> 
+																			
+					</div>
+				
+				</h:panelGroup>
+			</div>
+				
+			<h:panelGroup id="tableDelo"  layout="block" styleClass="margin-top"> 
+				
+				    <p:dataTable var="row" rowIndexVar="rkv" editable="true" editMode="cell" value="#{deloStorageBean.deloList}" sortBy="#{row[1]}" 
+				    	paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" 
+						rowStyleClass="#{row[7] == null ? 'red' : 'white'}">
+				      
+				        <p:headerRow  groupBy="#{row[0]}" expandable="true">
+				        	<p:column colspan="1" >
+				                <p:selectBooleanCheckbox value="#{deloStorageBean.checkBoxAll[row[0]]}" >
+						            <p:ajax update="storageForm:tableDelo storageForm:btnClear storageForm:btnInput" listener="#{deloStorageBean.actionChangeCheckAll(row[0])}" />
+						         </p:selectBooleanCheckbox>
+				            </p:column>
+				            <p:column colspan="6">
+				                <h:outputText value="#{row[1]}/ " />
+				                <h:outputText value="#{row[2]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloStorageBean.timeZone}"/>
+								</h:outputText>		
+				            </p:column>
+				        </p:headerRow>
+				        
+				       
+				         
+				        <p:column width="50">
+				         <p:selectBooleanCheckbox value="#{deloStorageBean.checkBoxHash[row]}" >
+				         	 <p:ajax update="storageForm:tableDelo storageForm:btnClear storageForm:btnInput" listener="#{deloStorageBean.actionChangeCheck(row)}" />
+				         </p:selectBooleanCheckbox>
+				        </p:column>  
+				        
+				        <p:column  headerText="#{labels['opis.tomNomer']}">				       
+				           <h:outputText value="#{row[4]}" /> 	               		          
+				        </p:column>
+				       
+				         <p:column headerText="#{labels['deloStorage.arhNo']}">
+				           <p:cellEditor>
+			                <f:facet name="output"><h:outputText value="#{row[6]}" /></f:facet>
+			                <f:facet name="input"><p:inputText value="#{row[6]}" style="width:96%" label="#{labels['deloList.room']}"/></f:facet>
+			            </p:cellEditor>
+				        </p:column>
+				         
+				        <p:column headerText="#{labels['deloList.room']}" >
+					        <p:cellEditor>
+				                <f:facet name="output"><h:outputText value="#{row[7]}" /></f:facet>
+				                <f:facet name="input">
+				                	<p:inputText value="#{row[7]}" style="width:96%" label="#{labels['deloList.room']}">
+				                	 	<p:ajax event="change"  update="storageForm:tableDelo" />
+				                	</p:inputText>
+				                </f:facet>
+				            </p:cellEditor>
+				        </p:column>
+				        <p:column headerText="#{labels['deloList.shkaf']}">
+				            <p:cellEditor>
+				                <f:facet name="output"><h:outputText value="#{row[8]}" /></f:facet>
+				                <f:facet name="input">
+				                	<p:inputText value="#{row[8]}" style="width:96%" label="#{labels['deloList.shkaf']}">
+				                		<p:ajax event="change" update="storageForm:tableDelo" partialSubmit="true" process="@this" listener="#{deloStorageBean.changeShkaf(rkv)}" />
+				                	</p:inputText>
+				                
+				                </f:facet>
+			            	</p:cellEditor>
+				        </p:column>
+				        
+				        <p:column headerText="#{labels['deloList.stillage']}">
+				            <p:cellEditor>
+				                <f:facet name="output"><h:outputText value="#{row[9]}" /></f:facet>
+				                <f:facet name="input">
+				                	<p:inputText value="#{row[9]}" style="width:96%" label="#{labels['deloList.stillage']}">
+				                		<p:ajax event="change" partialSubmit="true" process="@this" listener="#{deloStorageBean.changeStillage(rkv)}" update="storageForm:tableDelo"/>
+				                	</p:inputText>
+				                </f:facet>
+			            	</p:cellEditor>
+				        </p:column>
+				        
+				         <p:column headerText="#{labels['deloList.box']}">
+				            <p:cellEditor>
+				                <f:facet name="output"><h:outputText value="#{row[10]}" /></f:facet>
+				                <f:facet name="input">
+				                	<p:inputText value="#{row[10]}" style="width:96%" label="#{labels['deloList.box']}">
+				                		<p:ajax event="change" partialSubmit="true" process="@this" listener="#{deloStorageBean.changeBox(rkv)}" update="storageForm:tableDelo"/>
+				                	</p:inputText>
+				                </f:facet>
+			            	</p:cellEditor>
+				        </p:column>
+				       
+		   		</p:dataTable>
+			
+		</h:panelGroup>
+			
+				
+		</h:form>
+	</ui:define>
+</ui:composition>

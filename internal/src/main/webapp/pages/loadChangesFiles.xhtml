@@ -1,0 +1,145 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:h="http://java.sun.com/jsf/html"
+ 	xmlns:f="http://java.sun.com/jsf/core" 
+  	xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    template="/template/template.xhtml">
+
+    <ui:define name="title">Зареждане на файлове</ui:define>
+    
+    <ui:define name="viewname">
+        <li>Зареждане на файлове</li>
+    </ui:define>
+    
+    <ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.beans.LoadChangesFiles" />
+		</f:metadata>
+	</ui:define>
+    
+    <ui:define name="content">
+    
+    	<style>
+    		.simple-panel {
+    			border: 1px solid #dddddd;
+    			border-radius: 4px;
+    			padding: 15px;
+    			white-space: pre-wrap;
+    		}
+    	</style>
+    
+    	<h:form id="loadChangesForm">
+    	
+    		<div class="card">
+    		
+    			<h5>Разглеждане на файловете</h5>
+    			
+    			<div class="p-grid ui-fluid">
+    			
+    				<div class="p-col-12">
+    					<div class="form-label">Пакет с файлове</div>
+    				</div>
+    				
+    				<div class="p-col-6 p-md-4">
+    					<p:tree id="treeFiles" value="#{loadChangesFiles.treeRoot}" var="node" selectionMode="single">
+	    					<p:treeNode expandedIcon="fas fa-box-open" collapsedIcon="fas fa-box" type="package">
+					            <h:outputText value="#{node.packageName}"/>
+					        </p:treeNode>
+					        
+					        <p:treeNode icon="fas fa-file" type="file">
+					            <h:outputText value="#{node.fileName}"/>
+					        </p:treeNode>
+					        
+					        <p:ajax event="select" update="loadChangesForm:panelFileContents" listener="#{loadChangesFiles.onFileSelect(node)}" partialSubmit="true" process="@this" />
+    					</p:tree>
+    				</div>
+    				
+    				<div class="p-col-6 p-md-8">
+    					<div jsf:id="panelFileContents">
+    						<div class="simple-panel" jsf:rendered="#{loadChangesFiles.fileContents ne null}">
+    							<h:outputText value="#{loadChangesFiles.fileContents}" escape="false"/>
+    						</div>
+    					</div>
+    				</div>
+    				
+   				</div>
+			</div>
+			
+			<div class="card margin-top">
+			
+				<h5>Избор на версия за ъпгрейдване</h5>
+				
+    			<div jsf:id="inputFields" class="p-grid ui-fluid p-align-end">
+    				
+    				<div class="p-col-12 p-md-2">
+    					<div class="form-label">DB vendor</div>
+    					<p:selectOneMenu value="#{loadChangesFiles.inputDbVendor}">
+    						<f:selectItems value="#{loadChangesFiles.dbVendorNames}" />
+    					</p:selectOneMenu>
+    				</div>
+    				
+    				<div class="p-col-6 p-md-2">
+    					<div class="form-label">Min версия</div>
+    					<p:inputText id="inputVersionMin" value="#{loadChangesFiles.inputVersionMin}" />
+    				</div>
+    				
+    				<div class="p-col-6 p-md-2">
+    					<div class="form-label">Max версия</div>
+    					<p:inputText id="inputVersionMax" value="#{loadChangesFiles.inputVersionMax}" />
+    				</div>
+    				
+    				<div class="p-col-fixed" style="width:150px">
+			            <p:commandButton update="loadChangesForm:inputFields loadChangesForm:resultFiles" 
+			            	actionListener="#{loadChangesFiles.actionUpgrade}" value="Избор" icon="fas fa-paw" />
+    				</div>
+    				
+    			</div>
+    			
+    			<div jsf:id="resultFiles" class="p-grid ui-fluid">
+    				<div class="p-col-12 p-md-3" jsf:rendered="#{loadChangesFiles.foundFiles.size() > 0}">
+    					<div class="form-label"></div>
+    					<p:dataView value="#{loadChangesFiles.foundFiles}" var="file">
+    						<f:facet name="header">
+					            Открити файлове: #{loadChangesFiles.foundFiles.size()}
+					        </f:facet>
+					       
+					        <p:dataViewGridItem>
+					        	 #{file.fileName}
+					        </p:dataViewGridItem> 
+					        <p:dataViewListItem >
+		                		 #{file.fileName}
+		                	</p:dataViewListItem>
+					    </p:dataView>
+    				</div>
+    				
+    				<div class="p-col-12 p-md-3" jsf:rendered="#{loadChangesFiles.orderedFiles.size() > 0}">
+    					<div class="form-label"></div>
+    					<p:dataView  value="#{loadChangesFiles.orderedFiles}" var="file" >
+    						<f:facet name="header">
+					           Файлове, които ще се изпълнят, сортирани: #{loadChangesFiles.orderedFiles.size()}
+					        </f:facet>
+					       <p:dataViewGridItem>
+					        	 #{file.fileName}
+					        </p:dataViewGridItem> 
+					        <p:dataViewListItem >
+		                		 #{file.fileName}
+		                	</p:dataViewListItem>
+					    </p:dataView>
+    				</div>
+    				
+    				<div class="p-col-12 p-md-6" jsf:rendered="#{loadChangesFiles.orderedFiles.size() > 0}">
+    					<div class="form-label">Лог</div>
+    					<div class="simple-panel">
+    						<h:outputText value="#{loadChangesFiles.log}" escape="false" />
+    					</div>
+    				</div>
+    			</div>
+    		</div>
+    	
+    	</h:form>
+    
+    </ui:define>
+    
+</ui:composition>

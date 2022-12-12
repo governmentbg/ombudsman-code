@@ -1,0 +1,140 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:h="http://java.sun.com/jsf/html"
+ 	xmlns:f="http://java.sun.com/jsf/core" 
+  	xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    template="/template/template.xhtml"
+    xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+   <ui:define name="title">Test Svilen</ui:define>
+    
+    
+    <ui:define name="viewname">
+        <li>Test Svilen</li>
+        
+    </ui:define>
+	
+	<ui:define name="head"> 
+
+
+	</ui:define>
+	
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			
+		</f:metadata>
+	</ui:define>
+
+    <ui:define name="content">
+		
+		  
+		  	<f:metadata>
+			<!-- 	<f:viewAction action="#{userData.checkPageAccess(1053)}" onPostback="false" /> -->
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			</f:metadata>
+		
+			<h:form id="testForm" >
+			
+				<div class="page-title-wrapper">	
+					<div class="container title">
+						<h:inputText value="#{testSvilen.rnDoc}" id="rnDocument" />		
+						<p:commandButton id="opnM" 
+						    value="Избор на док."
+						    title="Тест Mодален док." action="#{testSvilen.actionOpenModalDoc}">
+													
+						</p:commandButton>					
+							
+						
+					</div>
+				</div>
+				<div class="page-title-wrapper">	
+					<div class="container title">
+						 
+						<p:commandButton id="opnMM" 
+						    value="Избор на MНОГО док."
+						    title="Тест Mодален док. Mного" action="#{testSvilen.actionOpenModalDocM}">
+													
+						</p:commandButton>					
+							
+						
+					</div>
+				</div>
+			 
+
+	<p:commandButton id="opnMMOncomplete" 
+						    value="Избор Oncomplete"
+						    title="Тест Mодален док. Mного" oncomplete="PF('modalDocSearchM').show();">
+													
+						</p:commandButton>
+						
+	<p:commandButton id="opnAccessModal" 
+						    value="Избор dostap" update="modalAccessModal"
+						    title="Тест Mодален dostap" oncomplete="PF('modalAccess').show();">
+													
+						</p:commandButton>
+			 
+		<p:dialog appendTo="@form"
+		    header="#{labels['docu.document']}" 
+		    fitViewport="true"		
+			widgetVar="modalDocSearch" dynamic="true" id="modalDocSearchId" 
+			modal="true">
+
+		 	<ibg:compDocSearch id="modalDeloSearchComp" 
+				 searchDocS="#{testSvilen.selectedDoc}"
+				 searchRnDoc="#{testSvilen.rnDoc}"
+				 dateClassif="#{testSvilen.decodeDate}"
+				 modal="true"
+				 update="testForm:rnDocument"
+				 onComplete = "PF('modalDocSearch').hide();"/>						
+		</p:dialog>	
+		
+		<p:dialog appendTo="@form"
+		    header="#{labels['docu.document']}" 
+		    fitViewport="true"		
+		   
+			widgetVar="modalDocSearchM" dynamic="true" id="modalDocSearchIdM" 
+			modal="true">
+
+		 	<ibg:compDocSearch id="modalDeloSearchCompM" 
+				 selectedDocList="#{testSvilen.selectedDocM}"
+				 searchRnDoc=""
+				 dateClassif="#{testSvilen.decodeDate}"
+				 modal="true"
+				 multi="true"
+				 update="testForm:rnDocument"
+				 onComplete = "PF('modalDocSearchM').hide();"/>						
+		</p:dialog>	
+		
+		
+		<p:dialog appendTo="@form"
+		    header="Достъп" 
+		    fitViewport="true" closeOnEscape="true"
+		   	position="top" style="margin-top:50px !important"
+			widgetVar="modalAccess" dynamic="true" id="modalAccessModal" 
+			modal="true">
+
+		 	<ibg:compAccess id="listVodeshtSluj"  
+							dateClassif="#{testSvilen.decodeDate}" 
+							saveStateTree="false" showRadioBtn="true" 
+							listDeloAccesss="#{testSvilen.listDeloAcces}"
+							typeDocDelo="1"								 
+							styleAutoComp="width:100%;"
+							onComplete = "PF('modalAccess').hide();"
+							/> 					
+		</p:dialog>	
+		
+		
+							
+							
+							 
+		
+			</h:form>
+			
+	</ui:define>
+</ui:composition>
+
+
+		
+			

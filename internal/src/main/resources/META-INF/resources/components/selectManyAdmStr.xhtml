@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"
+	     xmlns:ui="http://java.sun.com/jsf/facelets"
+>
+
+<cc:interface componentType="selectManyAdmStr">
+   <cc:attribute name="selectedCodes" 		 type="java.util.List"    shortDescription="Кодове на избраните значения." />
+   <cc:attribute name="selectedText"  		 type="java.lang.String"  shortDescription="Текст на избраните значения." />
+   <cc:attribute name="selectedClassifs"	 type="java.util.List"	  shortDescription="Списък от избраните значения като обект класификация. Ако се използва с autoComplete  е задължително!" />
+   <cc:attribute name="codeClassif"   		 type="java.lang.Integer" shortDescription="Код на класификацията която да се зареди." />
+   <cc:attribute name="isSelectNode"  		 type="java.lang.Boolean" shortDescription="Да позволи ли да се избира node от дървото. По подразбиране - true" default="true" />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="What id to update. Полета, които трябва да се обновят" />
+   <cc:attribute name="modalPosition" 		 type="java.lang.String"  shortDescription="Position - на модалния" default="" />
+   <cc:attribute name="modal" 		  		 type="java.lang.Boolean" shortDescription="Дали да е модален прозореца" default="true" />
+   <cc:attribute name="dateClassif"   		 type="java.util.Date"    shortDescription="Дата, към която да се зареди дървото. По подразбиране - днешна дата." />
+   <cc:attribute name="header"		  		 type="java.lang.String"  shortDescription="Header for modal" />
+   <cc:attribute name="titleSearchBtn"		 type="java.lang.String"  shortDescription="Подсказка за бутон search. По подразбиране - Търси" default="Търси"/>
+   <cc:attribute name="titleRefreshBtn"		 type="java.lang.String"  shortDescription="Подсказка за бутон Refresh. По подразбиране - Презареди дървото" default="Презареди дървото" />
+   <cc:attribute name="titleLoadBtn"		 type="java.lang.String"  shortDescription="Подсказка за бутон за зареждане. По подразбиране - Избор" default="Избор" />
+   <cc:attribute name="valueLoadBtn"         type="java.lang.String"  shortDescription="Етикет на бутона" required="false"/>
+   <cc:attribute name="valueConfirmBtn"	     type="java.lang.String"  shortDescription="Наименование на бутона за потвърждение. По подразбиране - Потвърждение" default="Потвърждение" />
+   <cc:attribute name="headerSelectedValues" type="java.lang.String"  shortDescription="Наименование на колонкта в табл. с избрани значения. По подразбиране - избрани значения" default="Избрани значения" />
+   <cc:attribute name="titleClear" 			 type="java.lang.String"  shortDescription="Подсказка за бутона за изтриване на избрано значение. По подразбиране - премахни" default="Премахни" />
+   <cc:attribute name="titleClearAll" 		 type="java.lang.String"  shortDescription="Подсказка за бутона за изтриване на всички избрани значения. По подразбиране - Премахни всички" default="Премахни всички" />
+   <cc:attribute name="withBtnClear"     	 type="java.lang.Boolean" shortDescription="Дали да показва бутона за зачистване на полето, където се визуализират избраните значения" default="false" /> 
+   <cc:attribute name="styleBtn"             type="java.lang.String"  shortDescription="Задава стила на бутона за избор" default="" />
+   <cc:attribute name="showRadioBtn" 		 type="java.lang.Boolean" shortDescription="Дали да позволява избор на избрано с подинение, подчинените и т.н." default="false" />
+   <cc:attribute name="labelsRadioBtn" 		 type="java.lang.Object"  shortDescription="Списък с лейбъли за радиобутоните за избор" default="#{cc.lblRadioBtnDefault}" />
+   <cc:attribute name="msgNoSelectedCodes" 	 type="java.lang.String"  shortDescription="Текст на съобщението 'Няма избрани значения'" default="Няма избрани значения" />
+   <cc:attribute name="readOnlyCodes"		 type="java.util.List"	  shortDescription="Списък на кодове на елементи, които да са само за разглеждане в дървото (не позволява да се избират)." />
+   <cc:attribute name="sortByName" 		 	 type="java.lang.Boolean" shortDescription="true/false дали елементите в дървото да са подредени по азбучен ред или по реда на въвеждане" default="false" />
+   <cc:attribute name="expanded" 			 type="java.lang.Boolean" shortDescription="true/false дали дървото да е отворено или затворено при първоначално показване" default="false" />
+   <cc:attribute name="filtered" 			 type="java.lang.Boolean" shortDescription="true/false дали класификацията да се филтрира на база ролите на потребителя" default="false" />
+   <cc:attribute name="specifics" 			 type="java.util.Map"  	  shortDescription="key=индекс на специфика от масива, value=стойност на специфика, по която да се филтрира. Ако e подаден - се игнорира readOnlyCodes" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+  
+   <cc:attribute name="onAddItemDelegate"	 type="java.util.Date"    shortDescription="Само, ако класиф. е админ. структура - да провери за заместване. Подава се краен срок на заместване" default=""/>
+  
+   <cc:attribute name="emptyMessage"    	 type="java.lang.String"  shortDescription="autocomplete: emptyMessage"  default=""/>
+   <cc:attribute name="scrollHeight"    	 type="java.lang.Integer" shortDescription="autocomplete: scrollHeight"  default="250"/>
+   <cc:attribute name="minQueryLength"  	 type="java.lang.Integer" shortDescription="autocomplete: minQueryLength" default="3"/>
+   <cc:attribute name="maxResults" 	    	 type="java.lang.Integer" shortDescription="autocomplete: maxResults" default="50"/>
+   <cc:attribute name="styleAutoComp"   	 type="java.lang.String"  shortDescription="autocomplete: - задава стила" default="width:90%;" />
+   <cc:attribute name="compType"        	 type="java.lang.Integer" shortDescription="1-само модалния за избор от дърво; 2-autocomplete и модалния; 3 - само autocomplete; 4 - dropdown autocomplete" default="1"/>
+   <cc:attribute name="readonly"        	 type="java.lang.Boolean" shortDescription="само за разглеждане" default="false" />
+   
+   <cc:attribute name="dopInfoAutoComp" 	 type="java.lang.Boolean" shortDescription="autocomplete: полето dopInfo да се покаже като itemtip в списъка за избор, by default=false" default="false" />
+   <cc:attribute name="dopInfoTitleAutoComp" type="java.lang.String"  shortDescription="autocomplete: itemtip - title " default="" />
+   <cc:attribute name="itemtipAtPosition"    type="java.lang.String"  shortDescription="autocomplete: itemtip - position " default="right bottom" />
+   
+   <cc:attribute name="codeExtCheck" 		 type="java.lang.Object"  shortDescription="да се включи проверка по codeExt(codeExtCheck[1]) и специфика (codeExtCheck[0]) - значения, за които codeExt е различен от подадения да не могат да се избират. Извежда съобщение codeExtCheck[2], че изборът е забранен" default="#{null}" />
+</cc:interface>
+
+<cc:implementation>
+
+		<f:event type="preRenderComponent" listener="#{cc.initAutoCompl()}" /> <!--  За да се инициализира компонентата-->
+
+		<div class="ui-g ui-fluid">
+			<div class="ui-g-12 ui-g-nopad">
+				<div	class="#{(cc.attrs.compType == 3 and !cc.attrs.withBtnClear)?'': 'ui-inputgroup'}">
+			
+					<p:autoComplete id="autoComplM" rendered="#{cc.attrs.compType!=1}"
+						multiple="true" maxResults="#{cc.attrs.maxResults}" disabled="#{cc.attrs.readonly}"
+						dropdown="#{cc.attrs.compType==4}" 
+						emptyMessage="#{cc.attrs.emptyMessage}"
+						scrollHeight="#{cc.attrs.scrollHeight}" 
+						style="#{cc.attrs.styleAutoComp}"  
+						completeMethod="#{cc.actionComplete}"
+						value="#{cc.attrs.selectedClassifs}" var="item"
+						itemLabel="#{item.tekst}" itemValue="#{item}"
+						converter="sysClassifItemConverter" forceSelection="true"						
+						queryEvent="keyup" minQueryLength="#{cc.attrs.minQueryLength}"
+						itemtipAtPosition="#{cc.attrs.itemtipAtPosition}" >
+
+						<f:facet name="#{cc.attrs.dopInfoAutoComp?'itemtip':''}" >
+						    <h:panelGrid columns="1"  width="300px"  rendered="#{cc.attrs.dopInfoAutoComp}"  style="#{item.dopInfo==null ? 'display:none;': ''}" >
+			                    <f:facet name="header">
+			                        <h:outputText value="#{cc.attrs.dopInfoTitleAutoComp}"/>
+			                    </f:facet>
+			                    <h:outputText value="#{item.dopInfo}" escape="false" />
+			                </h:panelGrid>
+				        </f:facet>		
+
+						<p:ajax event="itemSelect"
+							listener="#{cc.onItemSelectAutoComplete}"
+							partialSubmit="true" process="#{cc.attrs.update} #{cc.clientId}:btnClearM  @this "
+							update="#{cc.attrs.update}  #{cc.clientId}:pBtnClearM   #{cc.clientId}:dataMPanel @this" />
+						<p:ajax event="itemUnselect" listener="#{cc.onItemUnselectAutoComplete}"
+							partialSubmit="true" process="#{cc.attrs.update} #{cc.clientId}:btnClearM   @this"
+							update="#{cc.attrs.update} #{cc.clientId}:pBtnClearM  #{cc.clientId}:dataMPanel @this" />
+					</p:autoComplete>
+					
+					
+					<h:panelGroup id="pBtnClearM">
+				
+						<p:commandLink id="btnClearM" action="#{cc.clearInput}" tabindex="-1"
+							rendered="#{ cc.attrs.withBtnClear and not empty cc.attrs.selectedClassifs and !cc.attrs.readonly}"
+							partialSubmit="true" 	process="#{cc.attrs.update} #{cc.clientId}:btnClearM #{cc.clientId}:autoComplM @this"
+							update="#{cc.attrs.update} #{cc.clientId}:pBtnClearM  #{cc.clientId}:autoComplM">
+							<span class="fas fa-times"
+								style="#{(cc.attrs.compType == 4 )?'margin-left:-45px; margin-top:10px; position:absolute': 'margin-left:-18px; margin-top:10px; position:absolute'}"></span>
+						</p:commandLink>
+						
+					</h:panelGroup>
+
+					<p:commandButton icon="fas fa-list-ul" id="dialogButtonM" disabled="#{cc.attrs.readonly}"
+						actionListener="#{cc.loadRoot}" value="#{cc.attrs.valueLoadBtn}"
+						partialSubmit="true" process="#{cc.clientId}:dataMPanel @this" 
+						update="#{cc.clientId}:dataMPanel"
+						style="#{cc.attrs.styleBtn}" 
+						rendered="#{not (cc.attrs.compType gt 2)}"
+						oncomplete="PF('many#{cc.clientId}').show();"
+						title="#{cc.attrs.titleLoadBtn}" />
+					
+					<p:message for="autoComplM"  display="tooltip" style="padding:0px; margin:0px;">	<p:autoUpdate/>	</p:message>
+				</div>
+			</div>
+		</div>
+
+
+	<h:panelGroup id="dataMPanel" rendered="#{not (cc.attrs.compType gt 2)}">
+	
+		<h:panelGroup id="dataMPanel1" rendered="#{cc.showMe}" >
+			<p:dialog   position="#{cc.attrs.modalPosition}"	 	
+			    header="#{cc.attrs.header}" 
+				responsive="true"	  fitViewport="true" 							 
+				widgetVar="many#{cc.clientId}" dynamic="true" id="dialogM"
+				resizable="true" closeOnEscape="true" style="margin-top:50px !important"
+				modal="#{cc.attrs.modal}"  appendTo="@form">
+				<div class="container #{guestPreferences.containerPosition}" >
+				
+					<div jsf:id="tree" class="p-grid  ui-fluid" >
+					 
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-7" jsf:id="treePanel" jsf:rendered="#{!cc.attrs.readonly}">
+						<ui:remove><!-- 
+							<p:selectOneButton  value="#{cc.treeType}" id="typeTree" unselectable="false" style="margin-bottom: 5px;">
+								<f:selectItem itemValue="1"  itemLabel="#{labels['admStruct.admStruct']}"/> 
+								<f:selectItem itemValue="2"  itemLabel="#{labels['dvijenie.gripuSlujiteli']}"/> 
+							  <p:ajax event="change" listener="#{cc.actionChangeTree}"
+							  		  update="#{cc.clientId}:treePanel" 
+									  partialSubmit="true" process="@this #{cc.clientId}:treePanel" />
+							</p:selectOneButton>
+						 --></ui:remove>
+						 <p:message id="errMsgcodeExt"  	
+						    	for="#{cc.clientId}:treeM" showDetail="true" showSummary="true" escape="false">
+				     			<p:autoUpdate/>
+				    		</p:message>
+							<p:selectOneRadio id="radioBtn" value="#{cc.selectedType}" 
+								rendered="#{cc.attrs.showRadioBtn}">
+								<f:selectItem itemValue="0"
+									itemLabel="#{cc.attrs.labelsRadioBtn[0]}" />
+								<f:selectItem itemValue="1" 
+									itemLabel="#{cc.attrs.labelsRadioBtn[1]}" itemDisabled="#{!cc.attrs.isSelectNode}"/>
+								<f:selectItem itemValue="2" 
+									itemLabel="#{cc.attrs.labelsRadioBtn[2]}"  />
+								<p:ajax event="click" update="radioBtn" />
+							</p:selectOneRadio>
+							
+							<div class="ui-inputgroup margin-bottom">
+							 	<p:inputText value="#{cc.searchWord}" id="searchInputM"
+									style="width:90%"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); document.getElementById('#{cc.clientId}:searchBtnM').click()}" />
+								<p:commandButton icon="fas fa-search" style="width:40px;"
+									actionListener="#{cc.search}" id="searchBtnM" 
+									partialSubmit="true" process="@this #{cc.clientId}:treeM #{cc.clientId}:searchInputM"
+									update="#{cc.clientId}:treeM" title="#{cc.attrs.titleSearchBtn}" />
+								<p:commandButton icon="fas fa-sync" style="width:40px;"
+									actionListener="#{cc.clear}" id="refreshBtnM" styleClass="ui-button-warning"
+									partialSubmit="true" process="@this #{cc.clientId}:treeM #{cc.clientId}:searchInputM"
+									update="#{cc.clientId}:treeM #{cc.clientId}:searchInputM"
+									title="#{cc.attrs.titleRefreshBtn}" />
+							</div>
+							
+							
+							<p:tree dynamic="true" id="treeM" value="#{cc.root}" var="treeNode"
+								nodeVar="rowNode" selectionMode="single" 
+								selection="#{cc.selectedNode}"  skipChildren="true"
+								style="width: 100%; max-height: 500px; overflow: auto;">
+								<p:ajax event="select"
+									partialSubmit="true" process="#{cc.clientId}:dataM  @this"
+									update="#{cc.clientId}:dataM  "
+									listener="#{cc.onNodeSelect}" />
+								<p:treeNode expandedIcon="fas fa-folder-open" 
+									icon="#{rowNode.leaf ? 'fas fa-file':'fas fa-folder'}"
+									collapsedIcon="fas fa-folder">
+									<h:outputText value="#{treeNode.tekst}" escape="false" id="itM" 
+										style="#{((!rowNode.leaf and !cc.attrs.isSelectNode) or !rowNode.selectable or (cc.codeExt ne null and treeNode.codeExt ne cc.codeExt))?'font-style: italic; cursor:  not-allowed; !important;':''}" />
+								</p:treeNode>					
+							</p:tree>
+						 
+						</div>
+								
+						<div jsf:id="dataM" class="#{cc.attrs.readonly ? 'p-col-12' : 'p-col-12 p-md-12 p-lg-12 p-xl-5'} olig" >
+			 				
+							<div style=" float:right;" jsf:id="tbP">
+								<p:commandButton value="#{cc.attrs.valueConfirmBtn}"  rendered="#{!cc.attrs.readonly}" 
+									partialSubmit="true" process="#{cc.attrs.update}  #{cc.clientId}:pBtnClearM #{cc.clientId}:autoComplM #{cc.clientId}:dataM  @this"
+									update="#{cc.attrs.update}  #{cc.clientId}:pBtnClearM #{cc.clientId}:autoComplM"
+									actionListener="#{cc.actionConfirm}"
+									oncomplete="PF('many#{cc.clientId}').hide();" />
+							
+								<p:commandButton value="#{ui_labels['general.close']}" rendered="#{cc.attrs.readonly}" 
+									oncomplete="PF('many#{cc.clientId}').hide();" />
+									
+							</div>
+							
+							<div class="p-grid p-col-12">
+								<p:dataTable var="item"  
+			 							   scrollable="true" scrollHeight="240" emptyMessage="#{ui_labels['general.emptyMessageTbl']}"
+										   value="#{cc.tempCodes}" draggableRows="true" id="idSelected" >
+									<p:ajax event="rowReorder" listener="#{cc.onRowReorder}" process="@this #{cc.clientId}:dataM" />
+									    
+									<p:column headerText="#{cc.attrs.headerSelectedValues}" width="100%">
+							           <h:outputText id="rd" value="#{systemData.decodeItem(cc.attrs.codeClassif, item, cc.lang, cc.currentDate)}" 
+							           	  title="#{ui_labels['general.dragAndDrop']}"/>
+							        </p:column>
+			 
+						        	<p:column style="width:40px" rendered="#{!cc.attrs.readonly}">
+						        		<f:facet name="header">					
+											<p:commandButton 
+												rendered="#{not empty cc.tempCodes}" styleClass="ui-button-danger"
+												partialSubmit="true" process="#{cc.clientId}:dataM  @this"
+												update="#{cc.clientId}:dataM " icon="fas fa-times"
+												actionListener="#{cc.clearCodesTable}"
+												title="#{cc.attrs.titleClearAll}" id="btnR1" />	
+										</f:facet>	
+										<p:commandButton partialSubmit="true" process="#{cc.clientId}:dataM  @this"
+											update="#{cc.clientId}:dataM " icon="fas fa-times"
+											actionListener="#{cc.removeFromCodes()}" styleClass="ui-button-danger"
+											title="#{cc.attrs.titleClear}" id="btnR" >
+											 <f:param name="rItem" value="#{item}" />
+										</p:commandButton>
+						       		</p:column>
+								</p:dataTable>
+							</div>
+							
+						</div>	
+					
+					</div>
+				
+				</div>			
+			</p:dialog>
+			
+		</h:panelGroup>
+		
+		<p:dialog width="500px" header="Заместване" appendTo="@form" closeOnEscape="true"
+				widgetVar="deleg#{cc.clientId}" dynamic="true" id="dDelegate"
+				modal="true" >
+				
+				<p:outputLabel value="#{cc.dopInfo}"/>
+				<f:facet name="footer">
+					<p:selectOneRadio id="radioBtnDeleg" value="#{cc.selectedDeleg}">
+						<f:selectItem itemValue="0"
+							itemLabel="Заместник" style="width:100px" />
+						<f:selectItem itemValue="1"
+							itemLabel="Титуляр" style="width:100px" />
+						<f:selectItem itemValue="2"
+							itemLabel="И двамата" style="width:100px" />
+						<p:ajax event="click" update="radioBtnDeleg" />
+					</p:selectOneRadio>
+					<div style="height: 0.3em;"></div>			
+					<p:commandButton value="#{cc.attrs.valueConfirmBtn}" 
+						partialSubmit="true" process="#{cc.attrs.update}  #{cc.clientId}:pBtnClearM #{cc.clientId}:autoComplM #{cc.clientId}:dataM  @this"
+						update="#{cc.attrs.update}  #{cc.clientId}:pBtnClearM #{cc.clientId}:autoComplM
+						#{cc.clientId}:dataM  @this"
+						actionListener="#{cc.actionConfirmDelegate}"
+						oncomplete="PF('deleg#{cc.clientId}').hide();" />
+						
+					<div style="height: 0.3em;"></div>					
+				</f:facet>
+			
+		</p:dialog>			
+		
+	</h:panelGroup>
+
+		
+	<style>
+		
+			.olig .ui-orderlist .ui-orderlist-list .ui-orderlist-item {
+				padding: 3px 5px 0px 5px;
+				border-bottom: 0px solid;
+			}
+			.olig .ui-orderlist .ui-orderlist-caption {
+				padding: 3px;
+			}
+			
+			.olig .ui-orderlist .ui-orderlist-list {
+				padding: 0px;
+				height: 250px;
+			}
+			
+			
+	</style>
+</cc:implementation>
+	
+</html>	

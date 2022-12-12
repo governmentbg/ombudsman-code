@@ -1,0 +1,532 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+	
+	
+	
+	<h:form id="deloListForm">
+	<div class="container #{guestPreferences.containerPosition}">	
+	
+		<h:panelGroup id="panelFilterDelo" layout="block" styleClass="margin-top">
+			<div class="card">
+			
+				<div  class="p-grid  ui-fluid" >
+					<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+						 <h:outputText value="#{labels['docu.deloRn']}" styleClass="form-label"/>
+						 <div class="ui-inputgroup"> 	
+							<p:inputText value="#{deloList.deloSearch.rnDelo}" id="rnDelo"/>
+						    <p:focus id="focusRnDoc" for="rnDelo" />
+							 												 
+							 <p:selectBooleanButton id="rndEq" value="#{deloList.deloSearch.rnDeloEQ}" 
+						      	    onLabel="Да"
+						    	    offLabel="Не"
+									title="Търсене по пълно съвпадение на номер на преписка/дело" 
+								    onIcon="fas fa-toggle-on"  
+									offIcon="fas fa-toggle-off" 
+								    styleClass="inputgroup-button">
+										<p:ajax update="@this rnDelo" partialSubmit="true"
+												process="@this rnDelo"/>			
+							</p:selectBooleanButton>				    	
+						</div>
+					</div>
+					
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+						<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+						 <p:selectOneMenu id="idPerR" value="#{deloList.period}" height="250">
+		                        <f:selectItem value="#{null}" itemValue="#{null}"/>
+		                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, deloList.currentLang)}" 
+		                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+		                        <p:ajax event="change" partialSubmit="true"
+		                        update="@this dateOtReg dateDoReg" listener="#{deloList.changePeriod}"/>   
+		                 </p:selectOneMenu>
+					</div>
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">			
+						<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+						 <p:datePicker id="dateOtReg" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+				         	value="#{deloList.deloSearch.deloDateFrom}">
+				         	<p:ajax event="change" update="idPerR" listener="#{deloList.changeDate}"/>
+				         	<p:ajax event="dateSelect" update="idPerR" listener="#{deloList.changeDate}"/>      
+				         </p:datePicker>
+					</div>
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">		
+						<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+						 <p:datePicker id="dateDoReg" pattern="dd.MM.yyyy" mask="true" showIcon="true"  locale="bg" 
+		         			    value="#{deloList.deloSearch.deloDateTo}">
+		         			 	<p:ajax event="change" update="idPerR" listener="#{deloList.changeDate}"/>   
+		         			 	<p:ajax event="dateSelect" update="idPerR" listener="#{deloList.changeDate}"/>   
+			         	</p:datePicker>
+					</div>
+					
+				</div>	
+					
+				<!-- разширени критерии.... -->				
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#srch-extended')">
+						<h:outputText value="#{ui_labels['search.extend']}"/>
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+				
+				<div class="p-grid ui-fluid p-align-end" id="srch-extended"  style="display: none;">		
+					
+					
+									
+					<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+						<h:outputText value="#{labels['docu.status']}" styleClass="form-label"/>
+						<p:selectCheckboxMenu id="mSt"  style="width:100%"
+					    					  value="#{deloList.deloSearch.statusArr}"  multiple="true" >				        
+				          			<f:selectItems  value="#{deloList.statusList}" 
+		                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					  	</p:selectCheckboxMenu>
+					</div>
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+						<h:outputText value="#{labels['delo.periodStatus']}" styleClass="form-label"/>
+						 <p:selectOneMenu id="idPerRStat" value="#{deloList.periodStat}" height="250">
+		                        <f:selectItem value="#{null}" itemValue="#{null}"/>
+		                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, deloList.currentLang)}" 
+		                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+		                        <p:ajax event="change" partialSubmit="true"
+		                        update="@this dateOtRegStat dateDoRegStat" listener="#{deloList.changePeriodStat}"/>   
+		                 </p:selectOneMenu>
+					</div>
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">			
+						<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+						 <p:datePicker id="dateOtRegStat" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+				         	value="#{deloList.deloSearch.statusDateFrom}">
+				         	<p:ajax event="change" update="idPerRStat" listener="#{deloList.changeDateStat}"/>
+				         	<p:ajax event="dateSelect" update="idPerRStat" listener="#{deloList.changeDateStat}"/>      
+				         </p:datePicker>
+					</div>
+					
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">		
+						<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+						<p:datePicker id="dateDoRegStat" pattern="dd.MM.yyyy" mask="true" showIcon="true"  locale="bg" 
+		         			    value="#{deloList.deloSearch.statusDateTo}" >
+		         			 	<p:ajax event="change" update="idPerRStat" listener="#{deloList.changeDateStat}"/>   
+		         			 	<p:ajax event="dateSelect" update="idPerRStat" listener="#{deloList.changeDateStat}"/>   
+			         	</p:datePicker>
+					</div>
+
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+						<h:outputText value="#{labels['docu.type']}" styleClass="form-label"/>
+						<p:selectCheckboxMenu id="mTp"   style="width:100%"	 value="#{deloList.deloSearch.deloTypeArr}"   multiple="true" rendered="#{deloList.typeList ne null}">				              
+			               <f:selectItems value="#{deloList.typeList}" 
+		                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}"  />
+		                </p:selectCheckboxMenu>
+		                <p:inputText  value="преписка" readonly="true" rendered="#{deloList.typeList eq null}"/>
+		                   
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid" jsf:rendered="false">	
+						<h:outputText value="#{labels['delo.vodeshtSluj']}" styleClass="form-label"/>
+						<ibg:selectManyModalA id="listVodeshtSluj" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 																
+							dateClassif="#{deloList.decodeDate}" filtered="false" sortByName="false"
+							saveStateTree="false" showRadioBtn="true" isSelectNode="false"
+							selectedCodes="#{deloList.deloSearch.codeRefLeadList}"
+							selectedClassifs="#{deloList.listVodSlujClassif}"
+							styleAutoComp="width:100%;"
+							withBtnClear="true" /> 
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid" jsf:rendered="#{deloList.showRegistaturiList}">
+						<h:outputText value="#{labels['users.registratura']}" styleClass="form-label" rendered="#{deloList.showRegistaturiList}"/>
+					   	<p:selectOneMenu id="registratura" value="#{deloList.deloSearch.registraturaId}" label="#{labels['users.registratura']}"
+		                        	 rendered="#{deloList.showRegistaturiList}">
+					            <f:selectItem itemValue="" />      
+					            <f:selectItems value="#{deloList.registraturaList}" />
+					     </p:selectOneMenu>   
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+						<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label p-mr-2"/>
+						<i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{deloList.isOkToRender}"></i>
+						<p:inputText value="#{deloList.deloSearch.deloName}" id="nameDelo" />
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+						<h:outputText value="#{labels['delo.opisanie']}" styleClass="form-label p-mr-2"/>
+						
+						<i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{deloList.isOkToRender}"></i>
+						<p:inputText value="#{deloList.deloSearch.deloInfo}" id="otnosno" />
+					</div>
+					
+					 
+					
+						
+					
+					<!--Предадени на -->
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-8 ui-fluid ">												
+						<h:outputText value="#{labels['docList.dvijToText']}" styleClass="form-label" rendered="#{isSahranenie eq null}"/>	
+						<p:inputText value="#{deloList.deloSearch.dvijToText}" id="dvijToText" rendered="#{isSahranenie eq null}"/>	
+					</div>
+					
+					<!-- Предадени дела, които не са върнати-->								
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-4 ui-fluid">
+						<p:selectBooleanCheckbox value="#{deloList.deloSearch.dvijNotReturned}" rendered="#{isSahranenie eq null}"
+						styleClass="form-label" itemLabel="#{labels['delo.dvijNotReturned']}" /> 	
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+						<h:outputText value="#{labels['deloList.room']}" styleClass="form-label" rendered="#{isSahranenie==3}"/>
+						<p:inputText value="#{deloList.deloSearch.room}" id="room" rendered="#{isSahranenie==3}"/>
+					</div>								
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+						<h:outputText value="#{labels['deloList.shkaf']}" styleClass="form-label" rendered="#{isSahranenie==3}"/>
+						<p:inputText value="#{deloList.deloSearch.shkaf}" id="shkaf" rendered="#{isSahranenie==3}"/>
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+						<h:outputText value="#{labels['deloList.stillage']}" styleClass="form-label" rendered="#{isSahranenie==3}"/>
+						<p:inputText value="#{deloList.deloSearch.stillage}" id="stillage" rendered="#{isSahranenie==3}"/>
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+						<h:outputText value="#{labels['deloList.box']}" styleClass="form-label" rendered="#{isSahranenie==3}"/>
+						<p:inputText value="#{deloList.deloSearch.box}" id="box" rendered="#{isSahranenie==3}"/>
+					</div>
+					
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-8 p-xl-8  ui-fluid">
+						<h:outputText value="#{labels['deloList.storage']}: " styleClass="form-label" rendered="#{isSahranenie==3}"/>
+						<p:selectOneRadio id="storage" value="#{deloList.triCheckStore}" rendered="#{isSahranenie==3}"  columns="3">						
+							<f:selectItem itemLabel="#{labels['deloList.haveStorage']}"    itemValue="1" />
+				           	<f:selectItem itemLabel="#{labels['deloList.noStorage']}"  itemValue="2"/>
+				           	<f:selectItem itemLabel="#{labels['deloList.noMatter']}"    itemValue="0" />						
+						</p:selectOneRadio>
+						<ui:remove>
+							<h:panelGroup id="triCheckGroup">						
+								<p:triStateCheckbox  rendered="#{isSahranenie==3}" id="triCheckStore" value="#{deloList.triCheckStore}" 
+								itemLabel="#{deloList.triCheckStore=='0'? labels['deloList.noMatter'] : deloList.triCheckStore=='1'? labels['deloList.haveStorage'] :labels['deloList.noStorage']}">  
+									<p:ajax event="change" update="deloListForm:triCheckGroup"/>
+								</p:triStateCheckbox>	           
+							</h:panelGroup>
+						</ui:remove>
+					</div>
+				</div>	
+					
+			
+				 
+				<div class="filter-buttons">
+				
+	
+					<div style=" display:inline; " jsf:rendered="#{deloList.isOkToRender}">
+						<p:selectBooleanCheckbox id="chkSearchFullTextDoc" value="#{deloList.fillTextSearch}" style="vertical-align: middle;" styleClass="p-mr-2"/>
+							
+						<p:outputLabel value="#{ui_labels['general.searchFullText']}" for="chkSearchFullTextDoc" style="vertical-align: middle;"  title="#{labels['general.instructions']}"/>
+						<p:link href="../resources/docs/fullTextSearchHelp.docx" target="_blank"  style="vertical-align: middle;">
+							<i class="fas fa-book-open" style="vertical-align: middle; font-size: 16px"></i>
+						</p:link>
+						
+					</div>
+				
+					<p:commandButton id="btnSearchC1" 						
+					    actionListener="#{deloList.actionSearchNew}"
+						partialSubmit="true" 
+						process="@this  panelFilterDelo" 
+						update="panelTblDelo" 
+						icon="fas fa-search"  
+						value="#{ui_labels['general.search']}" styleClass="p-ml-4 p-mr-2"/>
+					<p:defaultCommand target="btnSearchC1" scope="panelFilterDelo"/>
+	
+	<ui:remove>				
+					
+					
+					<p:commandButton icon="fas fa-search"
+					value="#{ui_labels['general.searchFullText']}"
+					id="btnSearchFullTextDelo" update="panelTblDelo" partialSubmit="true"
+					process="@this panelFilterDelo"
+					actionListener="#{deloList.actionSearchDeloFullText}"
+					title="#{ui_labels['general.titleSearchFulltext']}" rendered="#{deloList.isOkToRender}"/>
+	</ui:remove>			
+					 
+						 
+					<p:commandButton 					    
+						id="btnClearC1" 
+						actionListener="#{deloList.actionClearDelo}"
+						partialSubmit="true"
+						process="@this  panelFilterDelo panelTblDelo" 
+						update="panelFilterDelo panelTblDelo"
+						icon="fas fa-eraser"  	styleClass="ui-button-warning"
+					    value="#{ui_labels['general.clear']}"	title="#{ui_labels['general.titleClear']}"  /> 	    
+						
+				</div>
+			</div>
+		</h:panelGroup>
+	</div>	
+			<h:panelGroup id="panelTblDelo"  layout="block" styleClass="margin-top">
+				<h:panelGroup rendered="#{deloList.deloList != null}" layout="block" styleClass="card">
+				<h:panelGroup id="panelTblToolbar">
+				
+					<div class="table-toolbar">
+						
+						
+						<p:splitButton id="btnAccess" value="#{labels['delo.group']}" 
+							action="#{deloList.actionVlaganeSelected}"	
+							rendered="#{deloList.deloSelectedAllM.size()>0 and isSahranenie==null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GROUP_DELO) and !deloList.deloSearch.dvijNotReturned}"			                 
+			                ppartialSubmit="true" update="@this" process="@this" styleClass=" p-mr-2">				                
+								<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+							
+							<!-- не е довършено -->	
+				            <p:menuitem value="#{labels['delo.predavane']}"  ajax="false"
+					            action="#{deloList.actionPredavaneSelected}"     
+					            partialSubmit="true" update="@this" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+				            <p:menuitem value="#{labels['task.chStatus']}" title="#{labels['delo.groupStatus']}"
+					            actionListener="#{deloList.actionOpenModalStatusChange}" 
+					            partialSubmit="true" update="deloListForm:deloModalStatusPanel" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+							 <!-- не е довършено -->
+				            <p:menuitem value="#{labels['delo.sahranqvane']}"  rendered="false"
+					            actionListener="#{deloList.actionSahranqvaneSelected}"    
+					            partialSubmit="true" update="@this" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+				            <p:menuitem value="#{labels['general.delete']}" title="#{labels['delo.groupDelete']}"
+					            actionListener="#{deloList.actionDeleteSelected}"   rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DELO)}" 
+					            partialSubmit="true" update="@this panelTblDelo" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}"  
+									message="#{labels['delo.confrimGroupDelete']}" icon="fas fa-exclamation-triangle" />
+								
+							</p:menuitem>
+							
+				        </p:splitButton>
+						
+						<p:commandButton value="#{labels['delo.vrashtane']}" action="#{deloList.actionVrashtaneSelected}"  ajax="false"
+				        	rendered="#{deloList.deloSelectedAllM.size() > 0 and deloList.deloSearch.dvijNotReturned}" 
+				        	partialSubmit="true" update="@this" process="@this" styleClass=" p-mr-2">
+				        	<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+			        	</p:commandButton>
+			        
+				         <p:commandButton action="#{deloList.actionGotoStorage}" value="#{labels['deloList.showSelected']}" ajax="false" rendered="#{deloList.deloSelectedAllM.size()>0 and isSahranenie==3}" styleClass=" p-mr-2">
+				         </p:commandButton>
+				        			
+				        <span class="p-mr-2" style="#{deloList.deloSelectedAllM.size()>0?'':'display:none'}">
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="#{ui_labels['general.reportResult']} #{deloList.deloList.rowCount}" styleClass="form-label  p-mr-2"/>
+						
+						
+						<span class="p-mr-2" style="#{deloList.deloSelectedAllM.size()>0?'':'display:none'}" >
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="Бр. избрани: #{deloList.deloSelectedAllM.size()}" rendered="#{deloList.deloSelectedAllM.size()>0}" styleClass="form-label" id="brSel"/>
+						
+					</div>
+				</h:panelGroup>
+			  <p:dataTable id="tblDeloList" var="row" value="#{deloList.deloList}" lazy="true" 	
+					rowIndexVar="idx" sortMode="single" reflow="true" 
+					emptyMessage="#{deloList.deloList eq null ? '' : labels['docu.deloSrchEmptyMsg']}" 
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+					rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+					paginatorAlwaysVisible="true" paginator="true"
+					rowSelectMode="checkbox" disabledSelection="#{row[7]!=null}"
+					selection="#{deloList.deloSelectedTmp}" sortBy="#{row.a2}" >
+					
+				<p:ajax event="toggleSelect"	 	 listener="#{deloList.onRowSelectAll}" process="@this" update=" deloListForm:panelTblToolbar"/>
+				<p:ajax event="rowSelectCheckbox"	 listener="#{deloList.onRowSelect}"   process="@this"  update=" deloListForm:panelTblToolbar"/>
+				<p:ajax event="rowUnselectCheckbox"  listener="#{deloList.onRowUnselect}" process="@this"  update=" deloListForm:panelTblToolbar"/>
+				<p:ajax event="page" listener="#{deloList.onPageUpdateSelected}" />
+				
+						
+				<p:column selectionMode="multiple" style="width:30px;text-align:center;" 
+					rendered="#{isDeloPrereg==null and (userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GROUP_DELO) or isSahranenie==3) and isView!=5 and isView!=1}"/>	
+				
+				
+				<f:facet name="{Exporters}">
+						
+		            <div style="float:left">
+			            <h:commandLink id="excel" rendered="#{deloList.deloList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}" >
+			        			<h:graphicImage library="images" name="excel2.png" />
+			        			<p:dataExporter type="xls" target="tblDeloList" fileName="deloList"	
+			        			postProcessor="#{deloList.postProcessXLS}" />
+			    		</h:commandLink>
+			<ui:remove> <!-- 
+			    		<h:commandLink id="pdf" rendered="#{deloList.deloList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}" >
+			        	 	  <h:graphicImage library="images" name="pdf.png" />
+			        	 	  <p:dataExporter type="pdf"  target="tblDeloList" fileName="deloList" 	 encoding="windows-1251"
+					        			preProcessor="#{deloList.preProcessPDF}" options="#{deloList.pdfOptions()}"/>	
+			        	 	 
+			    		</h:commandLink> 
+			  --> 	</ui:remove>	
+			    	<!--  	<h:commandLink id="csv" >
+			        		<h:graphicImage library="images" name="csv.png"    rendered="#{isView==1}" />
+			        		<p:dataExporter type="csv" target="tblDeloList" fileName="deloList"  encoding="CP1251"/>
+			    		</h:commandLink> -->
+		            </div>
+		       	</f:facet>
+									
+			  	<p:column  style="text-align: center" width="30" rendered="false">
+					<f:facet name="header">
+			               #{labels['general.No-symbol']}  
+			         </f:facet>
+					<h:outputText value="#{idx + 1}" />
+				</p:column>	
+				
+				<p:column  width="50" exportable="false" rendered="#{isSahranenie==null}">					
+					
+	  				<p:button  icon="fas fa-eye" href="#{deloList.actionGoto(1, row)}" target="_blank" 
+					           title="#{ui_labels['general.view']}" 
+			  				   rendered="#{isView eq 1}" >
+			  				  
+			  		</p:button> 
+			  						
+					<p:commandButton   icon="fas fa-edit"  action="#{deloList.actionGoto(0, row)}" ajax="false" title="#{ui_labels['general.edit']}"  
+			 				   rendered="#{isView==null and row[7]==null and isDeloPrereg==null}" />
+			 				   
+			 		<p:commandButton   icon="fas fa-edit"  action="#{deloList.actionGoto(3, row)}" ajax="false" title="#{ui_labels['general.edit']}"  
+			 				   rendered="#{isDeloPrereg eq 2 and row[7]==null}" />
+			 				   	  
+			 				   
+	 				<p:commandButton type="button"   icon="fas fa-lock"  id="disabledButton" ajax="false" alt="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], deloList.currentLang, now)}"
+							   title="#{beanMessages['delo.lockedDelo']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], deloList.currentLang, now)}"   
+			 				   rendered="#{isView==null and row[7]!=null}" styleClass="ui-button-secondary"/>
+			 		<p:tooltip for="disabledButton">
+			 			#{beanMessages['delo.lockedDelo']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], deloList.currentLang, now)} на 
+			 			<h:outputText value="#{row[8]}" >
+			 				<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{deloList.timeZone}"/>
+			 			</h:outputText>
+			 		</p:tooltip>
+			 		
+			 				   	
+					<p:commandButton   icon="fas fa-edit"  action="#{deloList.actionGoto(2, row)}" ajax="false" title="Избор на преписка за Опис на том"  
+			 				   rendered="#{isView==5}" />	
+
+				</p:column>
+				<p:column width="170" sortBy="#{row.a1}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.deloRn']}" style="margin-left:-8px" />										  
+					</f:facet>
+					<h:outputText value="#{row[1]}"  title="id: #{row[0]}"/> 
+				</p:column>
+				<p:column width="110" sortBy="#{row.a2}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.dateDoc']}" style="margin-left:-8px" />									  
+					</f:facet>
+					<h:outputText value="#{row[2]}">	
+						<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloList.timeZone}"/>
+					</h:outputText>									    
+				</p:column>
+				<p:column width="*" sortBy="#{row.a6}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.nameDelo']}" style="margin-left:-8px" />										  
+					</f:facet>
+					<h:outputText value="#{row[6]}" />
+				</p:column>
+				<p:column width="150" sortBy="#{row.a4}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.status']}" style="margin-left:-8px"/>									  
+					</f:facet>
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[4], deloList.currentLang, now)}"/>
+				</p:column>
+				<p:column width="50" sortBy="#{row.a3}" exportable="false" style="display:none">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.type']}" style="margin-left:-8px"/>									  
+					</f:facet>
+					
+					<h:panelGroup rendered="#{row[3] eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+						<i class="fas fa-book" style="font-size:1.2em" jsf:id="type1"/>
+						<p:tooltip id="type1Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[3], deloList.currentLang, now)}"
+								   for="type1"  escape="false"/>	
+					</h:panelGroup>
+					<h:panelGroup rendered="#{row[3] ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+						<i class="fas fa-folder" style="font-size:1.2em" jsf:id="type2"/>
+						<p:tooltip id="type2Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[3], deloList.currentLang, now)}"
+								   for="type2"  escape="false"/>	
+					</h:panelGroup>
+					
+				</p:column>
+				
+				<p:column width="220" sortBy="#{row.a3}" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['docu.type']}" style="margin-left:-8px"/>									  
+					</f:facet>
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[3], deloList.currentLang, now)}"/>
+					
+				</p:column>
+				
+				<p:column width="160" sortBy="#{row.a13}" headerText="#{labels['docu.predadenNa']}" rendered="#{deloList.deloSearch.dvijNotReturned}">
+					<h:outputText value="#{row[13]} (#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[12], deloList.currentLang, now)})"/>					    
+				</p:column>
+			</p:dataTable>
+			</h:panelGroup>	
+			
+		</h:panelGroup>	
+	
+	
+		
+		
+			<p:dialog appendTo="@form" position="center" 
+				width="700px"
+			    header="#{labels['delo.groupStatus']}"   
+			    responsive="true"	 		  							 
+				resizable="true" closeOnEscape="true"
+				widgetVar="modalStatusChange"  id="modalDeloStatusChange" 
+				modal="true">
+				
+				<h:panelGroup id="deloModalStatusPanel" >
+					<div  class="p-grid ui-fluid" >
+					
+							<div class="p-col-6 ">
+									<h:outputText value="#{labels['docu.status']}" styleClass="form-label"/>
+									<p:selectOneMenu id="mStat" value="#{deloList.statusGroup}">				            
+							             <f:selectItems  value="#{deloList.statusList}" 
+							               var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />	
+							               <p:ajax event="change" process="@this" 
+					                               listener="#{deloList.actionEndDelo}"
+								   				   partialSubmit="true" update="endTasks btnSave"/>				               
+						         	</p:selectOneMenu>
+									
+							 </div>
+							 <div class="p-col-6" > 	
+									<h:outputText value="#{labels['delo.dateStatus']}" styleClass="form-label req" />
+									<p:datePicker id="statusDate" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+												mask="true" value="#{deloList.statusDate}"/>
+									
+							 </div>
+							 <div class="p-col-9"  jsf:id="endTasks"  style="margin-top:20px !important"> 	
+							 	<p:selectBooleanCheckbox value="#{deloList.endTask}" id="prepStEndTask" 
+									rendered="#{deloList.accessFinishTask}"
+									itemLabel="#{labels['docu.finishTask']}" title="#{labels['docu.titleFinishTask']}"/>
+							</div>
+								
+							 <div class="p-col-3 " > 	
+							  	<p:commandButton style="margin-top:20px !important" icon="fas fa-save" value="#{ui_labels['general.save']}"
+										 id="btnSave"
+										 partialSubmit="true" 
+										 update="panelTblDelo"
+										 process="deloModalStatusPanel  @this"  
+										 actionListener="#{deloList.actionChangeStatusSelected}"
+										 title="#{labels['delo.saveTitle']}" >
+									<p:confirm disabled="#{deloList.statusGroup!=2}" header="#{ui_labels['general.comfirmation']}" message="#{labels['delo.confirmGroupStatus']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+							</div>
+						</div>
+						
+				</h:panelGroup>
+			 						
+			</p:dialog>	
+	
+	</h:form>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+
+
+	<ui:composition template="/template/template.xhtml">
+	
+		<ui:param name="pageTitle" value="Test" />
+		<ui:define name="title">#{pageTitle}</ui:define>
+	
+		<ui:define name="content">
+		  
+		  	<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			</f:metadata>
+		
+		<h:form id="testForm" >
+
+			 
+			 <style type="text/css">
+			    .ui-diagram-element {
+			        width: 14em;
+			        height: 4em;
+			        
+			        text-align: center;
+			        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.8);
+			        border-radius: 4px;
+			        border: 1px solid transparent;
+			        background-color: #98AFC7;
+			        color: #ffffff;
+			    }
+			
+			    .ui-diagram-success {
+			        background-color: #9CB071;
+			        color: #ffffff;
+			        border-color: #7ab02c;
+			    }
+			
+			    .ui-diagram-fail {
+			        background-color: #C34A2C;
+			        color: #ffffff;
+			    }
+			
+			    .flow-label {
+			        font-size: 16px;
+			        font-weight: bold;
+			        color: #816A51;
+			    }
+			</style>
+			 
+			 
+			 
+			<div class="card">
+			    <p:diagram value="#{testDiagram.model}" style="height:600px" styleClass="ui-widget-content"/>
+			</div>
+		
+			</h:form>
+		</ui:define>
+	</ui:composition>
+	
+</html>

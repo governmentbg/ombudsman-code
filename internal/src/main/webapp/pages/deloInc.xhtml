@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+	
+	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+	</f:metadata>
+	
+	
+<h:form id="deloForm" >
+		
+		
+		
+	<div class="auto">
+	
+		<ui:remove><!-- Бутон с данни за регистрация - модален за журнала --></ui:remove>
+	 	<ibg:compObjAudit id="a2" idObj="#{deloBean.delo.id}" 
+				 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DELO}"
+				 	identInfo="#{deloBean.rnFullDeloAudit}" />
+			<ui:remove><!-- 	 	
+		<p:commandButton id="buttonRegInfo" style="float: right; z-index: 1;" icon="fas fa-user" rendered="#{deloBean.delo.id != null}"/>
+		<p:overlayPanel for="buttonRegInfo">
+			<div>
+				<span class="form-label">#{labels['docu.registriranNa']}: </span>
+				<h:outputText value="#{deloBean.delo.dateReg}">
+					<f:convertDateTime pattern="dd.MM.yyyy, HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+				</h:outputText>
+				<span>#{labels['docu.ot']} </span>
+				<span>#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_USERS, deloBean.delo.userReg, deloBean.currentLang, now)}</span>
+			</div>
+			<div jsf:rendered="#{deloBean.delo.dateLastMod ne null}">
+				<span class="form-label">#{labels['docu.poslednaPromianaNa']}: </span>
+				<h:outputText value="#{deloBean.delo.dateLastMod}">
+					<f:convertDateTime pattern="dd.MM.yyyy, HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+				</h:outputText>
+				<span>#{labels['docu.ot']} </span>
+				<span>#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_USERS, deloBean.delo.userLastMod, deloBean.currentLang, now)}</span>
+			</div>
+			<div>
+				<span class="form-label">#{labels['docu.idNaDeloPrepiska']}: </span>
+				<span>#{deloBean.delo.id}</span>
+			</div>
+			
+		</p:overlayPanel>
+		 --></ui:remove>
+				
+		<!-- Тук трябва да има в коя преписка е вложена нашата след като направя филтъра -->
+		
+		<p:tabView id="tabsDelo" prependId="false" dynamic="true" cache="true" rendered="#{deloBean.delo ne null and !deloBean.hideAll}" >
+			<p:ajax event="tabChange" update="@this" process="@this" listener="#{deloBean.onTabChange}"/>
+			<p:tab title="#{labels['registratura.basicData']}" id="tabMainDelo" >
+				<ui:include src="deloIncMainData.xhtml" />
+			</p:tab>
+			<p:tab title="#{labels['delo.dvijenia']}" id="tabDeloDvij" rendered="#{deloBean.delo.id ne null and deloBean.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+				<ui:include src="deloIncDvijenia.xhtml" />
+			</p:tab>
+			<p:tab title="#{labels['delo.vlojeniDocs']}" id="tabDocsDelo" rendered="#{deloBean.delo.id ne null}">
+				<ui:include src="deloIncDocs.xhtml" />
+			</p:tab>	
+			<p:tab title="#{labels['delo.vlojeniDela']}" id="tabDeloDelo" rendered="#{deloBean.delo.id ne null}">
+				<ui:include src="deloIncDelo.xhtml" />
+			</p:tab>
+		</p:tabView>
+
+	</div>
+
+
+</h:form>
+
+
+
+
+</html>

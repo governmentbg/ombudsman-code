@@ -1,0 +1,28 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html" xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+
+    <div class="layout-footer">
+    
+    	<div class="footer-text container">
+    		<p>#{labels['general.blagodarnosti']}</p>
+    	</div>
+    	
+    	<div class="footer-logos">
+	    	<div></div>
+	    	
+	    	<div class="logo-images">
+	    		<p:graphicImage name="images/logo-eu.png" library="mirage-layout" styleClass="logo" />
+	    		<p:graphicImage name="images/logo-opdu.png" library="mirage-layout" styleClass="logo" />
+	    	</div>
+	    
+	        <div class="logo-text">
+	            <div class="text">
+	                <ui:remove><h1>#{labels['general.systemName']}</h1></ui:remove>
+	                <span>v #{systemData.srcVersion} ${build.timestamp} #{facesContext.application.projectStage}</span>
+	            </div>
+	        </div>
+        </div>
+        
+    </div>
+</ui:composition>

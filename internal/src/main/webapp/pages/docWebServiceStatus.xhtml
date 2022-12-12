@@ -1,0 +1,367 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+					<f:viewAction action="#{userData.checkPageAccess(215)}"	onPostback="false" />		
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/docWebServiceStatus.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">   
+			<li>
+		        <p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+					<i class="fas fa-caret-left" />
+				</p:commandLink>
+			</li>      
+	        <li>#{navTexts['/pages/docWebServiceStatus.xhtml']}</li>
+	    </ui:define> 
+    
+		<ui:define name="content">	
+			<h:form id="msgForm">	
+ 				<div class="container #{guestPreferences.containerPosition}">
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilterMsg" >
+						<div class="card">
+							<div class="p-grid ui-fluid p-align-end">	
+							
+								<!--Период-->	
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									<h:outputText value="#{labels['journal.period']}" styleClass="form-label"/>
+									<p:selectOneMenu id="idPeriod" value="#{docWebServiceStatus.period}">
+									     <f:selectItem value="#{null}" itemValue="#{null}"/>
+									     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docWebServiceStatus.currentLang)}" 
+									         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+									     <p:ajax event="change" update="idPeriod dateOtReg dateDoReg" listener="#{docWebServiceStatus.changePeriod}"/>   
+								    </p:selectOneMenu>
+							   </div>
+							   
+							   <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="dateOtReg" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+										value="#{docWebServiceStatus.dateOt}"  >
+										<p:ajax event="change" update="idPeriod" listener="#{docWebServiceStatus.changeDate}"/>
+										<p:ajax event="dateSelect" update="idPeriod" listener="#{docWebServiceStatus.changeDate}"/>      
+									 </p:datePicker>
+							   </div>
+														
+							   <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoReg" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg" 
+										value="#{docWebServiceStatus.dateDo}"  >
+										<p:ajax event="change" update="idPeriod" listener="#{docWebServiceStatus.changeDate}"/>   
+										<p:ajax event="dateSelect" update="idPeriod" listener="#{docWebServiceStatus.changeDate}"/>   
+									</p:datePicker>												    
+							   </div>	
+							   
+							   
+							  <!--СЕОС/ССЕВ-->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							   <p:selectOneRadio id="vidSpravka" value="#{docWebServiceStatus.vidSpravka}"  columns="2">
+									<f:selectItem itemLabel="#{labels['docWSStatus.seos']}" itemValue="S_SEOS"/>	
+									<f:selectItem itemLabel="#{labels['docWSStatus.ssev']}" itemValue="S_EDELIVERY"/>			
+									 <p:ajax event="change" update="panelFilterMsg" listener="#{docWebServiceStatus.actionChangeVidSpr}"/>   				
+								</p:selectOneRadio>					
+							  </div>	
+							
+							   
+							   <!--Тип на съобщението-->	
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									<h:outputText value="#{labels['docWSStatus.typeMsg']}" styleClass="form-label"/>
+									<p:selectOneMenu id="typeMsg" value="#{docWebServiceStatus.inOut}">
+									     <f:selectItem value="#{null}" itemValue="#{null}"/>
+									     <f:selectItem itemLabel="#{labels['docWSStatus.ingoing']}" itemValue="1"/>
+									     <f:selectItem itemLabel="#{labels['docWSStatus.outgoing']}" itemValue="2"/>
+								    </p:selectOneMenu>
+							   </div>	
+							   
+							   <!--Вид на съобщението-->
+							   <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_SEOS'}">					   	
+							   		<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">								
+										<h:outputText value="#{labels['docWSStatus.vidMsg']}" styleClass="form-label"/>
+										<p:selectOneMenu id="vidMsg" value="#{docWebServiceStatus.msgType}">
+										     <f:selectItem value="#{null}" itemValue="#{null}"/>
+										    <f:selectItems value="#{docWebServiceStatus.msgVidList}"/>
+									    </p:selectOneMenu>									
+							   		</div>	
+							   </h:panelGroup>
+							   
+							   <!--Статус на съобщението-->	
+							   <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_SEOS'}">
+									<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									
+										<h:outputText value="#{labels['docWSStatus.statusMsg']}" styleClass="form-label"/>
+										<p:selectOneMenu id="statusMsg" value="#{docWebServiceStatus.docStatus}">
+										     <f:selectItem value="#{null}" itemValue="#{null}"/>
+										    <f:selectItems value="#{docWebServiceStatus.msgStatusList}"/>
+									    </p:selectOneMenu>
+								  
+							  	 	</div>	
+							    </h:panelGroup>
+							    
+							   <!--Статус на изпращане-->	
+							   <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_SEOS'}">
+								<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+									
+										<h:outputText value="#{labels['docWSStatus.statusSend']}" styleClass="form-label"/>
+										<p:selectOneMenu id="sentStatus" value="#{docWebServiceStatus.sentStatus}">
+										     <f:selectItem value="#{null}" itemValue="#{null}"/>
+										    <f:selectItems value="#{docWebServiceStatus.msgCommStatusList}"/>
+									    </p:selectOneMenu>
+								    
+							    </div>	
+							   </h:panelGroup>
+							   
+							   <!--Подател-->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							   	  <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_SEOS'}">
+									<h:outputText value="#{labels['docWSStatus.sender']}" styleClass="form-label"/>
+											
+									<p:remoteCommand name="cmdChangeSender" partialSubmit="true" process="@this"
+										actionListener="#{docWebServiceStatus.actionChangeSender}" />
+										
+									<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_EGOV_ORGANISATIONS}" 
+									id="sender" dateClassif="#{docWebServiceStatus.decodeDate}" filtered="false" 													
+									selectedCode="#{docWebServiceStatus.senderCode}" saveStateTree="true"
+									withBtnClear="true" compType="2" styleAutoComp="" onClear="cmdChangeSender()" onComplete="cmdChangeSender()" />	
+						 		 </h:panelGroup>
+						 		 
+						 		  <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_EDELIVERY'}">
+									<h:outputText value="#{labels['docWSStatus.senderSSEV']}" styleClass="form-label"/>
+											
+									<p:remoteCommand name="cmdChangeSenderSSEV" partialSubmit="true" process="@this"
+										actionListener="#{docWebServiceStatus.actionChangeSenderSSEV}" />
+										
+									<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_EDELIVERY_ORGANISATIONS}" 
+									id="senderSSEV" dateClassif="#{docWebServiceStatus.decodeDate}" filtered="false" 													
+									selectedCode="#{docWebServiceStatus.senderCode}" saveStateTree="true"
+									withBtnClear="true" compType="2" styleAutoComp="" onClear="cmdChangeSenderSSEV()" onComplete="cmdChangeSenderSSEV()" />	
+						 		 </h:panelGroup>
+						 		 
+							  </div>	
+							  
+							   <!--Получател-->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							    <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_SEOS'}">
+									<h:outputText value="#{labels['docWSStatus.receiver']}" styleClass="form-label"/>
+											
+									<p:remoteCommand name="cmdChangeReceiver" partialSubmit="true" process="@this"
+										actionListener="#{docWebServiceStatus.actionChangeReceiver}" />
+										
+									<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_EGOV_ORGANISATIONS}" 
+									id="receiver" dateClassif="#{docWebServiceStatus.decodeDate}" filtered="false" 													
+									selectedCode="#{docWebServiceStatus.recepientCode}" saveStateTree="true"
+									withBtnClear="true" compType="2" styleAutoComp="" onClear="cmdChangeReceiver()" onComplete="cmdChangeReceiver()" />	
+								</h:panelGroup>
+								
+								<h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_EDELIVERY'}">
+									<h:outputText value="#{labels['docWSStatus.receiverSSEV']}" styleClass="form-label"/>
+										
+									<p:remoteCommand name="cmdChangeReceiverSSEV" partialSubmit="true" process="@this"
+										actionListener="#{docWebServiceStatus.actionChangeReceiverSSEV}" />
+																			
+									<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_EDELIVERY_ORGANISATIONS}" 
+									id="receiverSSEV" dateClassif="#{docWebServiceStatus.decodeDate}" filtered="false" 													
+									selectedCode="#{docWebServiceStatus.recepientCode}" saveStateTree="true"
+									withBtnClear="true" compType="2" styleAutoComp="" onClear="cmdChangeReceiverSSEV()" onComplete="cmdChangeReceiverSSEV()" />	
+								</h:panelGroup>
+								
+							  </div>
+							  
+							   <!--Подател - име -->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							   						 		 
+						 		  <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_EDELIVERY'}">
+									<h:outputText value="#{labels['docWSStatus.nameSender']}" styleClass="form-label"/>
+											
+									<p:inputText value="#{docWebServiceStatus.nameSender}" />	
+						 		 </h:panelGroup>
+						 		 
+							  </div>	
+							  
+							   <!--Получател - име -->								
+							   <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							   						 		 
+						 		  <h:panelGroup rendered="#{docWebServiceStatus.vidSpravka=='S_EDELIVERY'}">
+									<h:outputText value="#{labels['DocWSStatus.nameRecepient']}" styleClass="form-label"/>
+											
+									<p:inputText value="#{docWebServiceStatus.nameRecepient}" />	
+						 		 </h:panelGroup>
+						 		 
+							  </div>		
+							 															
+						</div>
+							
+						<div class="filter-buttons" >
+									<p:commandButton id="btnSearch" icon="fas fa-search" action="#{docWebServiceStatus.actionSearch}" update="msgForm:panelRezult" value="#{labels['general.search']}" styleClass="p-mr-2"/>																													
+									<p:defaultCommand target="btnSearch" scope="panelFilterMsg"/>
+									
+									<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+											id="btnClear" update="panelFilterMsg panelRezult" partialSubmit="true"
+											process="@this panelRezult" actionListener="#{docWebServiceStatus.actionClearFilter}"
+							 				styleClass="ui-button-warning" /> 									
+						</div>
+					</div>	
+				</h:panelGroup>		
+				</div>
+					<h:panelGroup id="panelRezult"  layout="block" styleClass="margin-top" >
+						<h:panelGroup layout="block" styleClass="card" rendered="#{docWebServiceStatus.msgList!=null}">
+								        																														
+							<div class="table-toolbar">
+								<h:outputText value="#{ui_labels['general.reportResult']} #{docWebServiceStatus.msgList.rowCount}" styleClass="form-label" />
+							</div>
+								
+							<p:dataTable id="tableMsg" var="row" value="#{docWebServiceStatus.msgList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+									emptyMessage="#{ui_labels['general.norows']}" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+									
+						    <f:facet name="{Exporters}">
+						
+					            <div style="float:left">
+						            <h:commandLink id="excel"  rendered="#{docWebServiceStatus.msgList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+						        			<h:graphicImage library="images" name="excel2.png" />
+						        			<p:dataExporter type="xls" target="tableMsg" fileName="msgList"	
+						        			postProcessor="#{docWebServiceStatus.postProcessXLS}" />
+						    		</h:commandLink>
+						<ui:remove><!-- 
+						    		<h:commandLink id="pdf"  rendered="#{docWebServiceStatus.msgList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+						        	 	  <h:graphicImage library="images" name="pdf.png" />
+						        	 	   <p:dataExporter type="pdf"   target="tableMsg" fileName="msgList" 	 encoding="windows-1251"
+					        				  preProcessor="#{docWebServiceStatus.preProcessPDF}" options="#{docWebServiceStatus.pdfOptions()}"/>	
+						        	</h:commandLink> 
+						   --></ui:remove>
+					            </div>
+					       	</f:facet>	
+				       	
+	
+								<p:column width="10"  headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+								
+								<p:column width="20" exportable="false">
+									<h:panelGroup rendered="#{row[1]=='MSG_DocumentRegistrationRequest'}" >
+										<i class="fas fa-paper-plane" aria-hidden="true" title="#{row[2]}"></i>
+									</h:panelGroup>
+									
+									<h:panelGroup rendered="#{row[1]=='MSG_DocumentStatusRequest'}" >
+										<i class="fas fa-praying-hands" aria-hidden="true" title="#{row[2]}"></i>
+									</h:panelGroup>
+									
+									<h:panelGroup rendered="#{row[1]=='MSG_DocumentStatusResponse'}" >
+										<i class="fa fa-reply" aria-hidden="true" title="#{row[2]}"></i>
+									</h:panelGroup>
+									
+									<h:panelGroup rendered="#{row[1]=='MSG_Error'}" >
+										<i class="fas fa-times-circle" aria-hidden="true" title="#{row[2]}"></i>
+									</h:panelGroup>								
+								</p:column>											
+				
+								<p:column width="110" sortBy="#{row.a3}" headerText="#{labels['docu.dateDoc']}">								
+									<h:outputText value="#{row[3]}" >
+										<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docWebServiceStatus.timeZone}"/>
+									</h:outputText>								
+								</p:column>
+				
+								<p:column width="170" sortBy="#{row.a11}" headerText="#{labels['docWSStatus.statusMsg']}">
+									<h:outputText value="#{row[11]}" />
+									<p:commandLink  action="#{docWebServiceStatus.actionSelectErr(row[14])}" update="msgForm:descErrPanel"
+									 rendered="#{row[14] ne null}" oncomplete="PF('prichinaOtkaz').show();">
+											<i class="fas fa-exclamation-circle"></i>			
+										
+									</p:commandLink>
+								</p:column>
+				
+								<p:column width="150" sortBy="#{row.a6}" headerText="#{labels['docWSStatus.doc']}">
+									<h:outputText value="#{row[6]}" />
+									<h:outputText value="/ " rendered="#{row[6] ne null}"/>
+									<h:outputText value="#{row[7]}" >
+										<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docWebServiceStatus.timeZone}"/>
+									</h:outputText>	
+									
+								</p:column>
+				
+								<p:column style="width:100%" sortBy="#{row.a4}"
+									headerText="#{labels['general.sender']}">
+									<h:outputText value="#{row[4]}" />
+								</p:column>
+								
+								<p:column style="width:100%" sortBy="#{row.a5}" 
+								headerText="#{labels['opis.poluch']}">
+									<h:outputText value="#{row[5]}" />
+								</p:column>
+										
+								<p:column width="170" sortBy="#{row.a12}" headerText="#{labels['docWSStatus.statusSend']}">
+									<h:outputText value="#{row[12]}" />	
+									
+									<p:commandLink  action="#{docWebServiceStatus.actionSelectErr(row[13])}" update="msgForm:errMsg"
+									 rendered="#{row[13] ne null}" oncomplete="PF('descErr').show();">
+											<i class="fas fa-exclamation-circle"></i>			
+										
+									</p:commandLink>
+																			
+								</p:column>		
+																																											
+							</p:dataTable>								
+						
+					</h:panelGroup>
+					</h:panelGroup>																							
+					
+					
+					<!-- Причина за отказ -->
+				 
+				<p:dialog header="#{labels['dashboard.prichinaOtkaz']}" appendTo="@form"  responsive="true" 
+				resizable="true" closeOnEscape="true" widgetVar="prichinaOtkaz" modal="true"  height="300">	    
+				    <div class="container #{guestPreferences.containerPosition}">					    												
+																
+							<h:panelGroup id="descErrPanel" layout="block">
+								<div class="card">
+									<div  class="p-grid  ui-fluid">			
+											
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12">	
+																					
+											<p:inputTextarea rows="12" value="#{docWebServiceStatus.errorMess}" autoResize="false"/>	 	
+										</div>
+												 
+									
+									</div>	
+								</div>						
+							</h:panelGroup>	
+				
+					</div>
+				</p:dialog>   
+				
+				<!-- Описание на грешка -->
+				<p:dialog header="#{labels['docWSStatus.descError']}" appendTo="@form"  responsive="true" 
+				resizable="true" closeOnEscape="true" widgetVar="descErr" modal="true"  height="440">	    
+				    <div class="container #{guestPreferences.containerPosition}">					    												
+																
+							<h:panelGroup id="errMsg" layout="block">
+								<div class="card">
+									<div  class="p-grid  ui-fluid">			
+											
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12">	
+																					
+											<p:inputTextarea rows="19" value="#{docWebServiceStatus.errorMess}" autoResize="false"/>	 	
+										</div>
+												 
+									
+									</div>	
+								</div>						
+							</h:panelGroup>	
+				
+					</div>
+				</p:dialog>   
+																
+							
+		</h:form>
+	</ui:define>
+</ui:composition>

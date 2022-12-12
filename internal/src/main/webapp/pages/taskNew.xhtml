@@ -1,0 +1,22 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"            
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+	 
+		
+		<f:metadata>
+	 		<f:viewAction action="#{userData.checkPageAccess(85)}" onPostback="false" />
+	 		<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />			
+		</f:metadata>
+		
+		<ui:define name="title">#{navTexts['/pages/taskNew.xhtml']}</ui:define>
+				
+		<ui:include src="/pages/taskEditIncl.xhtml">
+			<ui:param name="isNew" value="1" />
+		</ui:include>		
+		
+	
+</ui:composition>

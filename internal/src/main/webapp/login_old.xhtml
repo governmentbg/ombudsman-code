@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	  xmlns:h="http://java.sun.com/jsf/html" 
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:p="http://primefaces.org/ui">
+	<f:view locale="bg"/>
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <link rel="apple-touch-icon" sizes="57x57" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-57x57.png"></link>
+            <link rel="apple-touch-icon" sizes="60x60" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-60x60.png"></link>
+            <link rel="apple-touch-icon" sizes="72x72" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-72x72.png"></link>
+            <link rel="apple-touch-icon" sizes="76x76" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-76x76.png"></link>
+            <link rel="apple-touch-icon" sizes="114x114" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-114x114.png"></link>
+            <link rel="apple-touch-icon" sizes="120x120" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-120x120.png"></link>
+            <link rel="apple-touch-icon" sizes="144x144" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-144x144.png"></link>
+            <link rel="apple-touch-icon" sizes="152x152" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-152x152.png"></link>
+            <link rel="apple-touch-icon" sizes="180x180" href="#{request.contextPath}/resources/mirage-layout/images/favicon/apple-icon-180x180.png"></link>
+            <link rel="icon" type="image/png" sizes="192x192"  href="#{request.contextPath}/resources/mirage-layout/images/favicon/android-icon-192x192.png"></link>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-32x32.png"></link>
+            <link rel="icon" type="image/png" sizes="96x96" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-96x96.png"></link>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{request.contextPath}/resources/mirage-layout/images/favicon/favicon-16x16.png"></link>
+            <link rel="manifest" href="#{request.contextPath}/resources/mirage-layout/manifest.json"></link>
+            <meta name="msapplication-TileColor" content="#ffffff"></meta>
+            <meta name="msapplication-TileImage" content="#{request.contextPath}/resources/mirage-layout/images/favicon/ms-icon-144x144.png"></meta>
+            <meta name="theme-color" content="#ffffff"></meta>
+        </f:facet>
+        <title>#{labels['general.systemName']}</title>
+        <h:outputScript name="js/layout.js" library="mirage-layout" />
+
+        <script type="text/javascript">
+            //<![CDATA[
+            function changeMode() {
+                var body = $('.login-body');
+
+                if (body) {
+                    if (body.hasClass('layout-dark')) {
+                        body.removeClass('layout-dark').addClass('layout-light');
+                    } else {
+                        body.removeClass('layout-light').addClass('layout-dark');
+                    }
+                }
+            }
+            //]]>
+        </script>
+    </h:head>
+
+    <h:body styleClass="login-body layout-light">
+
+        <div class="login-content" style="background-image: none !important;">
+            <div class="night-switch">
+                <h:form>
+                    <p:commandButton styleClass="dark-switch" icon="far fa-sun" onclick="changeMode(); return false;" />
+					<p:commandButton styleClass="light-switch" icon="far fa-moon"  onclick="changeMode(); return false;" />
+                </h:form>
+            </div>
+            <div class="login-panel">
+                <div class="login-panel-content">
+                    <div class="logo">
+                        <p:graphicImage name="images/logo-ombudsman.png" library="mirage-layout" />
+                    </div>
+                    <h1>#{labels['general.systemName']}</h1>
+                     <div jsf:rendered="#{login.showChangePass}"><h1 style="font-size:20px">(#{labels['docu.changePass']})</h1></div>
+                    <h:form styleClass="forms">
+                    
+                    	<div jsf:rendered="#{!login.showChangePass}">
+                   			
+                   			<p:focus for="username"/>
+                   			
+	                        <div class="login-input-wrapper">
+	                            <p:outputLabel for="username" value="#{ui_labels['general.user']}" />
+	                            <p:inputText id="username" placeholder="Type your username..." value="#{login.username}"/>
+	                           
+	                            <i class="fas fa-user" />
+	                        </div>
+	
+	                        <div class="login-input-wrapper">
+	                            <p:outputLabel for="password" value="#{ui_labels['general.password']}" />
+	                            <p:password id="password" placeholder="Type your password" feedback="false" value="#{login.password}"/>
+	                            <i class="fas fa-lock" />
+	                        </div>
+	
+	                        
+	
+	                        <div class="buttons">
+	                            <p:commandButton value="#{labels['docu.login']}" action="#{login.actionLogin}" ajax="false"/>
+	                            	<ui:remove>
+		                            	<p:commandButton value="#{labels['docu.loginEAuto']}" action="rest/eauth/login-saml"   ajax="false" onclick="samlLoginNew(event,'rest/eauth/login-saml')" />
+		                            
+		                            
+			                           <!--  <a  id="samlLogin" href='rest/eauth/login-saml'  onclick="samlLogin(event)" >
+											#{labels['docu.loginEAuto']}
+										</a> -->
+									</ui:remove>
+	                        </div>
+                        </div> 
+                        
+                        <p:messages />
+                        
+                        
+                        <div jsf:rendered="#{login.showChangePass}"> 
+							
+						
+							<div class="login-input-wrapper">
+								<p:outputLabel value="#{ui_labels['general.oldPass']}" />
+								<p:password value="#{login.oldPassword}" id="oldPassword" />
+								<i class="fas fa-lock" />
+							</div>
+							<div class="login-input-wrapper">
+								<p:outputLabel value="#{ui_labels['general.newPass']}" />
+								<p:password value="#{login.newPassword1}" id="newPassword1" />
+								<i class="fas fa-lock" />
+							</div>
+							<div class="login-input-wrapper">
+								<p:outputLabel value="#{ui_labels['general.confirmPass']}" />
+								<p:password value="#{login.newPassword2}" id="newPassword2" />
+								<i class="fas fa-lock" />
+							</div>
+							
+							<div class="buttons">
+								<p:commandButton ajax="false" value="#{ui_labels['general.change']}" action="#{login.actionChangePassword()}" />
+							</div>
+						</div>	
+						
+                    </h:form>
+                </div>
+            </div>
+
+            
+        </div>
+
+        <h:outputStylesheet name="css/layout-purple-light.css" library="mirage-layout" />
+        <h:outputStylesheet name="css/all.css" library="font-awesome" />
+		
+		<h:outputScript library="js" name="scripts.js"/>
+    </h:body>
+
+</html>

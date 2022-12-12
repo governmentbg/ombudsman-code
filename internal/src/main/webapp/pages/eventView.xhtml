@@ -1,0 +1,15 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"            
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+	
+		<ui:define name="title">#{navTexts['/pages/eventView.xhtml']}</ui:define>
+				
+		<ui:include src="/pages/eventEditInc.xhtml">
+			<ui:param name="isView" value="1" />
+		</ui:include>
+						
+</ui:composition>

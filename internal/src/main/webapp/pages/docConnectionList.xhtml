@@ -1,0 +1,324 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+	
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				 <f:viewAction action="#{userData.checkPageAccess(106)}" onPostback="false" />						
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/docConnectionList.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/docConnectionList.xhtml']}</li>
+	    </ui:define> 
+	    
+		
+	<ui:define name="content">
+	
+		<h:form id="docForm">
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+				<h:panelGroup id="panelFilterDoc" >
+					<div class="card ">
+					
+					<div  class="title-group">
+						<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:firstDoc')">
+							<h:outputText value="#{labels['docConnectionList.firstDoc']} "/>
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>	
+								
+					<div jsf:id="firstDoc">
+					
+						<div  class="p-grid  ui-fluid p-align-end" >
+						
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['doc.lstPeriod']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="periodFirst" value="#{docConnectionList.periodFirst}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docConnectionList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                  <p:ajax event="change" update="periodFirst dateOtReg dateDoReg" listener="#{docConnectionList.changePeriod}"/>   
+				         		 </p:selectOneMenu>
+							</div>
+							
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="dateOtReg"   mask="true"  showIcon="true"  locale="bg"   pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateFromFirst}"  >
+										<p:ajax event="change" update="periodFirst" listener="#{docConnectionList.changeDate}"/>
+										<p:ajax event="dateSelect" update="periodFirst" listener="#{docConnectionList.changeDate}"/>      
+									 </p:datePicker>
+							 </div>
+														
+							 <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoReg"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateToFirst}"  >
+										<p:ajax event="change" update="periodFirst" listener="#{docConnectionList.changeDate}"/>   
+										<p:ajax event="dateSelect" update="periodFirst" listener="#{docConnectionList.changeDate}"/>   
+									</p:datePicker>											    
+							</div>
+							
+							<!--Тип на документа-->															
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">					
+								<p:selectManyCheckbox value="#{docConnectionList.docTypeArrFirst}" id="typeDoc"	>
+									<f:selectItems value="#{docConnectionList.docTypeList}" />
+								
+								</p:selectManyCheckbox>
+							</div>
+							
+							<!--Вид на документа-->							
+							<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="lstDocsVid" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+									dateClassif="#{docConnectionList.decodeDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{docConnectionList.docVidListFirst}"
+									selectedClassifs="#{docConnectionList.docsVidClassifFirst}"
+									styleAutoComp="width:100%;"
+									withBtnClear="true" /> 
+														
+							</div>
+							
+							<!--Относно-->		
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+								<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label"/>						
+								<p:inputText value="#{docConnectionList.otnosnoFirst}" id="otnosno"/>
+													  
+							</div>	
+							
+							</div>
+							
+					   </div> 
+					 <br/>  
+					<div  class="title-group">
+						<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:conn')">
+							<h:outputText value="#{labels['docConnecton.conn']} "/>
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>	
+								
+					<div jsf:id="conn">
+					
+						<div  class="p-grid  ui-fluid p-align-end" >
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['doc.lstPeriod']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="periodConn" value="#{docConnectionList.periodConn}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docConnectionList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                  <p:ajax event="change" update="periodConn dateOtConn dateDoConn" listener="#{docConnectionList.changePeriodConn}"/>   
+				         		 </p:selectOneMenu>
+							</div>
+							
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="dateOtConn" mask="true"  showIcon="true"  locale="bg"  pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateFromConn}"  >
+										<p:ajax event="change" update="periodConn" listener="#{docConnectionList.changeDateConn}"/>
+										<p:ajax event="dateSelect" update="periodConn" listener="#{docConnectionList.changeDateConn}"/>      
+									</p:datePicker>
+							 </div>
+														
+							 <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoConn"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateToConn}"  >
+										<p:ajax event="change" update="periodConn" listener="#{docConnectionList.changeDateConn}"/>   
+										<p:ajax event="dateSelect" update="periodConn" listener="#{docConnectionList.changeDateConn}"/>   
+									</p:datePicker>												    
+							</div>
+							
+							<!--Вид на връзката-->							
+							<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="vidConn" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_REL_TYPE}" 																
+									dateClassif="#{docConnectionList.decodeDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{docConnectionList.vid}"
+									selectedClassifs="#{docConnectionList.vidClassif}"
+									styleAutoComp="width:100%;"
+									withBtnClear="true" /> 
+														
+							</div>
+						
+						</div>
+					</div>	
+					 <br/> 
+					<div  class="title-group">
+						<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:secondDoc')">
+							<h:outputText value="#{labels['docConnaection.secondDoc']} "/>
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>	
+								
+					<div jsf:id="secondDoc">
+					
+						<div  class="p-grid  ui-fluid p-align-end" >
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+						        <h:outputText  value="#{labels['doc.lstPeriod']}"  styleClass ="form-label"/>
+				            	<p:selectOneMenu id="periodSecond" value="#{docConnectionList.periodSecond}">
+					                <f:selectItem value="#{null}" itemValue="#{null}"/>
+					                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docConnectionList.currentLang)}" 
+					                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					                  <p:ajax event="change" update="periodSecond dateOtSecond dateDoSecond" listener="#{docConnectionList.changePeriodSecond}"/>   
+				         		 </p:selectOneMenu>
+							</div>
+							
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+									<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+									<p:datePicker id="dateOtSecond"   mask="true"  showIcon="true"  locale="bg"  pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateFromSecond}"  >
+										<p:ajax event="change" update="periodSecond" listener="#{docConnectionList.changeDateSecond}"/>
+										<p:ajax event="dateSelect" update="periodSecond" listener="#{docConnectionList.changeDateSecond}"/>      
+									</p:datePicker>
+							 </div>
+														
+							 <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+									<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+									<p:datePicker id="dateDoSecond"  mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" 
+										value="#{docConnectionList.dateToSecond}"  >
+										<p:ajax event="change" update="periodSecond" listener="#{docConnectionList.changeDateSecond}"/>   
+										<p:ajax event="dateSelect" update="periodSecond" listener="#{docConnectionList.changeDateSecond}"/>   
+									</p:datePicker>											    
+							</div>
+							
+							<!--Тип на документа-->															
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">					
+								<p:selectManyCheckbox value="#{docConnectionList.docTypeArrSecond}" id="typeDocSec"	>
+									<f:selectItems value="#{docConnectionList.docTypeList}" />
+								
+								</p:selectManyCheckbox>
+							</div>
+							
+							<!--Вид на документа-->							
+							<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+								<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="vidSecond" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+									dateClassif="#{docConnectionList.decodeDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{docConnectionList.docVidListSecond}"
+									selectedClassifs="#{docConnectionList.docsVidClassifSecond}"
+									styleAutoComp="width:100%;"
+									withBtnClear="true" /> 
+														
+							</div>
+							
+							<!--Относно-->		
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+								<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label"/>						
+								<p:inputText value="#{docConnectionList.otnosnoSecond}" id="otnosnoSecond"/>
+													  
+							</div>	
+						
+						</div>
+					</div>	
+						
+						<div class="filter-buttons">
+			
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"							    
+							id="btnSearch" update="panelTblDoc" partialSubmit="true"
+							process="@this panelFilterDoc" actionListener="#{docConnectionList.actionSearch}" styleClass="p-mr-3"/> 
+						<p:defaultCommand target="btnSearch" scope="panelFilterDoc"/>
+											
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"							    
+							id="btnClear" update="panelTblDoc panelFilterDoc" partialSubmit="true"
+							process="@this" actionListener="#{docConnectionList.actionClear}" styleClass="ui-button-warning" /> 
+					</div> 
+					</div>
+							
+				</h:panelGroup>
+			</div>	
+			
+			<!-- Резултат -->
+			<h:panelGroup id="panelTblDoc" layout="block" styleClass="card margin-top">
+				<h:panelGroup id="pResult1" rendered="#{docConnectionList.docList != null}">	
+				<div class="table-toolbar">
+					<h:outputText value="#{ui_labels['general.reportResult']} #{docConnectionList.docList.rowCount}" styleClass="form-label"/>
+				</div>
+						
+				<p:dataTable id="tblDoc" var="row" value="#{docConnectionList.docList}" lazy="true" rendered="#{docConnectionList.docList != null}" 	
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}" emptyMessage="#{labels['doc.listEmptyMsg']}"		
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="true" paginator="true">
+					
+					<f:facet name="{Exporters}">
+						
+				        <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{docConnectionList.docList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblDoc" fileName="docsList"	
+					        			postProcessor="#{docConnectionList.postProcessXLS}" />
+								</h:commandLink>
+								
+						</div>
+					</f:facet>
+								
+				  	<p:column width="10" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+					</p:column>	
+					
+					<p:column  width="10" exportable="false" >	
+							<p:button  icon="fas fa-eye" href="#{docConnectionList.actionGoto(row[3])}" target="_blank"  title="#{ui_labels['general.view']}" >
+					  		</p:button>	
+					</p:column> 		
+													
+					<p:column width="90" sortBy="#{row.a4}" headerText="#{labels['docConnection.nomFirst']}" >
+							<h:outputText value="#{row[4]}"  />								    
+					</p:column>
+						
+					<p:column width="90" sortBy="#{row.a5}" headerText="#{labels['docConnection.dateFirst']}" >									  
+							<h:outputText value="#{row[5]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docConnectionList.timeZone}"/>
+							</h:outputText>							    
+					</p:column>
+					
+					<p:column width="150" sortBy="#{row.a9}" headerText="#{labels['docConnection.otnosnoFirst']}">
+							<h:outputText value="#{row[9]}"  />								    
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a1}" headerText="#{labels['docDoc.relType']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_REL_TYPE, row[1], docConnectionList.currentLang, now)}"/>					    
+					</p:column>
+						
+					<p:column width="90" sortBy="#{row.a2}" headerText="#{labels['docConnection.dateConn']}" >									  
+							<h:outputText value="#{row[2]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docConnectionList.timeZone}"/>
+							</h:outputText>							    
+					</p:column> 
+					
+					<p:column width="90" sortBy="#{row.a7}" headerText="#{labels['docConnection.nomSecond']}">
+							<h:outputText value="#{row[7]}"  />								    
+					</p:column>	
+						
+					<p:column width="90" sortBy="#{row.a8}" headerText="#{labels['docConnection.dateSecond']}" >									  
+							<h:outputText value="#{row[8]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docConnectionList.timeZone}"/>
+							</h:outputText>							    
+					</p:column>
+					
+					<p:column width="150" sortBy="#{row.a10}" headerText="#{labels['docConnection.otnosnoSecond']}">
+							<h:outputText value="#{row[10]}"  />								    
+					</p:column>
+												
+				</p:dataTable>
+			</h:panelGroup>	
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>

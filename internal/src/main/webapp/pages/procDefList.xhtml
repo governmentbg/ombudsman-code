@@ -1,0 +1,317 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">	
+	
+  	<ui:define name="metadata">
+  		<f:metadata>
+  			<f:importConstants type="com.ib.omb.system.OmbConstants" />			
+			<f:viewAction action="#{userData.checkPageAccess(45)}" onPostback="false" />			
+		</f:metadata>
+	</ui:define>
+                
+    <ui:define name="title">#{navTexts['/pages/procDefList.xhtml']}</ui:define>
+   
+    <ui:define name="viewname">
+        <li>#{navTexts['/pages/procDefList.xhtml']}</li> 
+    </ui:define>
+	
+	<ui:define name="content">				
+			
+			<h:form id="formProcDefList" >
+				
+				<div class="container #{guestPreferences.containerPosition}">
+				
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilter" >
+	
+						<div class="card">
+		
+							<div class="p-grid ui-fluid">
+							
+								<!-- Регистратура -->
+								<p:focus for="idReg" />
+								<div class="p-col-12 p-md-3">	
+									<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label" />	
+									<p:selectOneMenu value="#{procDefList.idReg}" id="idReg">
+						 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+					                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTRATURI, now, procDefList.currentLang)}"                           
+					                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>                       		
+									</p:selectOneMenu>															
+								</div>
+								
+								<!-- Номер на процедура -->
+								<div  class=" p-col-12 p-md-1" >								
+									<h:outputText value="#{labels['procDefList.nomProc']}" styleClass="form-label"/>
+									<p:inputText value="#{procDefList.nomerProc}" />						
+								</div>
+								
+								<!-- Наименование на процедура -->
+								<div  class="p-col-12 p-md-5" >								
+									<h:outputText value="#{labels['procDefList.nameProc']}" styleClass="form-label"/>
+									<p:inputText value="#{procDefList.nameProc}" />						
+								</div>
+								
+								<!-- Статус -->
+								<div class="p-col-12 p-md-3">
+							        <h:outputText value="#{labels['procDefList.status']}" styleClass="form-label" />
+									<p:selectOneMenu value="#{procDefList.status}" id="status">
+											<f:selectItem value="#{null}" itemValue="#{null}"/>
+							                <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PROC_DEF_STAT, now, procDefList.currentLang)}"                           
+							                   			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+									</p:selectOneMenu>								        
+								</div>		
+								
+								<!-- Описание на процедура -->
+								<ui:remove><div  class="p-col-12 p-md-4" >								
+									<h:outputText value="#{labels['procDefList.opisProc']}" styleClass="form-label"/>
+									<p:inputText value="#{procDefList.opisProc}" />						
+								</div></ui:remove>
+								
+							</div>
+							
+							<div class="p-grid ui-fluid p-align-end">
+								
+								<div class="p-col-12 p-md-12" style="width: 99.9%;">
+
+									<p:fieldset styleClass="fieldset-compact">
+									
+    								<f:facet name="legend"><span class="form-label">#{labels['procDefList.otgIzpal']} </span></f:facet>  
+
+									<div class="p-grid ui-fluid">
+								
+									<!-- Служител -->
+									<div class="p-col-12 p-md-3"> 
+										<h:outputText value="#{labels['procDefList.sluj']}" styleClass="form-label" />
+										<p:remoteCommand name="cmdSelectSluj" update="formProcDefList"
+											partialSubmit="true" process="formProcDefList @this"
+											actionListener="#{procDefList.actionSelectSluj}" />
+										<ibg:selectOneModalA id="selectSluj" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+												dateClassif="#{procDefList.decodeDate}" filtered="false" isSelectNode="false"														
+												selectedCode="#{procDefList.sluj}" saveStateTree="true" 
+												header="#{labels['procDefList.sluj']}"
+												withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+												onComplete="cmdSelectSluj()" onClear="cmdSelectSluj()"/>
+									</div>
+									
+									<!-- Звено -->
+									<div class="p-col-12 p-md-3"> 
+										<h:outputText value="#{labels['procDefList.zveno']}" styleClass="form-label" />
+										<p:remoteCommand name="cmdSelectZveno" update="formProcDefList"
+											partialSubmit="true" process="formProcDefList @this"
+											actionListener="#{procDefList.actionSelectZveno}" />
+										<ibg:selectOneModalA id="selectZveno" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+												dateClassif="#{procDefList.decodeDate}" filtered="false" isSelectNode="true"														
+												selectedCode="#{procDefList.zveno}" saveStateTree="true" 
+												header="#{labels['procDefList.zveno']}"
+												withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+												onComplete="cmdSelectZveno()" onClear="cmdSelectZveno()"/>
+									</div>
+									
+									<!-- Длъжност -->					
+									<div class="p-col-12 p-md-3">
+										<h:outputText value="#{labels['procDefList.dlajnost']}" styleClass="form-label" />
+										<p:selectOneMenu value="#{procDefList.dlajnost}" >
+												<f:selectItem value="#{null}" itemValue="#{null}"/>
+								                        <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_POSITION, now, procDefList.currentLang)}"                           
+								                   			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+										</p:selectOneMenu>							
+									</div>
+									
+									<!-- Бизнес роля -->					
+									<div class="p-col-12 p-md-3">
+										<h:outputText value="#{labels['procDefList.businessRole']}" styleClass="form-label" />
+										<p:selectOneMenu value="#{procDefList.businessRole}" >
+												<f:selectItem value="#{null}" itemValue="#{null}"/>
+								                        <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, now, procDefList.currentLang)}"                           
+								                   			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+										</p:selectOneMenu>							
+									</div>
+									
+									</div>
+									
+								</p:fieldset>
+									
+								</div>								
+								
+							</div>
+		
+							<div class="filter-buttons">
+								
+								<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+												id="btnSearchProc" update="resultTable panelFilter" partialSubmit="true"
+												process="@this panelFilter resultTable" actionListener="#{procDefList.actionSearch}" styleClass="p-mr-3"/>
+								<p:defaultCommand target="btnSearchProc" />
+		
+		
+								<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+												 id="btnClear" update="resultTable panelFilter" partialSubmit="true"
+												 process="@this panelFilter resultTable" actionListener="#{procDefList.actionClear}"
+												 styleClass="ui-button-warning" />	
+							</div>
+		
+						</div>
+					
+					</h:panelGroup>
+				
+				</div>
+				
+				<h:panelGroup id="resultTable" layout="block" styleClass="margin-top">
+
+				<h:panelGroup layout="block" styleClass="card">
+
+					<div class="table-toolbar">
+
+						<p:commandButton icon="fas fa-file" action="#{procDefList.actionGotoNew}" ajax="false" value="#{labels['procDefList.newDefProc']}" styleClass="ui-button-success" />
+
+						<span class=" p-mx-2" jsf:rendered="#{procDefList.defProcList.rowCount > 0}"> 
+							<span class="fas fa-ellipsis-v" />
+						</span>			
+
+						<h:outputText value="#{ui_labels['general.reportResult']} #{procDefList.defProcList.rowCount} " styleClass="form-label" rendered="#{procDefList.defProcList.rowCount > 0}"/>
+
+					</div>
+
+					<p:dataTable id="tblProcDefList" var="row" value="#{procDefList.defProcList}" lazy="true" rendered="#{procDefList.defProcList != null}"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="15" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblProcDefList" fileName="procDefListXls" postProcessor="#{procDefList.postProcessXLSProcDefList}" />
+								</h:commandLink>
+<ui:remove><!-- 
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									 <p:dataExporter type="pdf" target="tblProcDefList" fileName="procDefListPdf" 	 encoding="windows-1251"
+					        			preProcessor="#{procDefList.preProcessPDFProcDefList}" options="#{procDefList.pdfOptions()}"/>
+								</h:commandLink>
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblProcDefList" fileName="procDefListCsv" encoding="CP1251" />
+								</h:commandLink>
+ --></ui:remove>
+							</div>
+
+						</f:facet>
+
+						<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="15" exportable="false">
+							<p:commandButton icon="fas fa-edit" action="#{procDefList.actionGoto(row[0])}" ajax="false" styleClass="btn-new" />							
+						</p:column>
+						
+						<p:column width="15" exportable="false">
+							<p:commandButton icon="fas fa-copy" action="#{procDefList.actionFindAllRegistraturi(row[0])}" update="formProcDefList:panelDlgCopyDefProc" 
+											 oncomplete="PF('modalCopyDefProc').show();" styleClass="btn-new" title="#{labels['procDefList.btnCopy']}" />							
+						</p:column>
+						
+						<p:column width="30" sortBy="#{row.a0}" headerText="#{labels['procDefList.nomProc']}">
+							<h:outputText value="#{row[0]}" />
+						</p:column>
+
+						<p:column width="150" sortBy="#{row.a1}" headerText="#{labels['procDefList.nameProc']}">
+							<h:outputText value="#{row[1]}" />
+						</p:column>
+
+						<p:column width="150" sortBy="#{row.a2}" headerText="#{labels['procDefList.opisProc']}">
+							<h:outputText value="#{row[2]}"/>								
+						</p:column>
+
+						<p:column width="50" sortBy="#{row.a4}" headerText="#{labels['procDefList.srokDni']}">
+							<h:outputText value="#{row[4]}" />
+						</p:column>
+
+						<p:column width="100" sortBy="#{row.a5}" headerText="#{labels['regData.registratura']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row[5], procDefList.currentLang, now)}" />								
+						</p:column>
+												
+						<p:column width="200"   headerText="#{labels['procDefList.otgIzpal']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[6], procDefList.currentLang, now)}" rendered="#{row[6] ne null}"/> 
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], procDefList.currentLang, now)}, #{labels['procDefList.dlajnost']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row[8], procDefList.currentLang, now)}" rendered="#{row[6] eq null and row[9] eq null and row[7] ne null and row[8] ne null}"/>
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[7], procDefList.currentLang, now)}, #{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, row[9], procDefList.currentLang, now)}" rendered="#{row[6] eq null and row[8] eq null and row[7] ne null and row[9] ne null}"/>
+							<h:outputText value="#{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, row[9], procDefList.currentLang, now)}" rendered="#{row[6] eq null and row[7] eq null and row[8] eq null and row[9] ne null}"/>								
+						</p:column>
+
+						<p:column width="50" sortBy="#{row.a3}" headerText="#{labels['procDefList.status']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_DEF_STAT, row[3], procDefList.currentLang, now)}" />							
+						</p:column>
+
+					</p:dataTable>
+
+				</h:panelGroup>
+
+			</h:panelGroup>
+			
+		<p:dialog header="#{labels['procDefList.titleCopyDefProc']}" widgetVar="modalCopyDefProc" modal="true" width="800" height="100" resizable="true" appendTo="@form">
+	
+		<p:messages id="messages" >
+	        <p:autoUpdate />
+	    </p:messages>	
+				
+		<p:outputPanel id="panelDlgCopyDefProc">
+		
+			<div class="p-grid">
+			
+				<!-- Избор на регистратура, за която да се създаде нова дефиниция на процедура, копие на избраната -->
+				<div  class=" p-col-12 p-md-12">								
+					<h:outputText value="#{labels['procDefList.fromRegistratura']}" styleClass="form-label req"/>
+					<p:selectOneMenu value="#{procDefList.fromRegistratura}" id="fromReg" styleClass="#{registerData.hasMessages('fromReg') ? 'invalid': ''}" style="width: 55%">
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                           <f:selectItems value="#{procDefList.classifRegsList}" 
+                      			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                      	<p:ajax event="change" update="panelCopyProc"/>
+					</p:selectOneMenu>					
+					<p:message for="fromReg" display="text" style="color:#ffffff; background:none; border:0px">
+						<p:autoUpdate/>
+					</p:message>								
+				</div>
+				
+				<h:panelGroup id="panelCopyProc" styleClass="p-grid p-col-12 p-nogutter" layout="block">
+
+					<h:panelGroup rendered="#{procDefList.fromRegistratura != null}">
+
+						<div class=" p-col-12 p-md-12">
+							<p:commandButton icon="fas fa-save" action="#{procDefList.actionCopyDefProc}"  value="#{labels['procDefList.createCopy']}"  ajax="false"/>
+						</div>
+
+					</h:panelGroup>
+
+				</h:panelGroup>
+			
+			</div>
+			
+		</p:outputPanel>
+				
+		<f:facet name="footer">
+		          	
+          	<div class="p-grid p-nogutter">
+	       		
+	       		<div class="p-col-12" align="right">
+		       	 	<p:commandButton id="bntCloseCopyReg" update="panelDlgCopyDefProc" process="@this panelDlgCopyDefProc"
+		       	 	    icon="fas fa-times" styleClass="ui-button-secondary" value="#{labels['register.cancel']}" oncomplete="PF('modalCopyDefProc').hide();" />	
+		 		</div>
+	 		
+	 		</div>
+		
+		</f:facet>	
+		
+	</p:dialog> 
+			
+		</h:form>
+			
+	</ui:define>	
+	
+</ui:composition>

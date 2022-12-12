@@ -1,0 +1,109 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" 
+				xmlns:ui="http://java.sun.com/jsf/facelets" 
+				xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+    <style type="text/css">
+
+        ol {
+            padding-left: 15px;
+        }
+
+        ol li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    
+    <div class="p-grid p-align-end">
+   
+     <p:outputPanel rendered="#{userEdit.admStructInfo != null}" class="ui-fluid p-col-6">
+         <h:outputText value="#{labels['users.zveno']} " styleClass="form-label"/>
+         <p:inputText value="#{userEdit.admStructInfo}" readonly="true" />
+      </p:outputPanel> 
+      
+      <div class="p-col-6">	
+         
+         <ui:remove>  <p:selectBooleanButton id="isDelovoditel1" value="#{userEdit.delovoditel}"
+	                       onLabel="#{labels['users.delovoditel']}"
+	                       offLabel="#{labels['users.noDelovoditel']}"
+	                       title="#{labels['users.delovoditel']}"
+	                       onIcon="fas fa-toggle-on"
+	                       offIcon="fas fa-toggle-off"
+	                       styleClass="margin-left">
+			               <p:ajax update="formUserEdit:selectedRegistraturi" listener="#{userEdit.changeDelovoditel}"/>
+			           </p:selectBooleanButton>  
+           </ui:remove>
+           
+           <h:outputText value="#{labels['users.businessRole']} " styleClass="form-label"/>
+           <p:remoteCommand name="cmdSelBuzinessRole"  process="formUserEdit:selectedRegistraturi formUserEdit:userData @this"		
+	 				update="formUserEdit:selectedRegistraturi formUserEdit:userData"
+	  				actionListener="#{userEdit.changeDelovoditel}" />
+           <ibg:selectManyModalA id="isDelovoditel1" compType="2" 
+								codeClassif="#{Constants.CODE_CLASSIF_BUSINESS_ROLE}" 																
+								dateClassif="#{now}" filtered="false"
+								saveStateTree="false" showRadioBtn="true" 
+								selectedCodes="#{userEdit.buzinessRoleList}"
+								selectedClassifs="#{userEdit.buzinessRoleClassif}"
+								styleAutoComp="width:100%;" sortByName="true"
+								withBtnClear="false"  onComplete="cmdSelBuzinessRole()" />    
+	   </div>
+	
+	<!--Регистър-->							 
+	<div jsf:id="registri" class="p-col-12" style="display: flex;">
+	
+			<p:remoteCommand name="cmdSelectRegister" update="formUserEdit:tblRegistriList formUserEdit:registri"
+				partialSubmit="true" process="formUserEdit:tblRegistriList formUserEdit:registri @this"
+				actionListener="#{userEdit.actionSelectRegister}" />
+			
+			<ibg:selectManyModalA compType="1" maxResults="50" 
+				header="#{labels['users.chooseRegistri']}" titleLoadBtn=""
+				valueLoadBtn="#{labels['users.chooseRegistri']}"
+				codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI_SORTED}"				
+				selectedCode="#{userEdit.registerIdList}"
+				selectedClassifs="#{userEdit.selRegistersList}"
+				specifics="#{userEdit.specificsRegister}" sortByName="false"
+				saveStateTree="false" showRadioBtn="true" 
+				styleAutoComp="width:100%;" filtered="false" 
+				onComplete="cmdSelectRegister()" />	
+			
+			
+			<span class="fas fa-ellipsis-v  p-mx-2" />
+			
+					
+			<p:commandButton id="btnAllRegistri" value="#{labels['users.chooseAllRegistries']}" action="#{userEdit.actionSelectALLRegisters}" 
+				 partialSubmit="true" process="formUserEdit:tblRegistriList formUserEdit:registri @this" update="formUserEdit:tblRegistriList formUserEdit:registri"
+				 icon="fas fa-check-double" />												   
+	</div>	
+	
+	<div class="p-col-12">
+		 
+	        <span style="color: #ff7f00; font-size: 0.9rem; font-style: italic;">#{userEdit.freeAcces ? labels['users.freeAcces'] : ''}</span>	    
+	
+			<p:dataTable id="tblRegistriList" var="row" value="#{userEdit.selectedRegistri}" 
+				rowIndexVar="idx" emptyMessage="#{labels['users.noChooseRegisters']}" rows="5" sortMode="single" reflow="true"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+				paginatorAlwaysVisible="true" paginator="true">
+				
+				<p:column width="15" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>
+				
+				<p:column width="*" headerText="#{labels['extendedUserEdit.registri']}">										
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, row, userEdit.currentLang, null)}" />					
+				</p:column>
+				
+				<p:column width="35" exportable="false">
+					<p:commandButton icon="fas fa-trash" action="#{userEdit.actionRemoveRegister(row)}" onclick="if(!confirm('Сигурни ли сте, че искате да изтриете регистъра?'))return false;"
+						ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" update="formUserEdit:tblRegistriList" />
+				</p:column>
+				
+			</p:dataTable>
+		</div>
+    
+    </div>
+  
+</ui:composition>

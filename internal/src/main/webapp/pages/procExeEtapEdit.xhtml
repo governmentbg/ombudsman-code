@@ -1,0 +1,681 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:viewAction action="#{userData.checkPageAccess(104)}" onPostback="false" />		
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/procExeEtapEdit.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li><p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>#{navTexts['/pages/procExeEtapEdit.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<h:form id="formProcExeEtap">
+
+			<div class="#{guestPreferences.containerPosition}">
+
+				<div class="card" jsf:id="allDataEtap">
+				
+					<!--Основни данни за процедурата-->
+					<p:toolbar styleClass="margin-bottom">
+						
+						<f:facet name="left">
+							<p:commandButton icon="fas fa-user-check" update="formProcExeEtap" value="#{labels['procExeEtapEdit.btnSelContr']}" disabled="#{!procExeEtapEdit.editEtapExe}"
+											 oncomplete="PF('modalSelContrEtap').show();" rendered="#{procExeEtapEdit.procExe.status ne OmbConstants.CODE_ZNACHENIE_PROC_STAT_STOP}"/>
+								<span class=" p-mx-2" jsf:rendered="#{procExeEtapEdit.procExe.status ne OmbConstants.CODE_ZNACHENIE_PROC_STAT_STOP}">
+			                         <span class="fas fa-ellipsis-v SoftGray" />
+			                   </span>
+							<p:commandButton icon="fas fa-cog" update="formProcExeEtap" value="#{labels['procExeEdit.btnDef']}" oncomplete="PF('modalDefEtap').show();" />
+						</f:facet>
+						
+						<f:facet name="right">						
+							<h:panelGroup id="pRegInfoProcExeEtap" rendered="#{procExeEtapEdit.etapExe.id ne null}">
+								<ibg:compObjAudit idObj="#{procExeEtapEdit.etapExe.id}" 
+											 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_PROC_EXE_ETAP}"
+											 	identInfo="#{procExeEtapEdit.etapExe.etapName}"/>
+							</h:panelGroup>
+						</f:facet>
+					
+					</p:toolbar>
+					
+					<div class="title-group">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataExeEtap')">
+							<h:outputText value="#{labels['procDefEdit.basicData']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+					
+					<div id="basicDataExeEtap" class="p-grid ui-fluid">			
+						
+						<!-- ИД на етап -->
+						<div class="p-col-12 p-md-1">
+							<h:outputText value="#{labels['procExeEdit.idEtap']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.id}" />
+						</div>
+						
+						<!-- Номер на етап -->
+						<div class="p-col-12 p-md-1">
+							<h:outputText value="#{labels['procExeEdit.numEtap']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.nomer}" />
+						</div>
+						
+						<!-- Наименование на етап -->
+						<div class="p-col-12 p-md-4">
+							<h:outputText value="#{labels['procDefList.nameProc']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.etapName}" />
+						</div>
+			
+						<!-- Събирателен -->
+						<div class="p-col-12 p-md-2">
+							<h:outputText value="#{labels['procDefEdit.isMerge']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, procExeEtapEdit.etapExe.defEtapData[1], procExeEtapEdit.currentLang, now)}" />	
+						</div>
+						
+						<!-- Условен -->
+						<div class="p-col-12 p-md-1">
+							<h:outputText value="#{labels['procDefEdit.etapUsloven']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, procExeEtapEdit.etapExe.conditional, procExeEtapEdit.currentLang, now)}" />	
+						</div>
+						
+						<!-- Стартиращ документ -->
+						<div class="p-col-12 p-md-3 ui-inputgroup">
+							<h:outputText value="#{labels['procExeEtapEdit.startDoc']}: " styleClass="form-label p-mr-2" rendered="#{procExeEtapEdit.etapExe.docId ne null}"/>
+							
+							<p:outputLabel value="#{procExeEtapEdit.docRnFull}" rendered="#{procExeEtapEdit.etapExe.docId ne null}" styleClass="p-mr-2"/>
+							
+			  				<p:link ajax="false" href="docView.xhtml?faces-redirect=true" target="_blank" rendered="#{procExeEtapEdit.etapExe.docId ne null}">
+			  					 <i class="fas fa-eye"> </i> 
+			  					 <f:param name="idObj" value="#{procExeEtapEdit.etapExe.docId}"/> 
+			  				</p:link>
+						</div>
+						
+						<!-- Начало -->
+						<div class="p-col-12 p-md-2" style="white-space: nowrap;">							
+							<h:outputText value="#{labels['procList.begin']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.beginDate}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procExeEtapEdit.timeZone}"/>
+							</p:outputLabel>	
+						</div>
+						
+						<!-- Срок -->
+						<div class="p-col-12 p-md-2" style="white-space: nowrap;" >							
+							<h:outputText value="#{labels['procDefEdit.srok']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.srokDate}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procExeEtapEdit.timeZone}"/>
+							</p:outputLabel>													
+						</div>
+						
+						<!-- Край -->
+						<div class="p-col-12 p-md-2" style="white-space: nowrap;" >							
+							<h:outputText value="#{labels['procList.end']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.endDate}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procExeEtapEdit.timeZone}"/>
+							</p:outputLabel>							
+						</div>
+						
+						<!-- Статус -->
+						<div class="p-col-12 p-md-2" style="white-space: nowrap;">
+							<h:outputText value="#{labels['procDefList.status']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ETAP_STAT, procExeEtapEdit.etapExe.status, procExeEtapEdit.currentLang, now)}" />	
+						</div>
+						
+						<!-- Предходен етап -->
+						<div class="p-col-12 p-md-4">
+							<h:outputText value="#{labels['procExeEtapEdit.prevEtap']}: " styleClass="form-label" />
+							<p:outputLabel value="ИД: #{procExeEtapEdit.etapExe.prev[0]}, № #{procExeEtapEdit.etapExe.prev[1]}, #{procExeEtapEdit.etapExe.prev[2]}" rendered="#{procExeEtapEdit.etapExe.prev ne null}"/>
+							<p:outputLabel value="#{labels['procExeEtapEdit.noPrevEtap']}" rendered="#{procExeEtapEdit.etapExe.prev eq null}"/>
+						</div>
+						
+						<!-- Контролиращ -->
+						<div class="p-col-12 p-md-4">
+							<h:panelGroup rendered="#{procExeEtapEdit.etapExe.codeRef ne null and !systemData.matchClassifItems(SysConstants.CODE_CLASSIF_USERS, procExeEtapEdit.etapExe.codeRef, now)}">
+								<i class="fas fa-exclamation-triangle" style="color:#e8a36d;font-size:16px;" title="#{labels['procExeEdit.slujNotUser']} "></i>							
+							</h:panelGroup>							
+							<h:outputText value="#{labels['procExeEdit.controlEtap']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapExe.codeRef, procExeEtapEdit.currentLang, now)}" id="codeRef"/>	
+						</div>
+						
+						<!-- Забележка по изпълнението -->
+						<div class="p-col-12 p-md-8">
+							<h:outputText value="#{labels['procExeEdit.comments']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.comments}" style="color:#F28686;"/>
+						</div>
+						
+					</div>
+					
+					<div class="title-group">
+						<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#opisUkazIzpalEtap')" >
+							<h:outputText value="#{labels['procExeEdit.opisUkazIzpal']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+					
+					<div id="opisUkazIzpalEtap" class="p-grid ui-fluid" style="display: none">	
+					
+						<!-- Описание на етап -->
+						<div class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefList.opisProc']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.etapInfo}" />
+						</div>
+			
+						<!--  Указания за изпълнение -->
+						<div class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.instruction']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapExe.instructions}" />
+						</div>
+					
+					</div>
+					
+					<br />
+					
+					<div class="title-group" jsf:rendered="#{procExeEtapEdit.etapExe.codeRef ne null and procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_WAIT}">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#etapDefTaksList')">
+							<h:outputText value="#{labels['procDefEdit.defTasks']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+						
+						<p:commandButton icon="fas fa-sync-alt" value="#{labels['procExeEtapEdit.regTasks']}" action="#{procExeEtapEdit.actionRegEtapTasks}"  update="formProcExeEtap" disabled="#{!procExeEtapEdit.editEtapExe}"/>
+							
+					    <p:commandButton widgetVar="hiddenReturn" id="btnRegTasksForDef" style="display:none" actionListener="#" update="formProcExeEtap">
+							<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['procExeEdit.sureReturnProc']}" icon="fas fa-exclamation-triangle" /> 
+						</p:commandButton>
+					</div>
+					
+					<div jsf:id="etapDefTaksList" class="p-grid ui-fluid" jsf:rendered="#{procExeEtapEdit.etapExe.codeRef ne null and procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_WAIT}">
+					
+						<h:outputText value="#{labels['procExeEtapEdit.txtOverDefTasks']}" style="color:#F28686;" escape="false"/>
+			
+						<p:dataTable id="tblDefTasksList" var="row" value="#{procExeEtapEdit.defTasksList}" rowIndexVar="idx" rowKey="#{row.id}"
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" selection="#{procExeEtapEdit.selDefTasksList}"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" >	
+							
+							<p:column width="25px" exportable="false" selectionMode="multiple" style="width:5px; text-align:center" rendered="#{procExeEtapEdit.editEtapExe}"/>
+			
+							<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.taskType}" headerText="#{labels['taskSchedule.vidZad']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row.taskType, procExeEtapEdit.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="150" sortBy="#{row.taskInfo}" headerText="#{labels['docu.dopInfo']}">
+								<h:outputText value="#{row.taskInfo}" />
+							</p:column>
+							
+							<p:column width="40" headerText="#{labels['procDefEdit.srok']}">
+								<h:outputText value="#{row.srokDays}д" rendered="#{row.srokDays ne null and row.srokHours eq null}" />
+								<h:outputText value="#{row.srokHours}ч" rendered="#{row.srokDays eq null and row.srokHours ne null}" />
+								<h:outputText value="#{row.srokDays}д #{row.srokHours}ч" rendered="#{row.srokDays ne null and row.srokHours ne null}" />
+							</p:column>
+			
+							<p:column width="200"  headerText="#{labels['procExeEtapEdit.defTaskIzpal']}">									
+								<h:outputText value="#{labels['procDefEdit.izpal']}: " rendered="#{row.taskIzpList ne null}" styleClass="form-label"/>
+								<p:repeat value="#{row.taskIzpList}" var="izpal" >																		
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, izpal.codeRef, procExeEtapEdit.currentLang, now)}; " 
+									rendered="#{izpal.codeRef ne null}"/> 
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, izpal.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.dlajnost']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, izpal.emplPosition, procExeEtapEdit.currentLang, now)}; " 
+									rendered="#{izpal.codeRef eq null and izpal.businessRole eq null and izpal.zveno ne null and izpal.emplPosition ne null}"/>
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, izpal.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, izpal.businessRole, procExeEtapEdit.currentLang, now)}; " 
+									rendered="#{izpal.codeRef eq null and izpal.emplPosition eq null and izpal.zveno ne null and izpal.businessRole ne null}"/>
+									<h:outputText value="#{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, izpal.businessRole, procExeEtapEdit.currentLang, now)}; " 
+									rendered="#{izpal.codeRef eq null and izpal.zveno eq null and izpal.emplPosition eq null and izpal.businessRole ne null}"/>								
+								</p:repeat>
+							</p:column>
+							
+							<p:column width="200"  headerText="#{labels['procExeEtapEdit.oprIzpal']}">
+								<h:outputText value="#{labels['procDefEdit.izpal']}: " styleClass="form-label"/>
+								<p:repeat value="#{row.realIzpCodes}" var="realIzp" >																		
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, realIzp, procExeEtapEdit.currentLang, now)}; " /> 
+								</p:repeat>
+							</p:column>
+							
+							<p:column width="10" exportable="false">
+								<div style="display:none">
+									<p:remoteCommand name="cmdSelectIzpal" update="formProcExeEtap:tblDefTasksList"
+												process="formProcExeEtap:tblDefTasksList @this"
+												actionListener="#{procExeEtapEdit.actionSelectIzpal(row.id)}" />							
+									<ibg:selectManyAdmStr compType="1" maxResults="50" id="manyIzpalList"									
+										header="#{labels['procExeEtapEdit.oprIzpal']}" 
+										codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 		
+										selectedCode="#{procExeEtapEdit.oprIzpList}" isSelectNode="false"
+										selectedClassifs="#{procExeEtapEdit.selOprIzpList}" sortByName="false"
+										showRadioBtn="true" filtered="false" onComplete="cmdSelectIzpal()"/>
+								</div>
+								<p:commandButton icon="fas fa-list-ul" action="#{procExeEtapEdit.actionLoadRealIzp(row.id, idx)}" update="formProcExeEtap:tblDefTasksList" disabled="#{!procExeEtapEdit.editEtapExe}"/>								
+							</p:column>
+			
+						</p:dataTable>
+			
+					</div>	
+					
+					<br />
+					
+					<div class="title-group" jsf:rendered="#{procExeEtapEdit.etapExe.status ne OmbConstants.CODE_ZNACHENIE_ETAP_STAT_WAIT}">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#etapRegTaksList')">
+							<h:outputText value="#{labels['procExeEtapEdit.btnRegTasks']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink> 
+										   
+					 <p:commandButton icon="fas fa-plus" value="#{labels['procExeEtapEdit.addTask']}" 
+					  	rendered="#{procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_EXE or procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_DECISION}"
+					    update="taskModalPanel" partialSubmit="true" disabled="#{!procExeEtapEdit.editEtapExe}"
+					    action="#{procExeEtapEdit.actionNewTaskEtap}" oncomplete="PF('taskMP').show()"  />
+										 							
+					</div>
+					
+					<div id="etapRegTaksList" class="p-grid ui-fluid" jsf:rendered="#{procExeEtapEdit.etapExe.status ne OmbConstants.CODE_ZNACHENIE_ETAP_STAT_WAIT}">
+								
+						<p:dataTable id="tblRegTasksList" var="row" value="#{procExeEtapEdit.regTasksList}" rowIndexVar="idx" 
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" 
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" >	
+			
+							<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+			
+							<p:column width="15" exportable="false">
+								<p:commandButton icon="fas fa-edit"  styleClass="btn-new"
+								update="formProcExeEtap:taskModalPanel" partialSubmit="true" 
+					    		action="#{procExeEtapEdit.actionEditTaskEtap(row[0])}" oncomplete="PF('taskMP').show()" style="text-align:center"  
+								disabled="#{procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_WAIT or procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_CANCEL}"/>
+							</p:column>
+							
+							<p:column width="50" sortBy="#{row[1]}" headerText="#{labels['procDefList.nomProc']}">
+								<h:outputText value="#{row[1]}" />
+							</p:column>
+							
+							<p:column width="60" sortBy="#{row[2]}" headerText="#{labels['docu.vid']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[2], procExeEtapEdit.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="50" sortBy="#{row[5]}" headerText="#{labels['tasks.srok']}" >									  
+								<h:outputText value="#{row[5]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procExeEtapEdit.timeZone}"/>
+								</h:outputText>							    
+							</p:column>
+							
+							<p:column width="60" sortBy="#{row[7]}"  headerText="#{labels['procDefList.status']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[7], procExeEtapEdit.currentLang, now)}" />							
+							</p:column>
+							
+							<p:column width="100" sortBy="#{row[17]}"  headerText="#{labels['procExeEtapEdit.slujStatus']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[17], procExeEtapEdit.currentLang, now)} "> </h:outputText>
+							</p:column>
+							
+							<p:column width="200" headerText="#{labels['admStruct.employees']}">
+								<h:outputText value="#{labels['tasks.assignCode']}: " styleClass="form-label"/>	
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], procExeEtapEdit.currentLang, now)}; "/>
+								<h:outputText value="#{labels['tasks.ctrlCode']}: " styleClass="form-label" rendered="#{row[11] ne null}"/>
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[11], procExeEtapEdit.currentLang, now)}; "/>
+								<h:outputText value="#{labels['procDefEdit.izpal']}: " styleClass="form-label"/>
+								<h:outputText value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[12], procExeEtapEdit.currentLang, now)}; " /> 														
+							</p:column>
+							
+							<p:column width="60" sortBy="#{row[4]}" headerText="#{labels['tasks.assign']}" >
+								<h:outputText value="#{row[4]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{procExeEtapEdit.timeZone}"/>
+								</h:outputText>								
+							</p:column>
+							
+							<p:column width="100" sortBy="#{row[9]}" headerText="#{labels['dashboard.mnenieKomentar']}">
+								<h:outputText value="#{labels['docu.modalRefMnenie']}: " styleClass="form-label" rendered="#{row[16] ne null}"/>
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_OPINION, row[16], procExeEtapEdit.currentLang, now)}; " rendered="#{row[16] ne null}"/>							
+								<h:outputText value="#{row[9]}" />								
+							</p:column>
+							
+							<p:column width="150" sortBy="#{row[3]}" headerText="#{labels['docu.dopInfo']}">
+								<h:outputText value="#{row[3]}" />
+							</p:column>
+							
+							<p:column style="text-align: center" width="20" exportable="false">
+								<f:facet name="header">
+									 <i class="fas fa-link" title="#{labels['tasks.delDocReq']}"></i>								  
+								</f:facet>
+								<p:button  icon="fas fa-eye" href="docView.xhtml?faces-redirect=true" target="_blank" 
+							           title="#{labels['tasks.delDocReq']} N: #{row[14]} / #{row[15]}" 
+					  				   rendered="#{row[13] != null}" >						  				   
+					  				   <f:param name="idObj" value="#{row[13]}"/>
+						  		</p:button>	
+							
+							</p:column> 
+			
+						</p:dataTable>
+			
+					</div>	
+					
+					<br />
+					
+					<div class="title-group" jsf:rendered="#{procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_DECISION}">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#makingDecision')">
+							<h:outputText value="#{labels['procExeEtapEdit.makingDecision']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+					
+					<div id="makingDecision" class="card" jsf:rendered="#{procExeEtapEdit.etapExe.status eq OmbConstants.CODE_ZNACHENIE_ETAP_STAT_DECISION}">
+						
+						<p:toolbar styleClass="margin-bottom" id="tlbSave">
+							<f:facet name="left">
+								<p:commandButton icon="fas fa-save" action="#{procExeEtapEdit.actionCompleteEtap}" value="#{ui_labels['general.save']}" update="formProcExeEtap" disabled="#{!procExeEtapEdit.editEtapExe}">
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['procExeEtapEdit.sureDecision']}" icon="fas fa-exclamation-triangle" /> 
+								</p:commandButton>								
+							</f:facet>							
+						</p:toolbar>
+						
+						<div jsf:id="makDecision" class="p-grid ui-fluid p-align-end"> 
+						
+							<div class="p-col-12 p-md-12">	
+								<h:outputText value="#{labels['procExeEtapEdit.txtForMakDec']}" style="color:#F28686;" escape="false"/>
+							</div>
+							
+							<div class="p-col-12 p-md-12" jsf:id="selActivate">
+								<p:selectOneRadio id="activateEtap" value="#{procExeEtapEdit.activateEtap}" disabled="#{!procExeEtapEdit.activeStatus or !procExeEtapEdit.editEtapExe}">
+									<f:selectItem itemLabel="#{labels['procExeEtapEdit.activateEtap']}" itemValue="true"/>
+									<p:ajax event="change" listener="#{procExeEtapEdit.actionSelectActivate}" update="formProcExeEtap:selNextOk formProcExeEtap:selNextNot formProcExeEtap:selNextOpt formProcExeEtap:tblnextOkList formProcExeEtap:tblnextNotList formProcExeEtap:tblnextOptList formProcExeEtap:tlbSave"/>									
+								</p:selectOneRadio>
+								
+								<h:outputText value="#{labels['procExeEtapEdit.txtForActivateEtap']}" styleClass="form-label" escape="false"/>
+							</div>
+									
+							<div class=" p-col-12 p-md-12" jsf:id="selNextOk">
+								<p:selectOneRadio id="nextOkEtaps" value="#{procExeEtapEdit.nextOk}" rendered="#{procExeEtapEdit.etapDef.nextOkList.size() > 0}" disabled="#{!procExeEtapEdit.editEtapExe}">
+									<f:selectItem itemLabel="#{labels['procDefEdit.etapNextOk']}" itemValue="true"/>
+									<p:ajax event="change" listener="#{procExeEtapEdit.actionSelectNextOk}" update="formProcExeEtap:selNextNot formProcExeEtap:selNextOpt formProcExeEtap:selActivate formProcExeEtap:tblnextOkList formProcExeEtap:tblnextNotList formProcExeEtap:tblnextOptList formProcExeEtap:tlbSave"/>									
+								</p:selectOneRadio>
+							</div>
+							
+							<div class="p-grid ui-fluid" style="width: 70%;">
+							
+								<p:dataTable id="tblnextOkList" var="row" value="#{procExeEtapEdit.etapDef.nextOkList}" rowIndexVar="idx" rowKey="#{row[0]}"
+								emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" selection="#{procExeEtapEdit.selNextOkList}"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" 
+								rendered="#{procExeEtapEdit.etapDef.nextOkList.size() > 0}">								
+								
+									<p:column width="25px" exportable="false" selectionMode="multiple" style="width:5px; text-align:center" rendered="#{procExeEtapEdit.editEtapExe}" />
+					
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+									
+									<p:column width="50" sortBy="#{row[1]}" headerText="#{labels['procDefList.nomProc']}">
+										<h:outputText value="#{row[1]}" />
+									</p:column>
+									
+									<p:column width="300" sortBy="#{row[2]}" headerText="#{labels['procDefList.nameProc']}">
+										<h:outputText value="#{row[2]}" />
+									</p:column>
+								
+								</p:dataTable>
+							
+							</div>
+							
+							<div class=" p-col-12 p-md-12" jsf:id="selNextNot">
+								<p:selectOneRadio id="nextNotEtaps" value="#{procExeEtapEdit.nextNot}" rendered="#{procExeEtapEdit.etapDef.nextNotList.size() > 0}" disabled="#{!procExeEtapEdit.editEtapExe}">
+									<f:selectItem itemLabel="#{labels['procDefEdit.etapNextNot']}" itemValue="true"/>
+									<p:ajax event="change" listener="#{procExeEtapEdit.actionSelectNextNot}" update="formProcExeEtap:selNextOk formProcExeEtap:selNextOpt formProcExeEtap:selActivate formProcExeEtap:tblnextOkList formProcExeEtap:tblnextNotList formProcExeEtap:tblnextOptList formProcExeEtap:tlbSave"/>
+								</p:selectOneRadio>
+							</div>
+							
+							<div class="p-grid ui-fluid" style="width: 70%;">
+							
+								<p:dataTable id="tblnextNotList" var="row" value="#{procExeEtapEdit.etapDef.nextNotList}" rowIndexVar="idx" rowKey="#{row[0]}"
+								emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" selection="#{procExeEtapEdit.selNextNotList}"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" 
+								rendered="#{procExeEtapEdit.etapDef.nextNotList.size() > 0}">								
+								
+									<p:column width="25px" exportable="false" selectionMode="multiple" style="width:5px; text-align:center" rendered="#{procExeEtapEdit.editEtapExe}"/>
+					
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+									
+									<p:column width="50" sortBy="#{row[1]}" headerText="#{labels['procDefList.nomProc']}">
+										<h:outputText value="#{row[1]}" />
+									</p:column>
+									
+									<p:column width="300" sortBy="#{row[2]}" headerText="#{labels['procDefList.nameProc']}">
+										<h:outputText value="#{row[2]}" />
+									</p:column>
+								
+								</p:dataTable>
+							
+							</div>
+							
+							<div class=" p-col-12 p-md-12" jsf:id="selNextOpt">
+								<p:selectOneRadio id="nextOptEtaps" value="#{procExeEtapEdit.nextOpt}" rendered="#{procExeEtapEdit.etapDef.nextOptionalList.size() > 0}" disabled="#{!procExeEtapEdit.editEtapExe}">
+									<f:selectItem itemLabel="#{labels['procDefEdit.nextOptional']}" itemValue="true"/>
+									<p:ajax event="change" listener="#{procExeEtapEdit.actionSelectNextOpt}" update="formProcExeEtap:selNextOk formProcExeEtap:selNextNot formProcExeEtap:selActivate formProcExeEtap:tblnextOkList formProcExeEtap:tblnextNotList formProcExeEtap:tblnextOptList formProcExeEtap:tlbSave"/>
+								</p:selectOneRadio>
+							</div>
+							
+							<div class="p-grid ui-fluid" style="width: 70%;">
+							
+								<p:dataTable id="tblnextOptList" var="row" value="#{procExeEtapEdit.etapDef.nextOptionalList}" rowIndexVar="idx" rowKey="#{row[0]}"
+								emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" selection="#{procExeEtapEdit.selNextOptList}"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true" 
+								rendered="#{procExeEtapEdit.etapDef.nextOptionalList.size() > 0}">								
+								
+									<p:column width="25px" exportable="false" selectionMode="multiple" style="width:5px; text-align:center" rendered="#{procExeEtapEdit.editEtapExe}"/>
+					
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+									
+									<p:column width="50" sortBy="#{row[1]}" headerText="#{labels['procDefList.nomProc']}">
+										<h:outputText value="#{row[1]}" />
+									</p:column>
+									
+									<p:column width="300" sortBy="#{row[2]}" headerText="#{labels['procDefList.nameProc']}">
+										<h:outputText value="#{row[2]}" />
+									</p:column>
+								
+								</p:dataTable>
+							
+							</div>
+							
+						</div>
+					
+					</div>
+
+				</div>
+
+			</div>
+			
+			<p:dialog appendTo="@form" header="#{labels['procExeEtapEdit.btnSelContr']}" width="600" widgetVar="modalSelContrEtap" dynamic="true" modal="true">
+						
+				<p:messages>
+			        <p:autoUpdate />
+			    </p:messages>	
+				
+				<p:outputPanel id="panelSelContrEtap">
+
+					<div class="p-grid ui-fluid">
+											
+						<!-- Контролиращ на етапа, според дефиницията на процедурата -->
+						<div  class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procExeEtapEdit.contrEtap']}: " styleClass="form-label" />
+						<br />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.codeRef, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef ne null}"/>	
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.dlajnost']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, procExeEtapEdit.etapDef.emplPosition, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.businessRole eq null and procExeEtapEdit.etapDef.zveno ne null and procExeEtapEdit.etapDef.emplPosition ne null}"/>
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, procExeEtapEdit.etapDef.businessRole, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.emplPosition eq null and procExeEtapEdit.etapDef.zveno ne null and procExeEtapEdit.etapDef.businessRole ne null}"/>
+							<p:outputLabel value="#{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, procExeEtapEdit.etapDef.businessRole, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.emplPosition eq null and procExeEtapEdit.etapDef.zveno eq null and procExeEtapEdit.etapDef.businessRole ne null}"/>					
+						</div>
+						
+						<div class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.controlEtap']}" styleClass="form-label" />							
+							<ibg:selectOneModalA id="selContrEtap" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+								dateClassif="#{now}" filtered="false" 
+								isSelectNode="false" selectedCode="#{procExeEtapEdit.codeRefExeEtap}"
+								saveStateTree="true" header="#{labels['procDefEdit.controlEtap']}"
+								withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" />
+						</div>
+						
+					</div>
+	
+				</p:outputPanel>
+				
+				<f:facet name="footer">
+					
+					<div class="p-grid p-nogutter">					
+						<div class="p-col-6" align="left">
+							<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}" action="#{procExeEtapEdit.actionChangeCodeRef}" update="allDataEtap" />
+						</div>
+							
+						<div class="p-col-6" align="right">
+							<p:commandButton update="panelSelContrEtap" process="@this panelSelContrEtap" icon="fas fa-times"
+								styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('modalSelContrEtap').hide();" />
+						</div>
+					</div>
+				
+				</f:facet>
+					
+			</p:dialog>
+			
+			<p:dialog appendTo="@form" header="#{labels['procExeEtapEdit.btnDefEtap']}" width="700" widgetVar="modalDefEtap" dynamic="true" modal="true">
+						
+				<p:messages>
+			        <p:autoUpdate />
+			    </p:messages>	
+				
+				<p:outputPanel id="panelDefEtap">
+				
+					<div class="p-grid ui-fluid">
+					
+						<!-- Номер на етап -->
+						<div class="p-col-12 p-md-2">
+							<h:outputText value="#{labels['procDefList.nomProc']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.nomer}" />
+						</div>						
+							
+						<!-- Наименование на етап -->
+						<div class="p-col-12 p-md-10">
+							<h:outputText value="#{labels['procDefList.nameProc']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.etapName}" />
+						</div>
+						
+						<!-- Описание на процедура -->
+						<div class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefList.opisProc']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.etapInfo}" />
+						</div>
+			
+						<!--  Указания за изпълнение -->
+						<div class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.instruction']}: " styleClass="form-label" />
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.instructions}" />
+						</div>	
+						
+						<!-- Срок за изпълнение в дни -->
+						<div class=" p-col-12 p-md-6">
+							<h:outputText value="#{labels['procExeEdit.srokIzpDays']}: " styleClass="form-label" style="white-space: nowrap;"/>
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.srokDays}" />
+						</div>
+						
+						<!-- Срок за изпълнение в часове, ако има -->
+						<div class=" p-col-12 p-md-6">
+							<h:outputText value="#{labels['procDefEdit.srokHours']}: " styleClass="form-label" style="white-space: nowrap;" rendered="#{procExeEtapEdit.etapDef.srokHours ne null}"/>
+							<p:outputLabel value="#{procExeEtapEdit.etapDef.srokHours}" rendered="#{procExeEtapEdit.etapDef.srokHours ne null}"/>
+						</div>
+
+						<!-- Събирателен -->
+						<div class=" p-col-12 p-md-12" >
+							<h:outputText value="#{labels['procDefEdit.isMerge']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, procExeEtapEdit.etapDef.isMerge, procExeEtapEdit.currentLang, now)}" />	
+						</div>
+						
+						<!-- Контролиращ етапа  -->
+						<div  class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.controlEtap']}: " styleClass="form-label" />
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.codeRef, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef ne null}"/>	
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.dlajnost']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, procExeEtapEdit.etapDef.emplPosition, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.businessRole eq null and procExeEtapEdit.etapDef.zveno ne null and procExeEtapEdit.etapDef.emplPosition ne null}"/>
+							<p:outputLabel value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, procExeEtapEdit.etapDef.zveno, procExeEtapEdit.currentLang, now)}, #{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, procExeEtapEdit.etapDef.businessRole, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.emplPosition eq null and procExeEtapEdit.etapDef.zveno ne null and procExeEtapEdit.etapDef.businessRole ne null}"/>
+							<p:outputLabel value="#{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, procExeEtapEdit.etapDef.businessRole, procExeEtapEdit.currentLang, now)}" rendered="#{procExeEtapEdit.etapDef.codeRef eq null and procExeEtapEdit.etapDef.emplPosition eq null and procExeEtapEdit.etapDef.zveno eq null and procExeEtapEdit.etapDef.businessRole ne null}"/>					
+						</div>
+						
+						<!-- Следващи етапи (при ДА) -->
+						<div  class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.etapNextOk']}: " styleClass="form-label" />
+							<p:repeat value="#{procExeEtapEdit.etapDef.nextOkList}" var="nextOk" >	
+								<p:outputLabel value="№: #{nextOk[1]}, #{nextOk[2]}; " />
+							</p:repeat>					
+						</div>
+						
+						<!-- Следващи етапи при НЕ -->
+						<div  class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.etapNextNot']}: " styleClass="form-label" />
+							<p:repeat value="#{procExeEtapEdit.etapDef.nextNotList}" var="nextNot" >
+								<p:outputLabel value="№: #{nextNot[1]}, #{nextNot[2]}; " />
+							</p:repeat>							
+						</div>
+						
+						<!-- Следващи етапи-опционални -->
+						<div  class="p-col-12 p-md-12">
+							<h:outputText value="#{labels['procDefEdit.nextOptional']}: " styleClass="form-label" />
+							<p:repeat value="#{procExeEtapEdit.etapDef.nextOptionalList}" var="nextOpt" >
+								<p:outputLabel value="№: #{nextOpt[1]}, #{nextOpt[2]}; " />
+							</p:repeat>							
+						</div>
+						 
+					</div>
+	
+				</p:outputPanel>
+				
+				<f:facet name="footer">
+					
+					<div class="p-grid p-nogutter">								
+						<div class="p-col-12" align="right">
+							<p:commandButton update="panelDefEtap" process="@this panelDefEtap" icon="fas fa-times"
+								styleClass="ui-button-secondary" value="#{ui_labels['general.close']}" oncomplete="PF('modalDefEtap').hide();" />
+						</div>
+					</div>
+				
+				</f:facet>
+					
+			</p:dialog>		
+ 
+			<p:remoteCommand name="hideModaltaskMP" update="allDataEtap taskModalPanel" actionListener="#{procExeEtapEdit.actionCancelPanelTask}" partialSubmit="true"/>
+			<p:dialog id="taskModalPanel" dynamic="true" widgetVar="taskMP" modal="true" position="top" 
+		     		    header="#{labels['procEtap.task']} #{procExeEtapEdit.etapExe.nomer}" responsive="true" style="max-width:98%"  closeOnEscape="true"
+		     		    onHide="hideModaltaskMP()">     
+		            <p:messages  showDetail="true" closable="true" id="msgModalT">
+				  		<p:autoUpdate />
+				  	</p:messages>
+				  	<p:remoteCommand name="cmdEtapTaskEdit" action="#{procExeEtapEdit.actionEtapTaskUpdate}" partialSubmit="true" process="@this"
+				  		ignoreAutoUpdate="true" update="formProcExeEtap:compTaskId:dopInfoTsk allDataEtap" />
+		            <ibg:taskData   id="compTaskId"
+		            				idDoc="#{procExeEtapEdit.etapExe.docId}"
+		            				dateDoc="#{procExeEtapEdit.etapExe.beginDate}"
+		            			    taskProcess="3"   
+		         					rendered="#{procExeEtapEdit.showTaskEdit}"  
+		         					idTask="#{procExeEtapEdit.idTask}"
+		         					onComplete="cmdEtapTaskEdit()" 
+		         					readonly="#{procExeEtapEdit.viewTask or !procExeEtapEdit.editEtapExe}"/>
+			</p:dialog>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

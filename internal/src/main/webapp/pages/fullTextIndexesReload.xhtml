@@ -1,0 +1,82 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	template="/template/template.xhtml">
+
+	<ui:define name="viewname">Индексиране </ui:define>
+
+	<ui:define name="title">Индексиране </ui:define>
+
+	<ui:define name="content">
+		<h:form>
+			<div class="p-grid">
+				<div class="p-col-1" />
+				<div class="p-col-10">
+					<div class="card">
+
+						<p:dataTable id="indexes" var="row" rowIndexVar="rowIndex"
+							value="#{fullTextIndexesReload.getValues()}">
+
+							<!-- Индекс -->
+							<p:column width="10" exportable="false" headerText="#{labels['index.index']}">
+								<h:outputText value="#{row}" />
+							</p:column>
+
+							<!-- Дата от -->
+							<p:column width="40" headerText="#{labels['index.changedFrom']}"
+								style="text-align:center">
+								<p:datePicker id="dateOt" pattern="dd.MM.yyyy" mask="true"
+									showIcon="true"  locale="bg"
+									value="#{fullTextIndexesReload.dateFrom}">
+									<p:ajax process="dateOt" partialSubmit="true" event="change"
+										listener="#{fullTextIndexesReload.setIndexDate(row)}"/>
+									<p:ajax process="dateOt" partialSubmit="true" event="dateSelect"
+										listener="#{fullTextIndexesReload.setIndexDate(row)}"/>
+								</p:datePicker>
+							</p:column>
+
+							<!-- Дата до -->
+							<p:column width="40" headerText="#{labels['index.changedTo']}"
+								style="text-align:center">
+								<p:datePicker id="dateDo" pattern="dd.MM.yyyy" mask="true"
+									showIcon="true"  locale="bg"
+									value="#{fullTextIndexesReload.dateTo}">
+									<p:ajax process="dateDo" partialSubmit="true" event="change"
+										listener="#{fullTextIndexesReload.setIndexDate(row)}" />
+									<p:ajax process="dateDo" partialSubmit="true" event="dateSelect"
+										listener="#{fullTextIndexesReload.setIndexDate(row)}" />
+								</p:datePicker>
+							</p:column>
+						
+							<!-- Статус -->
+							<p:column width="20" headerText="#{labels['index.status']}">
+								<h:outputText id="status"
+									value="#{fullTextIndexesReload.getIndexStatus(row)}" />
+							  	<p:poll interval="1" process="status button" update="status button"/>
+							</p:column>
+
+							<!-- Бутон Индексирай -->
+							<p:column width="20" exportable="false" style="text-align:center">
+								<p:commandButton id="button" styleClass="btn-new"
+									value="Индексирай" title="Стартира индексиране"
+									icon="fas fa-cog"
+									action="#{fullTextIndexesReload.actionStartThread(row)}"
+									disabled="#{fullTextIndexesReload.isRunning(row)}"
+									update="status button">
+									<p:confirm header="#{ui_labels['general.comfirmation']}"
+									message="#{beanMessages['fulltext.indexConfirmation']}" icon="fas fa-exclamation-triangle"
+									disabled ="#{fullTextIndexesReload.dateFrom ne null}" />
+								</p:commandButton>
+							</p:column>
+							
+						</p:dataTable>
+
+					</div>
+				</div>
+			</div>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

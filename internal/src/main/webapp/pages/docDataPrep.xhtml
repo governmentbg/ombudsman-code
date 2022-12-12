@@ -1,0 +1,531 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+
+	<ui:remove> <!--Вложен в преписка !--> </ui:remove>
+	<h:panelGroup id="tdPanel5" layout="block"  >
+	
+	<f:event type="preRenderComponent" listener="#{docDataPrep.initTab}" /> 
+
+		<ui:remove><!-- Списък преписки, в които е вложен документа--></ui:remove>
+		<h:panelGroup id="tdPanel51" >
+			<div  jsf:rendered="#{docDataPrep.viewPrepList}" class="title-group">
+				<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:tabsDoc:doc-deloList')">
+					<h:outputText value="#{labels['docu.titleLstPrep']} #{docDataPrep.rnFullDoc}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>	
+			<div jsf:id="doc-deloList"   jsf:rendered="#{docDataPrep.viewPrepList}">
+				
+				<p:dataTable id="tblDeloList" var="row" value="#{docDataPrep.prepList}" lazy="true" 	
+					rowIndexVar="idx" sortMode="single" reflow="true" 
+					emptyMessage=""  scrollable="true"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+					paginatorAlwaysVisible="false" paginator="true">				
+							
+					<p:column style="text-align: center" width="50" exportable="false" >
+						
+						<p:commandButton id="btnChP"  
+							    title="#{ui_labels['general.edit']}"									
+							    action="#{docDataPrep.loadDataFromPrepList(row)}"					
+							    partialSubmit="true" 
+							    process="docForm:tabsDoc:prepTbp5 docForm:tabsDoc:deloTbp5 @this"
+								update="docForm:tabsDoc:prepTbp5 docForm:tabsDoc:deloTbp5  docForm:tabsDoc:tbP5"
+								icon="fas fa-edit"	
+								onclick="highlightElement(this ,'tr');"/>		
+					</p:column>
+												
+					<p:column width="145" sortBy="#{row.a1}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.deloInpDate']}" />									  
+						</f:facet>  
+						<h:outputText value="#{row[1]}"  >	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docDataPrep.timeZone}"/>
+						</h:outputText>	
+					</p:column>
+					
+					<p:column width="145" sortBy="#{row.a6}" >
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.regNom']}"  />
+						</f:facet> 
+						#{row[6]}  						    
+					</p:column>
+					
+					<p:column width="145" sortBy="#{row.a7}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.datPrep']}" />									  
+						</f:facet>  
+						<h:outputText value="#{row[7]}"  >	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataPrep.timeZone}"/>
+						</h:outputText>	
+					</p:column>
+					
+					<p:column width="110" sortBy="#{row.a8}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.status']}" />									  
+						</f:facet>  
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[8], docDataPrep.currentLang, now)}"/>
+						
+						<i class="fas fa-info-circle" style="margin-left:5px"
+						   jsf:rendered="#{row[15] ne null}" 
+						   title="#{labels['docu.prepPrevDelo']} #{row[15]}"></i>
+					</p:column>
+					
+					<p:column width="*" sortBy="#{row.a11}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.nameDelo']}" />									  
+						</f:facet>  
+						#{row[11]}
+					</p:column>
+					
+					<p:column width="50" sortBy="#{row.a2}" rendered="#{docDataPrep.nastrWithEkz}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.ekzN']}" />									  
+						</f:facet>  
+						<h:outputText value="#{row[2]}" />
+					</p:column>
+					
+					<p:column width="50" sortBy="#{row.a3}" rendered="#{docDataPrep.nastrWithTom}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['deloDvij.tom']}" />									  
+						</f:facet>  
+						<h:outputText value="#{row[3]}"  rendered="#{row[14] eq OmbConstants.CODE_ZNACHENIE_DA}"/>
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a12}" rendered="#{docDataPrep.nastrWithSection}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.tomSection']}" />									  
+						</f:facet>  
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_SECTION, row[12], docDataPrep.currentLang, now)}"
+						  rendered="#{row[13] eq OmbConstants.CODE_ZNACHENIE_DA}"/>
+						
+					</p:column>
+					
+			
+					<p:column width="50" sortBy="#{row.a10}">
+						<f:facet name="header">
+							 <h:outputText value="#{labels['docu.type']}" />									  
+						</f:facet>  
+						<h:panelGroup rendered="#{row[10] eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-book" style="font-size:1.2em" jsf:id="type1"/>
+							<p:tooltip id="type1Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  row[10], docDataPrep.currentLang, now)}"
+								   for="type1"  escape="false"/>	
+						</h:panelGroup>
+						<h:panelGroup rendered="#{row[10] ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-folder" style="font-size:1.2em" jsf:id="type2"/>
+							<p:tooltip id="type2Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[10], docDataPrep.currentLang, now)}"
+								   for="type2"  escape="false"/>
+						</h:panelGroup>
+											
+					</p:column>
+			
+					
+				</p:dataTable>
+			
+			</div>
+	    </h:panelGroup>
+	
+	
+		<p:toolbar id="tbP5" class="margin-bottom"   rendered="#{isView ne 1}" >
+			<f:facet name="left">									
+			
+				<p:commandButton id="btnSavePrepIn" 						 
+			           icon="fas fa-save" styleClass="btn-save"
+					   value="#{ui_labels['general.save']}"					
+					   actionListener="#{docDataPrep.actionSavePrepIn}"
+					   partialSubmit="true"
+					   process="prepTbp5 deloTbp5 @this" 
+					   update="tdPanel5"
+					   title="#{labels['docu.titleSavePrep']}"/>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	            	        
+				<p:commandButton icon="fas fa-plus"  id="btnNew" 				
+				    value="#{labels['docu.newVlagane']}" styleClass="ui-button-success" 				
+					partialSubmit="true"
+					update="prepTbp5 deloTbp5 tdPanel51 tbP5" 
+					process="prepTbp5 deloTbp5 @this" 
+					actionListener="#{docDataPrep.actionNew}" >						
+				</p:commandButton>
+			</f:facet>
+			
+			<f:facet name="right">	
+		       <p:commandButton id="btnPrepOut" 	
+				   rendered="#{ docDataPrep.deloDocPrep.id ne null}"	
+		           icon="fas fa-minus"  styleClass="ui-button-danger"
+				   value="#{labels['docu.removeDocFromPrep']}"						
+				   actionListener="#{docDataPrep.actionDelDocLinkP}"
+				   partialSubmit="true"
+				   process="prepTbp5 @this" 
+				   update="prepTbp5 deloTbp5 tdPanel51 tbP5"
+				   title="#{labels['docu.titleRemoveDocFromPrep']}">
+		    		<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docu.delDocDelo']}" icon="fas fa-exclamation-triangle" /> 
+				</p:commandButton>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+		        		    
+		        <p:commandButton id="btnDeloOut" 	
+				       rendered="#{docDataPrep.deloDocPrep.id ne null and docDataPrep.deloDocPrep.deloDelo.id ne null}"
+				  	   icon="fas fa-minus"  styleClass="ui-button-danger"
+					   value="#{labels['docu.removePrepFromDelo']}"							
+					   actionListener="#{docDataPrep.actionDelDeloLinkP}"
+					   partialSubmit="true"
+					   process="prepTbp5 deloTbp5 @this" 
+					   update="prepTbp5 deloTbp5 tbP5"
+					   title="#{labels['docu.titleRemovePrepFromDelo']}">
+					  <p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docu.delDeloDelo']}" icon="fas fa-exclamation-triangle" /> 
+				</p:commandButton>
+			</f:facet>
+		</p:toolbar>				
+			
+	
+		<ui:remove><!-- Влагане нa документ в преписка -->	</ui:remove>
+		<h:panelGroup id="prepTbp5"  >
+	
+		 	<div class="title-group">
+				<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#doc-inprep')">
+					<h:outputText value="#{labels['docu.tVlDoc']} #{docDataPrep.rnFullDoc} #{labels['docu.tVlDoc1']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+		
+		
+			<div id="doc-inprep" class="p-grid  ui-fluid" >	
+				<h:outputText value="#{labels['docu.prepViewMsg']}"	styleClass="form-label" 
+				rendered="#{isView eq 1  ? docDataPrep.deloDocPrep.id eq null : 'false'}"	/>
+				
+				<h:panelGroup	rendered="#{isView eq 1  ? docDataPrep.deloDocPrep.id ne null : 'true'}"	>
+				
+				<div class="p-col-12 p-md-12 p-lg-8 p-xl-6">					
+					<div class="p-grid  p-align-end">
+						<div class="p-col-1 p-md-1 p-lg-1 p-xl-1" jsf:rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and docDataPrep.nastrWithEkz}">
+					
+								<h:outputText value="#{labels['docu.ekzN']}"
+									styleClass="form-label" />
+								<p:inputNumber id="ekzN" title="#{labels['delo.ekzNom']}"
+									value="#{docDataPrep.deloDocPrep.ekzNomer}"
+									minValue="1" decimalPlaces="0"
+									style="display:inline-block;">
+								</p:inputNumber>
+						</div>	
+						<div class="#{docDataPrep.nastrWithEkz ? 'p-col-3 p-md-3 p-lg-3 p-xl-3' : 'p-col-4 p-md-4 p-lg-4 p-xl-4'}">	
+							<h:outputText value="#{labels['docu.deloInpDate']}" styleClass="form-label req" />		
+							<p:datePicker id="inpDat" showIcon="true" mask="true"
+								rendered="#{isView ne 1}"  pattern="dd.MM.yyyy" locale="bg"
+								showTime="true" showSeconds="true"
+								value="#{docDataPrep.deloDocPrep.inputDate}"/>	
+							<p:inputText id="inpDatV" rendered="#{isView eq 1}"
+							 	value="#{docDataPrep.deloDocPrep.inputDate}"
+							    readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataPrep.timeZone}"/>
+							</p:inputText>	
+												
+						</div>
+										
+						<div class="p-col-4 p-md-4 p-lg-4 p-xl-4" > 
+							<h:outputText value="#{labels['docu.vlojen']}" styleClass="form-label req" />
+							
+							<h:panelGroup rendered="#{docDataPrep.deloDocPrep.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+								<i class="fas fa-book" style="font-size:1.2em" jsf:id="type11"/>
+								<p:tooltip id="type11Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  docDataPrep.deloDocPrep.delo.deloType, docDataPrep.currentLang, now)}"
+								   for="type11"  escape="false"/>	
+							</h:panelGroup>
+							<h:panelGroup rendered="#{docDataPrep.deloDocPrep.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+								<i class="fas fa-folder" style="font-size:1.2em" jsf:id="type21"/>
+								<p:tooltip id="type21Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, docDataPrep.deloDocPrep.delo.deloType, docDataPrep.currentLang, now)}"
+								   for="type21"  escape="false"/>
+							</h:panelGroup>
+					
+													
+							<div class="ui-inputgroup"> 
+								<p:inputText id="prepN" 
+								   value="#{docDataPrep.deloDocPrep.delo.rnDelo}"
+								   readonly="#{docDataPrep.deloDocPrep.id ne null}"
+								   style=" display:inline-block;"
+								   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+								   title="#{docDataPrep.deloName1}">
+								   <p:ajax event="change" update="dpDeloSearchP1 prepTbp5 deloTbp5" 
+								           process="prepTbp5  @this" partialSubmit="true"
+								   		   listener="#{docDataPrep.actionSearchRnDeloP(true)}"/>
+								</p:inputText>				
+					
+								<p:commandButton id="btnPrepIn" icon="fas fa-search"  style="width:40px"
+								   rendered="#{isView ne 1 and docDataPrep.deloDocPrep.id eq null}"	
+								   actionListener="#{docDataPrep.actionSearchRnDeloBtnP}"
+								   partialSubmit="true"
+						  		   process="prepTbp5 @this" 
+						           update="prepTbp5 deloTbp5"
+								   title="#{labels['docu.titleSrchPrep']}" >
+							 	</p:commandButton>
+							 	<p:button  icon="fas fa-eye" style="width:40px" id="bp1"
+							 	   rendered="#{docDataPrep.deloDocPrep.id ne null}"	
+							 		href="#{docDataPrep.actionGoto(docDataPrep.deloDocPrep.deloId)}" target="_blank" 
+						            title="#{ui_labels['general.view']}" >  
+				  				</p:button>
+				  			</div>
+						</div>
+						
+						<div class="#{(docDataPrep.nastrWithTom and docDataPrep.deloDocPrep.delo.withTom eq OmbConstants.CODE_ZNACHENIE_DA) or docDataPrep.deloDocPrep.delo.deloType  eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM ? 'p-col-3 p-md-3 p-lg-3 p-xl-3' : 'p-col-4 p-md-4 p-lg-4 p-xl-4'}">	
+							<h:outputText value="#{labels['docu.datPrep']}" styleClass="form-label " />		
+							<p:inputText id="prepD" value="#{docDataPrep.deloDocPrep.delo.deloDate}"
+							   readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataPrep.timeZone}"/>
+							</p:inputText>		
+						</div>	
+						
+						<div class="p-col-1 p-md-1 p-lg-1 p-xl-1" 
+							jsf:rendered="#{(docDataPrep.nastrWithTom and docDataPrep.deloDocPrep.delo.withTom eq OmbConstants.CODE_ZNACHENIE_DA) or docDataPrep.deloDocPrep.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">						
+								<h:outputText value="#{labels['deloDvij.tom']}"
+									styleClass="form-label" />
+								<p:inputNumber id="tomN" title="#{labels['docu.titleTomNom']}"
+									readonly="#{docDataPrep.deloDocPrep.id ne null}"
+									value="#{docDataPrep.deloDocPrep.tomNomer}"
+									minValue="1" decimalPlaces="0"
+									style="display:inline-block;">
+								</p:inputNumber>
+						</div>
+						
+					</div>
+				
+				</div>
+				
+				<div class="p-col-3 p-md-4 p-lg-2 p-xl-2" 
+					jsf:rendered="#{docDataPrep.nastrWithSection and docDataPrep.deloDocPrep.delo.withSection eq OmbConstants.CODE_ZNACHENIE_DA}">	
+					<h:outputText value="#{labels['docu.tomSection']}" styleClass="form-label" />		
+					<p:selectOneMenu id="sectionType" value="#{docDataPrep.deloDocPrep.sectionType}"
+					  	 readonly="#{isView eq 1}" disabled="#{isView eq 1}">
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_SECTION, now, docDataPrep.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+			    	</p:selectOneMenu>	
+						
+				</div>	
+				
+				<div class="#{docDataPrep.nastrWithSection and docDataPrep.deloDocPrep.delo.withSection eq OmbConstants.CODE_ZNACHENIE_DA ? 'p-col-12 p-md-8 p-lg-8 p-xl-8' : 'p-col-8 p-md-8 p-lg-8 p-xl-6'}">
+					<div class="p-grid  p-align-end">							
+						<div class="p-col-4 p-md-4 p-lg-4 p-xl-3" >	
+							<h:outputText value="#{labels['docu.status']}" styleClass="form-label " />		
+							<p:inputText id="prepSt"
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, docDataPrep.deloDocPrep.delo.status, docDataPrep.currentLang, now)}" 
+							    readonly="true"/>
+						</div>	
+						
+						<div class="p-col-8 p-md-8 p-lg-8 p-xl-8" jsf:rendered="#{isView ne 1}" >									 
+							<div class="ui-inputgroup" jsf:id="enddt">
+								<p:selectBooleanCheckbox value="#{docDataPrep.endDelo}" id="prepStEnd" 
+									rendered="#{(OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ACTIVE eq docDataPrep.deloDocPrep.delo.status  or
+									OmbConstants.CODE_ZNACHENIE_DELO_STATUS_CONTINUED eq docDataPrep.deloDocPrep.delo.status)}"
+									itemLabel="#{labels['docu.finish']}" title="#{labels['docu.titleFinish']}">
+									<p:ajax event="change" process="@this"
+										listener="#{docDataPrep.actionEndDelo}"
+										partialSubmit="true" update="enddt" />
+								</p:selectBooleanCheckbox>
+						
+								<p:selectBooleanCheckbox value="#{docDataPrep.endTask}" id="prepStEndTask" 
+									rendered="#{docDataPrep.endDelo and docDataPrep.accessFinishTask}"
+									itemLabel="#{labels['docu.finishTask']}" title="#{labels['docu.titleFinishTask']}"/>
+							</div>
+						</div>	
+						
+						<div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:rendered="#{docDataPrep.deloDocPrep.delo.prevNomDelo ne null}">
+						    <h:outputText value="#{labels['docu.prepPrevDelo']}" styleClass="form-label "/>
+								<i class="fas fa-book" style="font-size:1.2em" jsf:id="type1p"/>
+								<p:tooltip id="type1pIcon" 
+								   value="#{labels['delo.nomenklDelo']}"
+								   for="type1p"  escape="false"/>
+							<p:inputText id="prevSt"
+								value="#{docDataPrep.deloDocPrep.delo.prevNomDelo}"
+							    readonly="true"/>
+			
+						</div>
+					</div>
+				</div>
+				
+			
+				
+			</h:panelGroup>
+			</div>
+			
+			
+		</h:panelGroup>
+	
+	
+
+		<ui:remove><!--  Влагане нa преписка в преписка/дело --></ui:remove>
+		<h:panelGroup id="deloTbp5" 
+		    rendered="#{isView eq 1  ? docDataPrep.deloDocPrep.deloDelo.id ne null : docDataPrep.deloDocPrep.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"	 >
+		    <div class="title-group" jsf:rendered="#{docDataPrep.deloDocPrep.deloId != null}">
+				<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#doc-indelo')">
+					<h:outputText value="#{labels['docu.titleVlPrepDelo']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+				
+			</div>	
+			
+			<div id="doc-indelo"   class="p-grid  ui-fluid" jsf:rendered="#{docDataPrep.deloDocPrep.deloId != null and docDataPrep.deloDocPrep.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">			
+				
+				<div class="p-col-12 p-md-12 p-lg-12 p-xl-6">					
+					<div class="p-grid  p-align-end">
+						<div class="p-col-6 p-md-4 p-lg-4 p-xl-4">	
+							<h:outputText value="#{labels['docu.deloInpDate']}" styleClass="form-label req" />		
+							<p:datePicker  id="inpDatD" showIcon="true"   mask="true"
+										rendered="#{isView ne 1}"  pattern="dd.MM.yyyy" locale="bg"
+										showTime="true" showSeconds="true"
+										value="#{docDataPrep.deloDocPrep.deloDelo.inputDate}" />
+							<p:inputText id="inpDatDV" rendered="#{isView eq 1}"
+							 	value="#{docDataPrep.deloDocPrep.deloDelo.inputDate}"
+							    readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataPrep.timeZone}"/>
+							</p:inputText>	
+					    </div>
+			    
+						<div class="p-col-6 p-md-4 p-lg-4 p-xl-4" > 
+							<h:outputText value="#{labels['docu.vlojen']}" styleClass="form-label req" />
+							<h:panelGroup rendered="#{docDataPrep.deloDocPrep.deloDelo.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+									<i class="fas fa-book" style="font-size:1.2em" jsf:id="type12"/>
+									<p:tooltip id="type12Icon" 
+								   			   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  docDataPrep.deloDocPrep.deloDelo.delo.deloType, docDataPrep.currentLang, now)}"
+								   			   for="type12"  escape="false"/>	
+							</h:panelGroup>
+							<h:panelGroup rendered="#{docDataPrep.deloDocPrep.deloDelo.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+								<i class="fas fa-folder" style="font-size:1.2em" jsf:id="type22"/>
+								<p:tooltip id="type22Icon" 
+								   value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  docDataPrep.deloDocPrep.deloDelo.delo.deloType, docDataPrep.currentLang, now)}"
+								   for="type22"  escape="false"/>
+							</h:panelGroup>
+							
+							<div class="ui-inputgroup"> 
+								<p:inputText id="deloN" value="#{docDataPrep.deloDocPrep.deloDelo.delo.rnDelo}"
+								   readonly="#{docDataPrep.deloDocPrep.deloDelo.id ne null}"
+								   style=" display:inline-block;"
+								   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+								   title="#{docDataPrep.deloName2}">
+								   <p:ajax event="change" update="dpDeloSearchPD deloTbp5" process="deloTbp5  @this" 
+								   		   listener="#{docDataPrep.actionSearchRnDeloP2(true)}"/>
+								</p:inputText>				
+					
+								<p:commandButton id="btnDeloIn" icon="fas fa-search"  style="width:40px"
+									   rendered="#{isView ne 1 and docDataPrep.deloDocPrep.deloDelo.id eq null}"	
+									   actionListener="#{docDataPrep.actionSearchRnDeloBtnP2}"
+									   partialSubmit="true"
+							  		   process="deloTbp5 @this" 
+							           update="@this "
+									   title="#{labels['docu.titleSrhDelo']}">
+								</p:commandButton>
+								<p:button  icon="fas fa-eye" style="width:40px"
+								 	   rendered="#{docDataPrep.deloDocPrep.deloDelo.id ne null}"	
+								 	   href="#{docDataPrep.actionGoto(docDataPrep.deloDocPrep.deloDelo.deloId)}" target="_blank" 
+							           title="#{ui_labels['general.view']}" >  
+					  			</p:button>								
+							</div>
+						</div>
+						<div class="#{(docDataPrep.nastrWithTom and docDataPrep.deloDocPrep.deloDelo.delo.withTom eq OmbConstants.CODE_ZNACHENIE_DA) or docDataPrep.deloDocPrep.deloDelo.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM ? 'p-col-6 p-md-6 p-lg-3 p-xl-3' : 'p-col-6 p-md-4 p-lg-4 p-xl-4'}">	
+							<h:outputText value="#{labels['docu.dateDelo']}" styleClass="form-label " />		
+							<p:inputText id="deloD" value="#{docDataPrep.deloDocPrep.deloDelo.delo.deloDate}"
+							   readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataPrep.timeZone}"/>
+							</p:inputText>		
+						</div>
+												
+						<div class="p-col-2 p-md-2 p-lg-1 p-xl-1" 
+								jsf:rendered="#{(docDataPrep.nastrWithTom and docDataPrep.deloDocPrep.deloDelo.delo.withTom eq OmbConstants.CODE_ZNACHENIE_DA) or docDataPrep.deloDocPrep.deloDelo.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM }">						
+								<h:outputText value="#{labels['deloDvij.tom']}"
+									styleClass="form-label" />
+								<p:inputNumber id="tomN2" title="#{labels['docu.titleTomNom']}"
+								    readonly="#{docDataPrep.deloDocPrep.deloDelo.id ne null}"
+									value="#{docDataPrep.deloDocPrep.deloDelo.tomNomer}"
+									minValue="1" decimalPlaces="0"
+									style="display:inline-block;">
+								</p:inputNumber>
+						</div>
+							 
+					</div>
+				</div>
+				
+				<div class="p-col-8 p-md-8 p-lg-8 p-xl-6">
+					<div class="p-grid  p-align-end">							
+						<div class="p-col-4 p-md-4 p-lg-4 p-xl-3" >	
+							<h:outputText value="#{labels['docu.status']}" styleClass="form-label " />		
+							<p:inputText id="deloSt"
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, docDataPrep.deloDocPrep.deloDelo.delo.status, docDataPrep.currentLang, now)}" 
+							    readonly="true"/>
+						</div>		
+						<div class="p-col-8 p-md-8 p-lg-8 p-xl-8" >									 
+						
+							<p:selectBooleanCheckbox value="#{docDataPrep.endDeloDelo}" id="deloStEnd" 
+						        rendered="#{isView ne 1 and OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ACTIVE eq docDataPrep.deloDocPrep.deloDelo.delo.status}"
+								itemLabel="#{labels['docu.finish']}" title="#{labels['docu.titleFinishD']}"/>
+						</div>	
+					
+					</div>
+				</div>
+				
+			</div>
+	
+		</h:panelGroup>
+	
+			
+				  
+	</h:panelGroup>
+
+ 	<h:panelGroup id="dpDeloSearchP1">	
+		<p:remoteCommand name="cmdHideModalDP1" 
+	 				process="@this"		
+	 				update="docForm:tabsDoc:prepTbp5 docForm:tabsDoc:deloTbp5"
+	  				actionListener="#{docDataPrep.actionHideModalDeloP}" />
+	
+		<p:dialog appendTo="@form"  position="top"
+		    header="#{labels['docu.deloPrepiskaTitle']}" 
+		    responsive="true"	fitViewport="true"		  							 
+		    resizable="true" closeOnEscape="true"
+		    onHide="cmdHideModalDP1()"
+			widgetVar="mDeloSP" dynamic="true" id="modalDeloSP" 
+			modal="true">
+			
+		 	<ibg:compDeloSearch id="mDeloSP1" 
+				 searchDeloS="#{docDataPrep.selectedDeloP}"
+				 searchRnDelo="#{docDataPrep.deloDocPrep.delo.rnDelo}"
+				 dateClassif="#{docDataPrep.decodeDate}"
+				 multi="false"
+				 idDoc="#{docDataPrep.docEdit.id}"				
+				 onComplete = "PF('mDeloSP').hide();"
+				 addDeloAccess="true"/>			
+				 	
+		</p:dialog>	
+	</h:panelGroup>
+	
+ 	<h:panelGroup id="dpDeloSearchPD">	
+		<p:remoteCommand name="cmdHideModalDPD" 
+	 				process="@this"		
+	 				update="docForm:tabsDoc:prepTbp5 docForm:tabsDoc:deloTbp5"
+	  				actionListener="#{docDataPrep.actionHideModalDeloP2}" />
+	
+		<p:dialog appendTo="@form" position="top"
+		  		  header="#{labels['docu.deloPrepiskaTitle']}"
+				  responsive="true"	fitViewport="true"		  							 
+				  resizable="true" closeOnEscape="true"
+				  onHide="cmdHideModalDPD()"
+				  widgetVar="mDeloSPD" dynamic="true" id="modalDeloSPD" 
+				  modal="true">
+
+		 	<ibg:compDeloSearch id="mDeloSP2" 
+				 searchDeloS="#{docDataPrep.selectedDeloP}"
+				 searchRnDelo="#{docDataPrep.deloDocPrep.deloDelo.delo.rnDelo}"
+				 dateClassif="#{docDataPrep.decodeDate}"
+				 idDoc="#{docDataPrep.docEdit.id}"
+				 idDeloDoc="#{docDataPrep.deloDocPrep.deloId}"
+				 multi="false"		
+				 onComplete = "PF('mDeloSPD').hide();"/>						
+		</p:dialog>	
+	</h:panelGroup>
+
+</ui:composition>

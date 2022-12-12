@@ -1,0 +1,398 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<!--Основни данни за регистратурата-->
+<h:panelGroup id="panelTab2" layout="block">
+
+	<h:panelGroup id="panelDataRegistri">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#registriList')">
+				<h:outputText value="#{labels['register.regsList']}" />
+				<ui:remove>
+					<h:outputText value="#{labels['register.regsList']} #{labels['registraturaData.to']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, registerData.idReg, registerData.currentLang, now)}" />
+				</ui:remove>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="registriList" class="p-grid ui-fluid">	
+
+			<p:dataTable id="tblRegistriList" var="row" value="#{registerData.registriList}" rowIndexVar="idx" 
+				emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+				<f:facet name="{Exporters}">
+					
+					<div style="float: left">
+						
+						<h:commandLink id="excel">
+							<h:graphicImage library="images" name="excel2.png" />
+							<p:dataExporter type="xls" target="tblRegistriList" fileName="registriXls" postProcessor="#{registerData.postProcessXLS}"/>
+						</h:commandLink>
+<ui:remove><!-- 
+						<h:commandLink id="pdf">
+							<h:graphicImage library="images" name="pdf.png" />
+							 <p:dataExporter type="pdf"  target="tblRegistriList" fileName="registriPdf"	 encoding="windows-1251"
+					        			preProcessor="#{registerData.preProcessPDF}" options="#{registerData.pdfOptions()}"/>
+					
+						</h:commandLink>
+
+						<h:commandLink id="csv">
+							<h:graphicImage library="images" name="csv.png" />
+							<p:dataExporter type="csv" target="tblRegistriList" fileName="registriCsv" encoding="CP1251" />
+						</h:commandLink> --></ui:remove>
+					
+					</div>
+				
+				</f:facet>
+
+				<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>
+
+				<p:column width="10" exportable="false">
+					<p:commandButton icon="fas fa-edit" action="#{registerData.actionEdit(row[0])}" styleClass="btn-new" update="formRegistratura:tabsRegistraturi:panelTab2"/>
+				</p:column>
+
+				<p:column width="110" sortBy="#{row[2]}" headerText="#{labels['register.naim']}">
+					<h:outputText value="#{row[2]}" />
+				</p:column>
+
+				<p:column width="60" sortBy="#{row[6]}" headerText="#{labels['register.tipDoc']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], registerData.currentLang, now)}" />
+				</p:column>
+
+				<p:column width="80" sortBy="#{row[3]}" headerText="#{labels['register.tipReg']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, row[3], registerData.currentLang, now)}" />
+				</p:column>
+				
+				<p:column width="80" sortBy="#{row[8]}" headerText="#{labels['register.alg']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ALG, row[8], registerData.currentLang, now)}" />
+				</p:column>
+
+				<p:column width="30" sortBy="#{row[4]}" headerText="#{labels['register.active']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[4], registerData.currentLang, now)}" />
+				</p:column>
+
+			</p:dataTable>
+
+		</div>
+
+	</h:panelGroup>
+	
+	
+	<p:toolbar styleClass="margin-bottom" id="tbPanelTab2">		
+		<f:facet name="left">
+			<p:commandButton icon="fas fa-edit" action="#{registerData.actionNew}" update="formRegistratura:tabsRegistraturi:panelTab2" value="#{labels['register.new']}" styleClass="ui-button-success" />
+				
+				<ui:remove> <span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                
+			<p:commandButton icon="fas fa-copy" action="#{registerData.actionFindAllRegistraturi}" update="formRegistratura:tabsRegistraturi:panelDlgCopyReg" value="#{labels['register.copy']}" onclick="PF('dlgCopyReg').show();" />
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                 
+			<p:commandButton icon="fas fa-globe" action="#{registerData.actionFindCommonRegisters}" update="formRegistratura:tabsRegistraturi:panelDlgAddCommonReg" value="#{labels['register.addCommonReg']}" rendered="#{registerData.useCommonRegisters}" onclick="PF('dlgAddCommonReg').show();"/> </ui:remove>
+		</f:facet>		
+	</p:toolbar>
+			
+	<h:panelGroup id="p2BasicData" layout="block" rendered="#{registerData.showDataForReg}">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataRegistri')">
+				<h:outputText value="#{labels['registratura.basicData']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="basicDataRegistri" class="card">	
+		
+			<p:toolbar styleClass="margin-bottom" id="tbTab2Reg">
+				<f:facet name="left">
+					<p:commandButton icon="fas fa-save" action="#{registerData.actionSave}" update="formRegistratura:tabsRegistraturi:panelTab2" value="#{ui_labels['general.save']}" />
+				</f:facet>
+				<f:facet name="right">
+					<p:commandButton icon="fas fa-times" action="#{registerData.actionDelete}" update="formRegistratura:tabsRegistraturi:panelTab2" value="#{ui_labels['general.delete']}" rendered="#{registerData.register.id ne null}" styleClass="ui-button-danger" onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/> 
+				</f:facet>
+			</p:toolbar>
+			
+			 <div class="p-grid ui-fluid p-align-end">
+	
+			<!-- Наименование на регистратура -->
+			<div class="p-col-12 p-md-7">	
+				<h:outputText value="#{labels['register.naim']}" styleClass="form-label req" />	
+				<p:inputText id="naimRegister" value="#{registerData.register.register}" />		
+			</div>
+			
+			<!-- Активен -->
+			<div class="p-col-12 p-md-2">
+				<div class="ui-inputgroup">	 						
+				<p:selectBooleanButton id="validRegistri" value="#{registerData.activeRegister}"
+					onLabel="#{labels['register.active']}" onIcon="fas fa-check"
+					offLabel="#{labels['register.inactive']}" offIcon="fas fa-remove"
+					styleClass="btn-normal" style="width:110px">							
+				</p:selectBooleanButton>
+				</div>
+			</div>
+			
+			<!-- Общ за повече регистратури -->
+			<ui:remove> <div class="p-col-12 p-md-3">	
+				<h:outputText value="#{labels['register.commonForMoreReg']}" styleClass="form-label" rendered="#{registerData.useCommonRegisters}"/>
+				<div class="ui-inputgroup"> 						
+				<p:selectBooleanButton id="globalReg" value="#{registerData.commonRegister}" 
+					onLabel="#{ui_labels['general.yes']}" onIcon="fas fa-check"
+					offLabel="#{ui_labels['general.no']}" offIcon="fas fa-remove"
+					styleClass="btn-normal" rendered="#{registerData.useCommonRegisters}">							
+				</p:selectBooleanButton>
+				</div>		
+			</div> </ui:remove>
+			
+			<!-- Тип документ -->
+			<div  class=" p-col-12 p-md-4">								
+				<h:outputText value="#{labels['register.tipDoc']}" styleClass="form-label"/>
+				<p:selectOneMenu value="#{registerData.register.docType}" id="tipDoc" styleClass="#{registerData.hasMessages('tipDoc') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_TYPE, now, registerData.currentLang)}" 
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>						 
+													
+			</div>					
+			
+			<!-- Тип регистър -->
+			<div  class=" p-col-12 p-md-4">								
+				<h:outputText value="#{labels['register.tipReg']}" styleClass="form-label req"/>
+				<p:selectOneMenu value="#{registerData.register.registerType}" id="tipReg" styleClass="#{registerData.hasMessages('tipReg') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, now, registerData.currentLang)}" 
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>						
+												
+			</div>
+			
+			<!-- Алгоритъм -->
+			<div  class=" p-col-12 p-md-4">								
+				<h:outputText value="#{labels['register.alg']}" styleClass="form-label req"/>
+				<p:selectOneMenu value="#{registerData.register.alg}" id="algReg" styleClass="#{registerData.hasMessages('algReg') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_ALG, now, registerData.currentLang)}" 
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                     		<p:ajax event="change" listener="#{registerData.actionClearField}" update="formRegistratura:tabsRegistraturi:panelField"/>
+				</p:selectOneMenu>						
+												
+			</div>
+			
+			<h:panelGroup id="panelField" styleClass="p-grid p-col-12 p-nogutter " layout="block">
+			
+			 <div class="p-grid ui-fluid ">
+				
+				<!-- Пореден № за сортиране -->
+				<div  class=" p-col-12 p-md-2 ">
+					<h:outputText value="#{labels['register.sortNum']}" styleClass="form-label" style="white-space: nowrap;"/>
+					<p:inputNumber value="#{registerData.register.sortNomer}"  min="0" decimalPlaces="0" id="sortNum" inputStyle="width: 220px"/>					
+				</div>
+				
+				<!-- Индекс -->
+				<div  class=" p-col-12 p-md-2" jsf:rendered="#{registerData.register.alg eq OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}">								
+					<h:outputText value="#{labels['register.prefix']}" styleClass="form-label"/>
+					<p:inputText value="#{registerData.register.prefix}" id="prefix" />						
+				</div>
+				
+				<!-- Начален № -->
+				<div  class=" p-col-12 p-md-2" jsf:rendered="#{registerData.register.alg eq OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}">								
+					<h:outputText value="#{labels['register.begNum']}" styleClass="form-label req"/>
+					<p:inputNumber value="#{registerData.register.begNomer}"  min="0" decimalPlaces="0" id="begNum" />
+				</div>
+				
+				<!-- Достигнат № -->
+				<div  class=" p-col-12 p-md-2" jsf:rendered="#{registerData.register.alg eq OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}">								
+					<h:outputText value="#{labels['register.actNum']}" styleClass="form-label req"/>
+					<p:inputNumber value="#{registerData.register.actNomer}"  min="0" decimalPlaces="0" id="actNum" />
+				</div>
+				
+				<!-- Стъпка -->
+				<div  class=" p-col-12 p-md-1" jsf:rendered="#{registerData.register.alg eq OmbConstants.CODE_ZNACHENIE_ALG_INDEX_STEP}">								
+					<h:outputText value="#{labels['register.step']}" styleClass="form-label req"/>
+					 <p:spinner id="step" value="#{registerData.register.step}" min="0" onkeypress="return false;"/>
+				</div>
+				
+				</div>
+			
+			</h:panelGroup>
+			
+			</div>
+			
+		</div>
+						
+	</h:panelGroup>		
+	
+	<p:dialog header="#{labels['register.copy']}" widgetVar="dlgCopyReg" modal="true" width="900" height="450" resizable="true" appendTo="@form">
+	
+		<p:messages id="messages" >
+	        <p:autoUpdate />
+	    </p:messages>	
+				
+		<p:outputPanel id="panelDlgCopyReg">
+		
+			<div class="p-grid">
+			
+				<!-- Избор на друга регистратура, от която да се копират регистрите -->
+				<div  class=" p-col-12 p-md-12">								
+					<h:outputText value="#{labels['register.fromRegistratura']}" styleClass="form-label req"/>
+					<p:selectOneMenu value="#{registerData.fromRegistratura}" id="fromReg" styleClass="#{registerData.hasMessages('fromReg') ? 'invalid': ''}" style="width: 55%">
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                           <f:selectItems value="#{registerData.classifRegsList}" 
+                      			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                      	<p:ajax event="change" listener="#{registerData.actionFindRegistersForCopy}" update="formRegistratura:tabsRegistraturi:p2CopyPanel"/>
+					</p:selectOneMenu>					
+												
+				</div>				
+				
+				<div jsf:id="p2CopyPanel" class="p-grid">
+					
+					<h:panelGroup rendered="#{registerData.fromRegistratura != null}" >
+					
+						<div  class=" p-col-12 p-md-12">
+							<p:commandButton icon="fas fa-save" action="#{registerData.actionCopyRegisters}" update="formRegistratura:tabsRegistraturi:panelDataRegistri" value="#{labels['register.btnCopy']}" rendered="#{registerData.copyRegistriList.size() > 0}"/>				
+						</div>
+						
+						<p:dataTable id="tblCopyRegsList" var="row" value="#{registerData.copyRegistriList}" selection="#{registerData.selectedForCopyRegList}" lazy="true" rows="5" 
+							rowIndexVar="idx" sortMode="single" style="margin-bottom:20px; width: 99%" scrollable="true" scrollWidth="99%" 
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginator="true" rowKey="#{row[0]}"
+							paginatorAlwaysVisible="false" emptyMessage="#{ui_labels['general.norows']}">
+							
+							<p:column selectionMode="multiple" style="width:35px;text-align:center"/>
+					        
+					       <p:column  width="10">
+								<f:facet name="header">
+								     <h:outputText value="№" />
+								</f:facet> 
+								<h:outputText value="#{idx + 1}" />						
+							</p:column>
+		
+							<p:column width="120" headerText="#{labels['register.naim']}">
+								<h:outputText value="#{row[2]}" />
+							</p:column>
+		
+							<p:column width="80" headerText="#{labels['register.tipDoc']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], registerData.currentLang, now)}" />
+							</p:column>
+		
+							<p:column width="100" headerText="#{labels['register.tipReg']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, row[3], registerData.currentLang, now)}" />
+							</p:column>
+							
+							<p:column width="100" headerText="#{labels['register.alg']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ALG, row[8], registerData.currentLang, now)}" />
+							</p:column>
+		
+							<p:column width="35" headerText="#{labels['register.active']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[4], registerData.currentLang, now)}" />
+							</p:column>	
+							
+							<p:column width="30" headerText="#{labels['register.common']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[5], registerData.currentLang, now)}" />
+							</p:column>				       
+					       
+					    </p:dataTable>	
+				   
+				    </h:panelGroup>
+			    
+			   </div>
+			
+			</div>
+			
+		</p:outputPanel>
+				
+		<f:facet name="footer">
+		          	
+          	<div class="p-grid p-nogutter">
+	       		
+	       		<div class="p-col-12" align="right">
+		       	 	<p:commandButton id="bntCloseCopyReg" update="panelDlgCopyReg" process="@this panelDlgCopyReg"
+		       	 	    icon="fas fa-times" styleClass="ui-button-secondary" value="#{labels['register.cancel']}" oncomplete="PF('dlgCopyReg').hide();" />	
+		 		</div>
+	 		
+	 		</div>
+		
+		</f:facet>	
+		
+	</p:dialog>
+	
+	<p:dialog header="#{labels['register.addCommonReg']}" widgetVar="dlgAddCommonReg" modal="true" width="800" height="400" resizable="true" appendTo="@form">
+	
+		<p:messages id="messages1" >
+	        <p:autoUpdate />
+	    </p:messages>	
+				
+		<p:outputPanel id="panelDlgAddCommonReg">
+		
+			<div class="p-grid">
+					
+				<div  class=" p-col-12 p-md-12">
+					<p:commandButton icon="fas fa-save" action="#{registerData.actionAddCommonRegisters}" update="formRegistratura:tabsRegistraturi:panelDataRegistri" value="#{labels['register.btnAddCommon']}" rendered="#{registerData.commonRegistriList.size() > 0}"/>				
+				</div>
+				
+				<p:dataTable id="tblCommonRegsList" var="row" value="#{registerData.commonRegistriList}" selection="#{registerData.selectedForAddCommonRegList}" lazy="true" rows="5" 
+					rowIndexVar="idx" sortMode="single" style="margin-bottom:20px; width: 99%" scrollable="true" scrollWidth="99%" 
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginator="true" rowKey="#{row[0]}"
+					paginatorAlwaysVisible="false" emptyMessage="#{ui_labels['general.norows']}">
+					
+					<p:column selectionMode="multiple" style="width:35px;text-align:center"/>
+			        
+			       <p:column  width="10">
+						<f:facet name="header">
+						     <h:outputText value="№" />
+						</f:facet> 
+						<h:outputText value="#{idx + 1}" />						
+					</p:column>
+
+					<p:column width="120" headerText="#{labels['register.naim']}">
+						<h:outputText value="#{row[2]}" />
+					</p:column>
+
+					<p:column width="80" headerText="#{labels['register.tipDoc']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], registerData.currentLang, now)}" />
+					</p:column>
+
+					<p:column width="100" headerText="#{labels['register.tipReg']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTER_TYPE, row[3], registerData.currentLang, now)}" />
+					</p:column>
+
+					<p:column width="35" headerText="#{labels['register.active']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[4], registerData.currentLang, now)}" />
+					</p:column>	
+					<p:column width="30" headerText="#{labels['register.common']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[5], registerData.currentLang, now)}" />
+					</p:column>				       
+			       
+			    </p:dataTable>	
+			
+			</div>
+			
+		</p:outputPanel>
+				
+		<f:facet name="footer">
+		          	
+          	<div class="p-grid p-nogutter">
+	       		
+	       		<div class="p-col-12" align="right">
+		       	 	<p:commandButton id="bntCloseCommonReg" update="panelDlgAddCommonReg" process="@this panelDlgAddCommonReg"
+		       	 	    icon="fas fa-times" styleClass="ui-button-secondary" value="#{labels['register.cancel']}" oncomplete="PF('dlgAddCommonReg').hide();" />	
+		 		</div>
+	 		
+	 		</div>
+		
+		</f:facet>	
+		
+	</p:dialog>
+
+</h:panelGroup>
+
+</ui:composition>

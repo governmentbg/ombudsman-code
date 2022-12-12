@@ -1,0 +1,145 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+
+
+	<h:panelGroup id="tdPanel2" layout="block"  >
+
+		<ui:remove> <!-- Списък задачи към документ..........--></ui:remove>
+		<div   jsf:rendered="#{docData.document.id ne null}" class="title-group">
+			<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#docForm:tabsDoc:doc-taskdata')">
+				<h:outputText value="#{labels['tasks.listDoc']} #{docData.rnFullDoc}"/>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>	
+		<div jsf:id="doc-taskdata"  jsf:rendered="#{docData.document.id ne null}">
+	
+			<p:dataTable id="tblTasksList" var="row" value="#{docData.tasksList}" lazy="true" 	
+				rowIndexVar="idx" sortMode="single" scrollable="true" reflow="true" 
+				emptyMessage="#{labels['docu.taskListEmpty']}"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+				paginatorAlwaysVisible="fasle" paginator="true" >				
+				
+		
+				<p:column style="text-align: center" width="50" exportable="false" >
+					
+						<p:commandButton id="btnChTask"  
+						    title="#{ui_labels['general.edit']}"									
+						    action="#{docData.actionSelectTask(row)}"					
+						    partialSubmit="true" 
+						    process="@this"
+							update="docForm:tabsDoc:compTask @this"
+							icon="fas fa-edit" 
+							onclick="highlightElement(this ,'tr');"/>							
+				
+				</p:column> 
+	
+				<p:column width="90" sortBy="#{row.a1}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.nomer']}" />
+					</f:facet>
+					<h:outputText value="#{row[1]}"  />
+				</p:column>
+				
+				<p:column width="150" sortBy="#{row.a2}" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.vid']}"  />
+					</f:facet>
+				    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[2],  docData.currentLang, now)}" />		   						    
+				</p:column>
+				
+				<p:column width="110" sortBy="#{row.a4}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.srok']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[4]}"  >	
+							<f:convertDateTime pattern="#{docData.srokPattern}" timeZone="#{docData.timeZone}"/>
+					</h:outputText>	
+				    
+				</p:column>
+				
+				<p:column width="100" sortBy="#{row.a3}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['task.statusData']}" />									  
+					</f:facet>  
+				    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[3], docData.currentLang, now)}  "/>				  
+				</p:column>
+				
+				<p:column width="160"  sortBy="#{row.a15}" headerText="#{labels['taskList.emplStatus']}">						
+					<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[15], docData.currentLang, now)} "> </h:outputText>
+				</p:column>
+						
+				<p:column width="*" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['admStruct.employees']}" />									  
+					</f:facet>
+					<h:outputText value="#{labels['tasks.assignCode']}:" styleClass="form-label"></h:outputText> 
+					<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[8], docData.currentLang, now)} "> </h:outputText>
+					<h:outputText value="#{labels['tasks.exec']}:" styleClass="form-label"></h:outputText>	
+					<h:outputText value=" #{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[6],  docData.currentLang, now)}"/>
+				</p:column>
+				
+			
+				<p:column width="110" sortBy="#{row.a5}" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.assign']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[5]}"  >	
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docData.timeZone}"/>
+					</h:outputText>	
+				    
+				</p:column>
+				
+				<p:column width="*"  >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['dashboard.mnenieKomentar']}" />									  
+					</f:facet>  
+					<h:outputText value="#{docData.titleInfoTask(row[10], row[9])}" />	
+										    
+				</p:column>
+				<p:column width="*"  >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['task.dopInfo']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[11]}" />	
+										    
+				</p:column>
+				<p:column style="text-align: center" width="50" exportable="false" >
+					<f:facet name="header">
+						 <i class="fas fa-link" title="#{labels['tasks.delDocReq']}"></i>								  
+					</f:facet>
+					<p:button  icon="fas fa-eye" href="docView.xhtml?faces-redirect=true" target="_blank" 
+					           title="#{labels['tasks.delDocReq']} N: #{row[12]} / #{row[13]}" 
+			  				   rendered="#{row[14] != null}" >
+			  				   
+			  				   <f:param name="idObj" value="#{row[14]}"/>
+			  		</p:button>		
+				
+				</p:column> 
+				
+				
+			</p:dataTable>
+	    
+	    </div>
+	
+	
+		<h:panelGroup id="compTask">
+		
+			<p:remoteCommand name="cmdRefreshTaskList" update="docForm:tabsDoc:tblTasksList"
+						partialSubmit="true" process="@this" ignoreAutoUpdate="true"
+						actionListener="#{docData.actionRefreshTaskList}" />
+			<ibg:taskData dateDoc="#{docData.document.docDate}" readonly="#{isView eq 1}"
+				  idDoc="#{docData.document.id}"	rendered="#{(isView eq 1) ? docData.idTask ne null : 'true'}"
+				  idTask="#{docData.idTask}"		update="docForm:tabsDoc:tblTasksList"
+				  onComplete="cmdRefreshTaskList()"
+				  taskProcess="0"  />
+		 </h:panelGroup>
+				  
+	</h:panelGroup>
+</ui:composition>

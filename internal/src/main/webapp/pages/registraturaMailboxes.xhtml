@@ -1,0 +1,235 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<!--Основни данни за регистратурата-->
+<h:panelGroup id="panelTab5" layout="block">
+
+	<div class="title-group">	
+		<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#regMailboxesList')">
+		<h:outputText value="#{labels['regData.mailboxes']}" /> 
+	
+		<ui:remove>
+			<h:outputText value="#{labels['regData.mailboxes']} #{labels['registraturaData.to']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, registraturaMailboxes.idReg, registraturaMailboxes.currentLang, now)}" /> 
+		</ui:remove>	
+			<i class="fas fa-caret-right"></i>
+		</p:commandLink>
+	</div>
+
+	<div jsf:id="regMailboxesList" class="p-grid ui-fluid">
+
+		<p:dataTable id="tblRegMailboxes" var="row" value="#{registraturaMailboxes.mailboxList}" rowIndexVar="idx" 
+			emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true">
+
+			<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+				<h:outputText value="#{idx + 1}" />
+			</p:column>
+
+			<p:column width="5" exportable="false">
+				<p:commandButton icon="fas fa-edit" action="#{registraturaMailboxes.actionEdit(row.id)}" ajax="true" styleClass="btn-new" 
+					update="formRegistratura:tabsRegistraturi:p5BasicData" />
+			</p:column>
+
+			<p:column width="200" sortBy="#{row.mailboxName}" headerText="#{labels['regMailboxes.mailbox']}">
+				<h:outputText value="#{row.mailboxName}" />							
+			</p:column>
+
+			<p:column width="200" sortBy="#{row.mailboxUsername}" headerText="#{labels['refDeleg.user']}">
+				<h:outputText value="#{row.mailboxUsername}"/>
+			</p:column>
+
+		</p:dataTable>
+
+	</div>
+
+	
+	<p:toolbar styleClass="margin-bottom" id="tbPanelTab5">
+		<f:facet name="left">					
+			<p:commandButton icon="fas fa-edit" action="#{registraturaMailboxes.actionNew}" update="formRegistratura:tabsRegistraturi:p5BasicData" value="#{labels['regMailboxes.newMailbox']}" styleClass="ui-button-success" />
+		</f:facet>				
+	</p:toolbar>
+	
+	<div jsf:id="p5BasicData">
+	
+	<h:panelGroup rendered="#{registraturaMailboxes.showDataForMailbox}">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataMailbox')">
+				<h:outputText value="#{labels['regMailboxes.mailbox']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="basicDataMailbox" class="card">	
+		
+			<p:toolbar styleClass="margin-bottom">
+				<f:facet name="left">
+					<p:commandButton icon="fas fa-save" action="#{registraturaMailboxes.actionSave}" update="formRegistratura:tabsRegistraturi:panelTab5" value="#{ui_labels['general.save']}" />
+				</f:facet>
+				<f:facet name="right">
+					<p:commandButton icon="fas fa-times" action="#{registraturaMailboxes.actionDelete}" rendered="#{registraturaMailboxes.mailbox.id ne null}"
+								update="formRegistratura:tabsRegistraturi:p5BasicData formRegistratura:tabsRegistraturi:regMailboxesList" value="#{ui_labels['general.delete']}" 
+								styleClass="ui-button-danger"  onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/> 
+				</f:facet>
+			</p:toolbar>
+			
+			<div class="p-grid p-align-start vertical-container">
+    			<div class="p-col-5">
+			
+			<div class="p-grid ui-fluid">
+			
+			<!-- Име на пощенска кутия -->
+			<div class="p-col-12 p-md-12 p-lg-12">								
+				<h:outputText value="#{labels['regMailboxes.mailbox']}" styleClass="form-label req" />
+				<p:inputText value="#{registraturaMailboxes.mailbox.mailboxName}" id="mailboxName" />									
+			</div>
+												
+			<!-- Потребител -->
+			<div class="p-col-12 p-md-12 p-lg-12">								
+				<h:outputText value="#{labels['refDeleg.user']}" styleClass="form-label req" />
+				<p:inputText value="#{registraturaMailboxes.mailbox.mailboxUsername}" id="mailboxUsername" />									
+			</div>
+			
+			<!-- Парола -->
+			<div class="p-col-12 p-md-12 p-lg-12">								
+				<h:outputText value="#{labels['regMailboxes.mailboxPassword']}" styleClass="form-label req" />				
+				<p:password value="#{registraturaMailboxes.mailbox.mailboxPassword}" id="mailboxPassword" redisplay="true" autocomplete="off"/>									
+			</div>
+			
+			</div>
+			
+			</div>
+			
+			<div class="p-col-7">
+			
+			<p:selectOneButton value="#{registraturaMailboxes.settOrDefault}" id="mailboxVars" immediate="true" unselectable="false">						
+				<f:selectItem itemLabel="#{labels['regData.settings']}" itemValue="1"/>
+				<f:selectItem itemLabel="#{labels['regMailboxes.default']}" itemValue="2"/>
+				<p:ajax event="change" update="formRegistratura:tabsRegistraturi:panelSettings formRegistratura:tabsRegistraturi:panelDefault" partialSubmit="true" process="@this" />
+			</p:selectOneButton>
+					
+			<h:panelGroup id="panelSettings" >
+				<h:panelGroup rendered="#{registraturaMailboxes.settOrDefault eq 1}">
+					
+					<div class="p-grid ui-fluid p-align-end">
+					
+					<div class="p-col-12"/>		
+						
+						<!-- Ключ -->
+						<div class=" p-col-12 p-md-5 p-lg-5">								
+							<h:outputText value="#{labels['regMailboxes.key']}" styleClass="form-label req"/>
+							<p:selectOneMenu value="#{registraturaMailboxes.mailKey}" id="mailKey" styleClass="#{registraturaMailboxes.hasMessages('mailKey') ? 'invalid': ''}" >
+				 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+			                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_VARIABLES_SETTINGS_MAIL_ACCOUNT, now, registraturaMailboxes.currentLang)}"                           
+			                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+			                     		<p:ajax event="change" update="formRegistratura:tabsRegistraturi:mailValue" listener="#{registraturaMailboxes.actionChangeMailKey}"/>
+							</p:selectOneMenu>				
+						</div>
+						
+						<!-- Стойност -->
+						<div  class=" p-col-12 p-md-5 p-lg-5">								
+							<h:outputText value="#{labels['regSettings.value']}" styleClass="form-label req"/>
+							<p:inputText value="#{registraturaMailboxes.mailboxVar.mailValue}" id="mailValue" />
+						</div>	
+						
+						<div  class="p-col-12 p-md-2 p-lg-2">	
+							<div class="ui-inputgroup">	 	
+								<p:commandButton icon="fas fa-save" action="#{registraturaMailboxes.actionAddMailboxVar}" update="formRegistratura:tabsRegistraturi:panelSettings formRegistratura:tabsRegistraturi:panelDefault" value="#{labels['register.btnAddCommon']}" />				
+							</div>
+						</div>
+						
+						<div class="p-col-12"/>		
+						
+						<div class="p-grid ui-fluid">
+						
+						<div  class="p-col-12 ">
+						
+						<p:dataTable id="tblVarsMailbox" var="row" value="#{registraturaMailboxes.varsList}" rowIndexVar="idx" 
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+				
+							<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+				
+							<p:column width="20" exportable="false">
+								<p:commandButton icon="fas fa-edit" action="#{registraturaMailboxes.actionEditMailboxVar(row)}" ajax="true" styleClass="btn-new" 
+								update="formRegistratura:tabsRegistraturi:panelSettings" />	
+							</p:column>
+				
+							<p:column width="120" headerText="#{labels['regMailboxes.key']}">
+								<h:outputText value="#{row.mailKey}" />							
+							</p:column>
+				
+							<p:column width="120" headerText="#{labels['regSettings.value']}">
+								<h:outputText value="#{row.mailValue}"/>
+							</p:column>	
+							
+							<p:column width="20" exportable="false">
+								<p:commandButton icon="fas fa-trash" action="#{registraturaMailboxes.actionDeleteMailboxVar(row)}" onclick="if(!confirm('#{beanMessages['regMailbox.deleteVars']}'))return false;"
+									ajax="true" styleClass="ui-button-danger" update="formRegistratura:tabsRegistraturi:tblVarsMailbox" />
+							</p:column>					
+				
+						</p:dataTable>
+						
+						</div>
+						
+						</div>
+							
+					</div>
+				</h:panelGroup>
+			</h:panelGroup>
+			
+			<h:panelGroup id="panelDefault">
+				<h:panelGroup rendered="#{registraturaMailboxes.settOrDefault eq 2}">			
+					
+					<div class="p-grid ui-fluid p-align-end">
+					
+					<div class="p-col-12"/>						
+						
+						<div  class="p-col-12 ">
+						
+						<p:dataTable id="tblVarsMailboxView" var="row" value="#{registraturaMailboxes.varsGlobalList}" rowIndexVar="idx" 
+							emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+				
+							<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+				
+							<p:column width="120" headerText="#{labels['regMailboxes.key']}">
+								<h:outputText value="#{row.mailKey}" />							
+							</p:column>
+				
+							<p:column width="120" headerText="#{labels['regSettings.value']}">
+								<h:outputText value="#{row.mailValue}"/>
+							</p:column>							
+				
+						</p:dataTable>
+						
+						</div>
+						
+						</div>
+				</h:panelGroup>
+			
+			</h:panelGroup>
+			
+			</div>
+			
+			</div>
+			
+		</div>
+						
+	</h:panelGroup>	
+	
+	</div>
+
+</h:panelGroup>
+
+</ui:composition>

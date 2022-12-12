@@ -1,0 +1,260 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(60)}" onPostback="false" /> 
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/docArchiveList.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>#{navTexts['/pages/docArchiveList.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<h:form id="formDocArchiveList">
+
+			<div class="container #{guestPreferences.containerPosition}">
+			
+				<!-- FILTER -->	
+				<h:panelGroup id="panelFilter" rendered="#{docArchiveList.protForUA ne null or docArchiveList.protForDA ne null}">
+
+					<div class="card">
+	
+						<div class="p-grid">
+	
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4  ui-fluid">
+								<h:outputText value="#{labels['docDestrucList.period']}" styleClass="form-label" />
+								<p:selectOneMenu id="period" value="#{docArchiveList.period}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docArchiveList.currentLang)}"
+										var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+									<p:ajax event="change" update="period dateOt dateDo" listener="#{docArchiveList.changePeriod}"/>  
+								</p:selectOneMenu>
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label" />
+								<p:datePicker id="dateOt"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docArchiveList.dateFrom}" >
+								<p:ajax event="change" update="period" listener="#{docArchiveList.changeDate}"/>
+								<p:ajax event="dateSelect" update="period" listener="#{docArchiveList.changeDate}"/> 
+								</p:datePicker>  
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+								<p:datePicker id="dateDo" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docArchiveList.dateTo}" >
+								<p:ajax event="change" update="period" listener="#{docArchiveList.changeDate}"/>
+								<p:ajax event="dateSelect" update="period" listener="#{docArchiveList.changeDate}"/>
+								</p:datePicker>
+							</div>							
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4  ui-fluid">
+						        <h:outputText value="#{labels['docDestrucList.regNumWorkProt']}"  styleClass="form-label"/>
+						    	<div class="ui-inputgroup">
+							        <p:inputText value="#{docArchiveList.rnWorkProt}" id="rnWorkProt"/> 
+						    		<p:selectBooleanButton id="rnWorkEqWorkPrto" value="#{docArchiveList.rnWorkProtEQ}" 
+								      	    onLabel="#{ui_labels['general.da']}"
+								    	    offLabel="#{ui_labels['general.ne']}"
+											title="#{labels['docu.docSrchRegNom']}" 
+										    onIcon="fas fa-toggle-on"  
+											offIcon="fas fa-toggle-off"  >
+												<p:ajax update="@this rnWorkProt" partialSubmit="true" process="@this rnWorkProt"/>			
+									</p:selectBooleanButton>
+								</div>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4  ui-fluid">
+								<h:outputText value="#{labels['docDestrucList.periodOficDoc']}" styleClass="form-label" />
+								<p:selectOneMenu id="periodOficProt" value="#{docArchiveList.periodOficProt}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docArchiveList.currentLang)}"
+										var="clPerOfic" itemLabel="#{clPerOfic.tekst}" itemValue="#{clPerOfic.code}" />
+									<p:ajax event="change" update="periodOficProt dateOtOficProt dateDoOficProt" listener="#{docArchiveList.changePeriodOficProt}"/>  
+								</p:selectOneMenu>
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label" />
+									<p:datePicker id="dateOtOficProt"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+												value="#{docArchiveList.dateFromOficProt}" >
+									<p:ajax event="change" update="periodOficProt" listener="#{docArchiveList.changeDateOficProt}"/>
+									<p:ajax event="dateSelect" update="periodOficProt" listener="#{docArchiveList.changeDateOficProt}"/> 
+								</p:datePicker>  
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2  p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+									<p:datePicker id="dateDoOficProt"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+												value="#{docArchiveList.dateToOficProt}" >
+									<p:ajax event="change" update="periodOficProt" listener="#{docArchiveList.changeDateOficProt}"/>
+									<p:ajax event="dateSelect" update="periodOficProt" listener="#{docArchiveList.changeDateOficProt}"/>
+								</p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4  ui-fluid">
+						        <h:outputText value="#{labels['docDestrucList.regNumOficProt']}"  styleClass="form-label"/>
+						    	<div class="ui-inputgroup">
+							        <p:inputText value="#{docArchiveList.rnOficProt}" id="rnOficProt"/> 
+						    		<p:selectBooleanButton id="rnWorkEqOficProt" value="#{docArchiveList.rnOficProtEQ}" 
+								      	    onLabel="#{ui_labels['general.da']}"
+								    	    offLabel="#{ui_labels['general.ne']}"
+											title="#{labels['docu.docSrchRegNom']}" 
+										    onIcon="fas fa-toggle-on"  
+											offIcon="fas fa-toggle-off"  >
+												<p:ajax update="@this rnOficProt" partialSubmit="true" process="@this rnOficProt"/>			
+									</p:selectBooleanButton>
+								</div>
+							</div>	
+							
+							<ui:remove> <div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 ui-fluid" align="left">	
+						         <p:selectManyCheckbox id="grid2" value="#{docArchiveList.selectedVidProt}">
+							        <f:selectItem itemLabel="#{systemData.getSettingsDopInfo('delo.archiveProtocolUA')}" itemValue="#{docArchiveList.protForUA}" />
+						            <f:selectItem itemLabel="#{systemData.getSettingsDopInfo('delo.archiveProtocolDA')}" itemValue="#{docArchiveList.protForDA}" /> 
+							    </p:selectManyCheckbox> 
+					        </div> </ui:remove>
+					        
+					        <div class=" p-grid p-col-12">
+					        <div class="p-col-12 p-sm-6 p-md-6 p-lg-6  p-xl-6 ui-fluid" align="left" jsf:rendered="#{docArchiveList.protForUA ne null}">
+					        	<p:selectBooleanCheckbox value="#{docArchiveList.selProtUA}" itemLabel="#{systemData.getSettingsDopInfo('delo.archiveProtocolUA')}" />
+					        </div>
+					        
+					        <div class="p-col-12 p-sm-6 p-md-6 p-lg-6  p-xl-6 ui-fluid" align="left" jsf:rendered="#{docArchiveList.protForDA ne null}">
+					        	<p:selectBooleanCheckbox value="#{docArchiveList.selProtDA}" itemLabel="#{systemData.getSettingsDopInfo('delo.archiveProtocolDA')}" />
+					        </div>
+					        </div>
+	
+							<div class="p-col-12 p-sm-6 p-md-6 p-lg-6  p-xl-6 ui-fluid" align="left">
+								<p:selectBooleanCheckbox value="#{docArchiveList.onlyWorkProt}" itemLabel="#{labels['docDestrucList.onlyWorkProtocols']}" />
+							</div>
+						</div>
+	
+						<div class="filter-buttons">
+							<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+											id="btnSearchDoc" update="resultTable panelFilter" partialSubmit="true"
+											process="@this panelFilter resultTable" actionListener="#{docArchiveList.actionSearch}" styleClass="p-mr-3"/>
+							<p:defaultCommand target="btnSearchDoc" />
+	
+							
+							<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+											 id="btnClear" update="resultTable panelFilter" partialSubmit="true"
+											 process="@this panelFilter resultTable" actionListener="#{docArchiveList.actionClear}"
+											 styleClass="ui-button-warning" />	
+						</div>
+	
+					</div>
+				
+				</h:panelGroup>
+			
+			</div>
+
+			<h:panelGroup id="resultTable" layout="block" styleClass="margin-top">
+
+				<h:panelGroup layout="block" styleClass="card">
+
+					<div class="table-toolbar">
+
+						<p:commandButton icon="fas fa-file" action="#{docArchiveList.actionGotoNew(docArchiveList.protForUA)}" ajax="false" value="#{labels['docArchiveList.newWorkProtForUA']}" styleClass="ui-button-success" disabled="#{docArchiveList.protForUA eq null}"/>
+
+						<span class="fas fa-ellipsis-v p-mx-2" />
+						
+						
+						<p:commandButton icon="fas fa-file" action="#{docArchiveList.actionGotoNew(docArchiveList.protForDA)}" ajax="false" value="#{labels['docArchiveList.newWorkProtForDA']}" styleClass="ui-button-success  p-mr-2" disabled="#{docArchiveList.protForDA eq null}"/>
+						
+						<span class=" p-mr-2" jsf:rendered="#{docArchiveList.docsArchiveList.rowCount > 0}"> 
+							<span class="fas fa-ellipsis-v" />
+						</span>						
+
+						<h:outputText value="#{ui_labels['general.reportResult']} #{docArchiveList.docsArchiveList.rowCount} " styleClass="form-label" rendered="#{docArchiveList.docsArchiveList.rowCount > 0}"/>
+
+					</div>
+
+					<p:dataTable id="tblDocArchiveList" var="row" value="#{docArchiveList.docsArchiveList}" lazy="true" rendered="#{docArchiveList.docsArchiveList != null}"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="15" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblDocArchiveList" fileName="docArchiveListXls" postProcessor="#{docArchiveList.postProcessXLS}" />
+								</h:commandLink>
+							<ui:remove>
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									 <p:dataExporter type="pdf"  target="tblDocArchiveList" fileName="docArchiveListPdf" 	 encoding="windows-1251"
+					        			preProcessor="#{docArchiveList.preProcessPDF}" options="#{docArchiveList.pdfOptions()}"/>
+								</h:commandLink>
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblDocArchiveList" fileName="docArchiveListCsv" encoding="CP1251" />
+								</h:commandLink>
+							</ui:remove>
+							</div>
+
+						</f:facet>
+
+						<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="5" exportable="false">
+							<p:commandButton icon="fas fa-edit" action="#{docArchiveList.actionGoto(row[0], row[7])}" ajax="false" styleClass="btn-new" />							
+						</p:column>
+						
+						<p:column width="120" sortBy="#{row.a7}" headerText="#{labels['docArchiveList.vidProtocol']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[7], docArchiveList.currentLang, now)}" />
+						</p:column>
+
+						<p:column width="70" sortBy="#{row.a1}" headerText="#{labels['docDestrucList.regNumWorkProt']}">
+							<h:outputText value="#{row[1]}" />
+						</p:column>
+
+						<p:column width="70" sortBy="#{row.a2}" headerText="#{labels['docDestrucList.dateWorkProt']}">
+							<h:outputText value="#{row[2]}" >
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docArchiveList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+
+						<p:column width="70" sortBy="#{row.a4}" headerText="#{labels['docDestrucList.regNumOficProt']}">
+							<h:outputText value="#{row[4]}" />
+						</p:column>
+
+						<p:column width="70" sortBy="#{row.a5}" headerText="#{labels['docDestrucList.dateOficProt']}">
+							<h:outputText value="#{row[5]}" >
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docArchiveList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+
+						<p:column width="40" sortBy="#{row.a6}" headerText="#{labels['docArchiveList.transfered']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[6], docArchiveList.currentLang, now)}" />
+						</p:column>
+
+					</p:dataTable>
+
+				</h:panelGroup>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>
+

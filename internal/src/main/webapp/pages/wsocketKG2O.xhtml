@@ -1,0 +1,226 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:h="http://java.sun.com/jsf/html"
+ 	xmlns:f="http://java.sun.com/jsf/core" 
+  	xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:ibg="http://java.sun.com/jsf/composite/components"
+    xmlns:o="http://omnifaces.org/ui"
+    template="/template/template.xhtml">
+
+    <ui:define name="title">Dashboard</ui:define>
+    
+    
+    <ui:define name="viewname">
+        <li>Работен плот</li>
+        
+    </ui:define>
+	
+	<ui:define name="head"> 
+
+
+	</ui:define>
+	
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			
+		</f:metadata>
+	</ui:define>
+
+    <ui:define name="content">
+	  	
+	
+	<ui:remove></ui:remove>
+	 <style>
+		.fa-stack[data-count]:after{
+			position:absolute;
+			right:0%;
+			top:1%;
+			content: attr(data-count);
+			font-size:33%;
+			padding:.6em;
+			border-radius:999px;
+			line-height:.75em;
+			color: white;
+			background:rgba(255,0,0,1.0);
+			text-align:center;
+			min-width:2em;
+			font-weight:bold;
+		}
+
+		
+	 </style>
+	 <script type="text/javascript">
+	       function setConnected(channel){
+		   		console.log("setConnectedAA:channel="+channel);
+		   		
+		   		
+		   	}
+		   function setDisconnected(code, channel, event) {
+		   		console.log("setDisconnectedAA:"+code);
+		   		/*		var currentStatus = document.getElementById('currentstatus');
+		   				currentStatus.setAttribute("class","error") */ 
+		   			
+		   	    if (code == -1) {
+		   	        // Web sockets not supported by client.
+		   	    } else if (code == 1000) {
+		   	        // Normal close (as result of expired session or view).
+		   	    } else {
+		   	        // Abnormal close reason (as result of an error).
+		   	    }
+		   	}
+		   	function myOnMessage(message){
+				console.log("myOnMessage:"+message);
+		   	} 
+		   	function myOnMessageUsers(message){
+				console.log("myOnMessageUsers:"+message);
+				switch (message){
+				case 'updateUsers':
+					updateLoggedInUsers();
+					break;
+					
+
+					
+				default:
+					console.log('unknown refresh command');
+					showKG(message);
+						
+				}
+		   	}
+
+		   	function myOnMessageMain(message){
+				console.log("myOnMessageMain:"+message);
+				if (message instanceof Object){
+					console.log(message['title']);
+					console.log(message['details']);
+					console.log(message['severity']);
+					showKGMaain(message);
+					upNumber()
+				}else {
+					console.log("message is not Object !!!")
+				}
+				
+		   	}
+		   	function upNumber() {
+		   	   var x=document.getElementById("alibaba").getAttribute("data-count");
+		   	  document.getElementById("alibaba").setAttribute("data-count",Number(x)+1)
+
+		   	}
+		   	function downNumber() {
+			   	   var x=document.getElementById("alibaba").getAttribute("data-count");
+			   	  document.getElementById("alibaba").setAttribute("data-count",Number(x)-1)
+
+			   	}
+		   	function showKGMaain(message){
+		   		PF('growlWV').renderMessage({"summary":message['title'],
+		   	      "detail":message['details'],
+		   	      "severity":message['severity']});
+			   	}
+		   	
+		   	function showKG(message){
+		   		PF('growlWV').renderMessage({"summary":"summary goes here",
+		   	      "detail":message,
+		   	      "severity":"warn"});
+			   	}
+		   	
+		   	function show(){
+		   		PF('growlWV').renderMessage({"summary":"summary goes here",
+		   	      "detail":"detail goes here",
+		   	      "severity":"warn"});
+			   	}
+
+		   	function myAlert(){
+				alert('alabala');
+			   	}
+	</script>
+	<h:form id="mainForm">
+		==================================================================================================================
+		<p:commandLink id="btnBell1" process="@this" update="pn1" action="#{pMessages.actionLoadMessages}">
+			 <o:skipValidators />
+			<span class="fa-stack fa-2x has-badge" data-count="#{pMessages.brNotif}" id="alibaba">
+			  <i class="fas fa-circle fa-stack-2x"></i>
+			  <i class="fas fa-bell fa-stack-1x fa-inverse"></i>
+			</span>
+		</p:commandLink>
+		 <!-- ========================================================= -->
+      <p:overlayPanel id="notifPanel" for="btnBell1" style="width:400px"
+							hideEffect="fade" dynamic="true" showCloseIcon="true"	>
+			   	
+			 	<h:panelGroup id="pn1">
+			 	
+			 	<div style="max-height: 400px; overflow: auto; ">
+
+				   	<p:repeat value="#{pMessages.listNotif}" var="notif" >
+					   	 
+				   	  <p:panel id="basic" header="#{notif.title}" closable="true" style="margin-bottom:20px"  >
+				   	       <p:ajax event="close" listener="#{pMessages.actionMarkAsRed(notif.id)}"  update="@none" onsuccess="downNumber()"/>
+							   	      
+				   	       <f:facet name="actions">
+					            <h:outputText id="notifDate" value="#{notif.dateMessage}" >
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{pMessages.timeZone}"/>
+								</h:outputText>
+					           	
+					            					     
+					        </f:facet> 
+					        
+				   	  	 <h:panelGrid columns="1" cellpadding="5" width="100%" >
+					   	 	
+						   	<h:outputText id="notifInfo" value="#{notif.details}" />	
+					   	 </h:panelGrid>
+					   	 
+					 </p:panel>
+					   	 
+					 	
+										 
+					</p:repeat>
+					</div>
+			 	</h:panelGroup>
+			</p:overlayPanel>
+    	================
+       
+        <o:socket channel="kgLoggedUsers" onmessage="myOnMessageUsers" user="#{userData.userId}" onopen="setConnected" onclose="setDisconnected"/>
+		
+		<o:socket channel="kgMainMessages" onmessage="myOnMessageMain" user="#{userData.userId}" onopen="setConnected" onclose="setDisconnected"/>
+		
+		<o:socket channel="kgDeloMessages" onmessage="myOnMessageMain" user="#{userData.userId}:#{userData.registratura}" onopen="setConnected" onclose="setDisconnected"/>
+		
+      <p:remoteCommand name="updateLoggedInUsers" id="rc_u" update="mainForm:loggedInUsers" immediate="true"/>
+	      <h:panelGrid columns="2">
+	      	<p:dataTable value="#{pushBean.loggedIn}" var="row" id="loggedInUsers" style="width:200px;align:left">
+	      		<f:facet name="header">
+			        LoggedIn Users
+			    </f:facet>
+	      		<p:column>#{row.key}</p:column>
+	      		<p:column>#{row.value}</p:column>
+	      	</p:dataTable>
+	      
+	      	<h:panelGroup>
+	      		<h:outputLabel value="Sned message to (User id from left table):" />
+		        <h:selectOneRadio value="#{wsocketKG.severity}" id="severity">
+		            	<f:selectItem itemLabel="Info" itemValue="info"/>
+				    	<f:selectItem itemLabel="Wearn" itemValue="warn"/>
+				    	<f:selectItem itemLabel="Error" itemValue="error"/>
+				    	<f:selectItem itemLabel="Fatal" itemValue="Fatal"/>
+				</h:selectOneRadio>
+				<br/>
+			    
+					<p:outputLabel value="UserId" />
+			      	<p:inputText value="#{wsocketKG.userId}" id="userId"/>
+		      	<p:outputLabel value="Title" />
+		        <h:inputText value="#{wsocketKG.title}" id="title"/>
+		        <p:outputLabel value="Message" />
+		      	<h:inputTextarea id="msg" value="#{wsocketKG.message}"></h:inputTextarea>
+		      	
+		      	<p:commandButton action="#{wsocketKG.actionSendMsgMain}" value="SendEvent" ajax="true" process="severity,userId,title,msg,@this" update="@none"  />
+	      	 </h:panelGroup>
+	      </h:panelGrid>
+     
+     <p:growl widgetVar="growlWV" for="kgGrowl"/>
+      
+     
+      </h:form>
+      </ui:define>
+      </ui:composition>
+      

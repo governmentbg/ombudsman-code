@@ -1,0 +1,746 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:c="http://java.sun.com/jstl/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"	> 
+	  
+	  
+
+<cc:interface componentType="taskData">
+
+   <cc:attribute name="idTask"	         	 type="java.lang.Integer" shortDescription="id на задача" deafult="#{null}" />		 
+   <cc:attribute name="idDoc"	         	 type="java.lang.Integer" shortDescription="id на документ" deafult="#{null}" />
+   <cc:attribute name="dateDoc"   		     type="java.util.Date"    shortDescription="Дата на документа, дата към която да се заредят класификации и за разкодиране. По подразбиране - днешна дата." />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="Полета, които трябва да се обновят" />
+   <cc:attribute name="readonly"       		 type="java.lang.Boolean" shortDescription="Само за разглеждане" default="false" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+   <cc:attribute name="taskProcess"          type="java.lang.Integer" shortDescription="Обработка на задача - от къде е извикана - от екрана на документа (0), актуализация на задача (1), от раб. плот(2), от процедура (3) "  default="2" />
+   <cc:attribute name="showSprTasDash"  	 type="java.lang.Boolean" shortDescription="Да се показва бутон който извиква модален със задачи към документа през раб.плот " default="false" />
+   <cc:attribute name="showModalNewTasDash"  type="java.lang.Boolean" shortDescription="Определя кой бутон за нова задача да се показва през раб.плот " default="false" />
+   <cc:attribute name="docList"				 type="java.util.List"	  shortDescription="Списък с id-та на документи (1 зад. към много док.). Ако е подаден - idDoc се игнорира" deafult="#{null}"  />
+</cc:interface>
+<cc:implementation>
+
+ <f:event type="preRenderComponent" listener="#{cc.initTaskComp()}" /> <ui:remove> <!--  За да се инициализира компонентата--> </ui:remove>
+	
+	<h:outputText value="#{labels['task.notDefPravaRegTask']}" styleClass="form-label" 
+		rendered="#{cc.attrs.taskProcess ne 0 and cc.task.id eq null and !userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)}"/>
+	
+	<div jsf:id="dpDataC"  jsf:rendered="#{cc.showMe and 
+		(cc.lockMsg eq null and cc.task.id eq null ? (cc.task.registraturaId eq userData.getRegistratura() and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)) : true)}"> 
+		<ui:remove><!-- проверка дали потребителя има права да поставя задачи --></ui:remove>
+   
+		<p:toolbar id="tbTask" styleClass="margin-bottom">
+			<f:facet name="left">	
+				<p:commandButton icon="fas fa-save" id="btnSaveTask" 
+				    value="#{ui_labels['general.save']}"
+					rendered="#{!cc.attrs.readonly and (cc.editM or cc.editE) and cc.lockMsg eq null}"
+					update="#{cc.attrs.update} #{cc.clientId}:dpDataC" partialSubmit="true" 
+					process="#{cc.attrs.update} #{cc.clientId}:dpDataC @this" 
+					actionListener="#{cc.actionSave(cc.attrs.docList eq null ? true : false)}"
+					title="#{labels['task.saveTitle']}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" styleClass="p-mr-2">
+				</p:commandButton>
+	            
+	            <p:splitButton id="history" value="#{labels['task.history']}" title="#{labels['task.titleHistory']}" action="#{cc.fillHistoryList}"
+	                 icon="fas fa-history" rendered="#{cc.task.id ne null}"  update="#{cc.clientId}:histp" 
+	                 partialSubmit="true" process="#{cc.clientId}:histp @this"
+					 oncomplete="PF('historyModal').show()">
+		            <p:menuitem id="defCh" partialSubmit="true" process="#{cc.clientId}:defEditp @this"
+		                value="#{labels['task.definitonCh']}" action="#{cc.fillDefinitionEditList}"  icon="fas fa-edit"  
+		            	update="#{cc.clientId}:defEditp" oncomplete="PF('definitionEdit').show()"/>
+		        </p:splitButton>
+		          
+		       <ui:remove><!--       
+				<p:commandButton icon="fas fa-key" id="btnAccessDelo" value="#{labels['task.accessPrep']}" 
+				    rendered="#{cc.attrs.taskProcess ne 3
+				    			and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GIVE_ACCESS_DELO_BY_TASK)
+				                and cc.task.docId ne null and !cc.attrs.readonly and cc.task.id ne null 
+				                and cc.task.registraturaId eq userData.getRegistratura() }"
+				    styleClass="ui-button-warning p-ml-2"
+					actionListener="#{cc.actionAccessDelo}" 
+					update="#{cc.clientId}:pAccessDelo" partialSubmit="true" process="#{cc.clientId}:pAccessDelo @this" />
+				  --></ui:remove>			          
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	           
+	          
+				<p:commandButton icon="fas fa-file"  id="btnNewTask" 
+				    value="#{labels['task.new']}" styleClass="ui-button-success" 
+					rendered="#{!cc.attrs.showModalNewTasDash and  !cc.attrs.readonly and cc.attrs.taskProcess ne 3 and cc.task.registraturaId eq userData.getRegistratura() and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)}" 
+					partialSubmit="true"
+					update="#{cc.clientId}:dpDataC #{cc.attrs.update}" 
+					process="#{cc.clientId}:dpDataC @this" 
+					actionListener="#{cc.actionNewTask(true)}" 
+					title="#{labels['task.newTitle']}" >						
+				</p:commandButton>
+				
+			    <ui:remove><!-- допълнителни бутони от раб. плот --></ui:remove>
+				<p:commandButton  onclick="dashboardNewTaskDoc()" icon="fas fa-file" value="#{labels['task.new']}"
+					 styleClass="ui-button-success"
+					 rendered="#{cc.attrs.showModalNewTasDash and  cc.task.registraturaId eq userData.getRegistratura() and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_REG_TASK)}"/>
+		
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />	            
+				
+				<p:commandButton icon="fas fa-th-list" value="#{labels['dashboard.taskspr']}" rendered="#{cc.attrs.showSprTasDash}" process="@this" ajax="true"
+						styleClass="ui-button-info  p-mr-2" update="@none" onclick="showTaskSprDoc(); ">
+				</p:commandButton>
+				
+				<p:commandButton icon="fas fa-th-list" value="#{labels['dashboard.linkdocspr']}" rendered="#{cc.attrs.showSprTasDash}" process="@this" ajax="true"
+						styleClass="ui-button-info"  update="@none" onclick="showTaskSprLinkDoc(); ">
+				</p:commandButton>
+				
+			 
+				<h:outputText value=" #{labels['task.tskReg']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, cc.task.registraturaId,cc.lang, now)}" 
+					rendered="#{cc.task.registraturaId ne userData.getRegistratura()}"/>
+				
+			</f:facet>
+			
+			<f:facet name="right">		
+				<p:commandButton icon="fas fa-times" id="btnDelTask"
+				 	value="#{ui_labels['general.delete']}"				
+					rendered="#{!cc.attrs.readonly and cc.attrs.taskProcess ne 3 and cc.task.id ne null and cc.editM and cc.task.registraturaId eq userData.getRegistratura() and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_TASK)}" 
+					update="#{cc.attrs.update} #{cc.clientId}:dpDataC" partialSubmit="true" 
+					process="#{cc.attrs.update} #{cc.clientId}:dpDataC @this"  styleClass="ui-button-danger"
+					actionListener="#{cc.actionDelete}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"
+					title="#{labels['task.deleteTitle']}" >
+						<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['tasks.msgDelete']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>						
+				
+			</f:facet>
+		</p:toolbar>	
+
+		<h:panelGroup rendered="#{cc.lockMsg ne null}">
+			<p:staticMessage severity="warn" summary="#{labels['docu.taskLockedMsg']}" detail="#{cc.lockMsg}" />
+		</h:panelGroup>
+		<!-- Бутон с данни за регистрация - модален за журнала-->
+		<h:panelGroup id="pRegInfo">
+		
+	 		<ibg:compObjAudit id="a2" idObj="#{cc.task.id}" 
+				 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_TASK}"
+				 	identInfo="#{labels['docu.taskH1']} #{cc.task.rnTask};" 	/>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{cc.lockMsg eq null}">
+			<div class="title-group" jsf:id="exeTask">
+				<p:commandLink styleClass="extended-search-toggle expanded "  rendered="#{cc.task.id ne null}" 
+				       onclick="toggleSection(this, '##{cc.clientId}:cd1-statusData')" >
+					
+						<h:outputText value="#{labels['docu.taskH1']} #{cc.task.rnTask};" title="#{labels['tasks.nomer1']}"/>
+						<h:outputText value=" #{labels['docu.taskH2']}:  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, cc.task.status, cc.lang, now)};"
+										  title="#{labels['task.currentStatus']}" />
+						<h:outputText value=" #{labels['taskList.emplStatus2']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, cc.task.statusUserId, cc.lang, now)}"/>
+						<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			
+			<ui:remove><!-- 	
+				<h:panelGroup 
+				    rendered="#{cc.viewSignBtn and cc.task.id ne null and cc.viewPanelExec ? (cc.execSigned ? true :  cc.editE and !cc.attrs.readonly and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN) ) : false}">  
+					<ibg:compSignXml id="exeSign" 
+					    value="#{cc.execString}" 
+						titleButton="#{cc.task.signExe ne null ? ui_labels['general.elSignView1'] : ui_labels['general.elSign']}"
+						titleButton2="#{labels['task.signExec']}"
+						titlePanel="#{labels['task.signExec']}"
+						onClickSign="#{cc.actionExecSigned()}" 
+						onCompleteSign="#{cc.actionExecCompleteSigned()}"
+						onRemoveSign="#{cc.actionExecRemoveSigned()}"
+						removeSign="#{cc.editE and !cc.attrs.readonly and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}"
+						update="#{cc.clientId}:cd1-statusData #{cc.clientId}:exeTask"/>
+					
+				</h:panelGroup>	 
+				 --></ui:remove>
+			</div>
+	
+	
+			<ui:remove><!-- изпълнение на задача --></ui:remove>
+			<div jsf:id="cd1-statusData" class="p-grid  ui-fluid">
+			    <div class="p-col-12 p-md-12 p-lg-12 p-xl-12" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">	
+				    <div class="p-grid  ui-fluid">	
+						<div class="p-col-6 p-md-4 p-lg-4 p-xl-2"
+							 jsf:rendered="#{!cc.attrs.readonly and cc.task.id ne null and cc.statusList.size() ne 0 and cc.editE}" > 
+						
+							<h:outputText value="#{labels['task.newStatus']}"  id="lblnst" styleClass="form-label" /> 
+							<p:selectOneMenu id="nStatus1" value="#{cc.newStatus}" layout="responsive" immediate="true" >
+								<f:selectItem value="#{null}" itemValue="#{null}"/>
+								<f:selectItems value="#{cc.statusList}"  />									
+								<p:ajax event="change" update="@this" process="@this" partialSubmit="true"
+								   		oncomplete="cmdChangeStatus()"/>
+							</p:selectOneMenu>	
+			
+							<p:remoteCommand name="cmdChangeStatus" 
+							    update=" #{cc.clientId}:cd1-statusData #{cc.clientId}:lblnst  #{cc.clientId}:exeTask"
+								partialSubmit="true" process=" #{cc.clientId}:cd1-statusData @this"
+								actionListener="#{cc.actionChStatus}" />						
+						</div>	
+				
+						<div class="p-col-6 p-md-3 p-lg-3 p-xl-2"
+					      jsf:rendered="#{cc.viewPanelExec and cc.viewDateExec}" > 
+							<h:outputText value="#{cc.labelDateExec}" styleClass="form-label req" />
+							<p:datePicker id="exeDat" mask="true"
+										showIcon = "true"  showTime="#{cc.srokTime}" showSeconds="#{cc.srokTime}" pattern="#{cc.srokPattern}" locale="bg"
+										value="#{cc.task.realEnd}"									
+										rendered="#{!(cc.attrs.readonly or  !cc.editE or cc.execSigned)}" />	
+							<p:inputText id="exeDatV" rendered="#{cc.srokTime and (cc.attrs.readonly or  !cc.editE or cc.execSigned)}"
+									 	 value="#{cc.task.realEnd}"	
+									    readonly="true">
+									  <f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{cc.timeZone}"/>
+							</p:inputText>
+							<p:inputText id="exeDatV2" rendered="#{!cc.srokTime and (cc.attrs.readonly or  !cc.editE or cc.execSigned)}"
+									 	 value="#{cc.task.realEnd}"	
+									    readonly="true">
+									  <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+							</p:inputText>	   							   						
+						
+						</div>	
+				 
+						<div  class="p-col-12 p-md-5 p-lg-4 p-xl-4" 
+						    jsf:rendered="#{cc.viewPanelExec and cc.viewOpinion  and cc.opinionList.size() ne 0}"> 	
+							<h:outputText value="#{labels['tasks.opinion']}" styleClass="form-label req" />
+							<p:selectOneMenu id="opinion" value="#{cc.task.endOpinion}" immediate="true" 
+								 disabled="#{cc.attrs.readonly or !cc.editE or cc.execSigned}"	  >
+								<f:selectItem value="#{null}" itemValue="#{null}"/>
+								<f:selectItems value="#{cc.opinionList}" />
+							</p:selectOneMenu>					
+						</div>
+						
+						<div class="p-col-12 p-md-7 p-lg-5 p-xl-4" jsf:id="divDocEnd"
+							jsf:rendered="#{cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_REZOL and cc.viewPanelExec and cc.viewDateExec}">
+							<div class="p-grid">
+							<div class="p-col-6">
+								<h:outputText value="#{labels['tasks.delDocReq1']}" 
+								styleClass="form-label 
+								#{(cc.newStatus eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP or
+								 cc.task.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP) and 
+								 cc.task.docRequired eq OmbConstants.CODE_ZNACHENIE_DA ? 'req' : ''}" />
+								<div class="ui-inputgroup">	
+							 		
+									<p:inputText id="rnDocEnd" value="#{cc.task.rnDocEnd}" 
+										readonly="#{cc.attrs.readonly or cc.execSigned}"
+										style="display:inline-block;"										
+										onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+										<p:ajax event="change" update="#{cc.clientId}:docEndPG #{cc.clientId}:divDocEnd @this"
+												process="#{cc.clientId}:docEndPG  @this" partialSubmit="true"
+												listener="#{cc.actionSearchDocBtn(false)}" />		
+									</p:inputText>
+									<p:commandButton id="btnDocEnd" icon="fas fa-search"  style="width:40px"
+											rendered="#{!cc.attrs.readonly and cc.task.endDocId eq null and !cc.execSigned}"
+											title="#{labels['docDoc.searchDoc']}" 
+											actionListener="#{cc.actionSearchDocBtn(true)}"
+											update="#{cc.clientId}:docEndPG"  partialSubmit="true">
+									</p:commandButton>										 
+									<p:button  icon="fas fa-eye" href="#{cc.actionGotoViewDoc()}" target="_blank" rendered="#{cc.task.endDocId ne null}"
+							          style="width:30px">
+					  				</p:button> 
+								</div>
+							</div>
+							<div class="p-col-6" jsf:id="dateDoc" >
+								<h:outputText value="#{labels['docDoc.dateDoc']}" styleClass="form-label"/>
+							
+								<p:inputText value="#{cc.task.dateDocEnd}" readonly="true" id="dDoc">
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+								</p:inputText>
+							
+							</div>
+							</div>
+						</div>
+						
+					</div>
+				</div>				
+			
+				<div class="p-col-12" jsf:id="plExec2"> 
+				    <h:outputText value="#{labels['tasks.comment']}" 
+				     styleClass="form-label #{cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_SAGL and
+								  			 cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_PODPIS and
+								   			 cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_REZOL ? 'req' :''}"
+				     id="labComment" rendered="#{cc.viewPanelExec}"/>
+					<p:inputTextarea   id="taskStComment"	value="#{cc.task.statusComments}" rows="2"  
+							readonly="#{cc.attrs.readonly or !cc.editE or cc.execSigned}" rendered="#{cc.viewPanelExec}" />
+							
+				</div> 	
+					
+			</div>
+			
+			<ui:remove><!-- дефиниция на задача --></ui:remove>
+            <div class="title-group" jsf:id="defTask">
+				<p:commandLink styleClass="extended-search-toggle expanded " onclick="toggleSection(this, '##{cc.clientId}:cd1-mainData')" >
+						<h:outputText value="#{labels['task.mainData']}" />
+						<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+				<ui:remove><!-- 
+				<h:panelGroup rendered="#{cc.viewSignBtn and cc.task.id ne null ? (cc.defSigned ? true :  cc.editM and !cc.attrs.readonly and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)) : false}">  
+					<ibg:compSignXml id="defSign" 
+					    value="#{cc.defString}" 
+						titleButton="#{cc.task.signDef ne null ? ui_labels['general.elSignView1'] : ui_labels['general.elSign']}"
+						titleButton2="#{labels['task.signDef']}"
+						titlePanel="#{labels['task.signDef']}"
+						onClickSign="#{cc.actionDefSigned()}" 
+						onCompleteSign="#{cc.actionDefCompleteSigned()}"
+						onRemoveSign="#{cc.actionDefRemoveSigned()}"
+						removeSign="#{cc.editM and !cc.attrs.readonly and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}"
+						update="#{cc.clientId}:cd1-mainData #{cc.clientId}:defTask"/>
+					
+				</h:panelGroup>	 
+				 --></ui:remove>
+			</div>
+		
+			<div jsf:id="cd1-mainData" class="p-grid  ui-fluid  ">
+				<div class="p-col-12 p-md-12 p-lg-12 p-xl-12">
+
+					<div class="p-grid  ui-fluid p-align-end">
+						<div  class="p-col-4 p-md-4 p-lg-2 p-xl-2" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+						 	<h:outputText value="#{labels['tasks.vid']}" styleClass="form-label req" />
+							<p:selectOneMenu id="typeTask" value="#{cc.task.taskType}" immediate="true" 
+								 rendered="#{ cc.task.id eq null and !cc.attrs.readonly }" 	  >
+								<f:selectItems  value="#{cc.taskTypeList}" />
+							 	<p:ajax event="change" update="@this" process="@this" partialSubmit="true"
+						   				oncomplete="cmdChTypeTask()"/>
+							</p:selectOneMenu>
+													
+							<h:outputText  value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, cc.task.taskType,  cc.lang, now)}" 
+							    rendered="#{cc.attrs.readonly or cc.task.id ne null}" 	
+								style="padding: 7px 12px;font-style: italic;background-color:rgba(216,222,233,0.35);border-radius: 4px;font-weight: bold;display:block;" />
+				
+							<p:remoteCommand name="cmdChTypeTask" 
+									partialSubmit="true" process="@this"
+									update="#{cc.clientId}:cd1-statusData #{cc.clientId}:chOneExec  #{cc.clientId}:dPrikl #{cc.clientId}:srokDat #{cc.clientId}:chBezSrok  #{cc.clientId}:lblSrok #{cc.clientId}:lblVazl" 
+									actionListener="#{cc.actionChTypeTask(cc.task.taskType)}" />	 	
+						
+						</div>
+						
+						<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"> 	
+							<h:outputText value="#{labels['tasks.assign']}" styleClass="form-label req" />
+							<p:datePicker id="vDat" mask="true"
+										showIcon = "true"   showTime="#{cc.srokTime}" showSeconds="#{cc.srokTime}"
+										pattern="#{cc.srokPattern}" locale="bg"
+										value="#{cc.task.assignDate}"									
+										rendered="#{!(cc.attrs.readonly or !cc.editM or cc.defSigned)}" />		
+							<ui:remove><!-- по някаква причина #{cc.srokPattern} в  <f:convertDateTime /> не ми връща правилната стойност!!! затова го разделям в две контроли...--></ui:remove>								
+							<p:inputText id="vDatV" rendered="#{cc.srokTime and (cc.attrs.readonly or !cc.editM or cc.defSigned)}"
+									 	value="#{cc.task.assignDate}"
+									    readonly="true">
+									    <f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{cc.timeZone}"/>
+							</p:inputText>	 
+							<p:inputText id="vDatV2" rendered="#{!cc.srokTime and (cc.attrs.readonly or !cc.editM or cc.defSigned)}"
+									 	value="#{cc.task.assignDate}"
+									    readonly="true">
+									    <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+							</p:inputText>	
+						</div>
+						
+						<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"> 	
+							<h:outputText value="#{labels['tasks.srok']}" styleClass="form-label #{cc.bezSrok ? '' : 'req'}"  id="lblSrok" />
+							<p:datePicker id="srokDat" mask="true" pattern="#{cc.srokPattern}" locale="bg"
+										showIcon="true"  showTime="#{cc.srokTime}" showSeconds="#{cc.srokTime}"
+										value="#{cc.task.srokDate}"									
+										rendered="#{!(cc.attrs.readonly or cc.bezSrok or !cc.editM or cc.defSigned)}" >										
+								<p:ajax event="change" 		update="#{cc.clientId}:lstIzp" />   
+							    <p:ajax event="dateSelect"  update="#{cc.clientId}:lstIzp" />   
+							</p:datePicker>
+						    <p:inputText id="srokDatV" rendered="#{cc.srokTime and (cc.attrs.readonly or cc.bezSrok or !cc.editM or cc.defSigned)}"
+									 	 value="#{cc.task.srokDate}"	
+									     readonly="true">
+									   <f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{cc.timeZone}"/>
+							</p:inputText>	 
+							<p:inputText id="srokDatV2" rendered="#{!cc.srokTime and (cc.attrs.readonly or cc.bezSrok or !cc.editM or cc.defSigned)}"
+									 	 value="#{cc.task.srokDate}"	
+									     readonly="true">
+									   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+							</p:inputText>	 
+						</div>
+						
+						<div class="p-col-4 p-md-4 p-lg-6 p-xl-6" > 	
+							
+		       				<p:selectBooleanCheckbox id="chBezSrok" styleClass="form-label" 
+				       			 value="#{cc.bezSrok}"
+								 itemLabel="#{labels['tasks.bezSrok']}" disabled="#{cc.attrs.readonly or !cc.editM or cc.defSigned}">
+							 	<p:ajax update="@this #{cc.clientId}:srokDat #{cc.clientId}:lblSrok" partialSubmit="true"
+									process="@this #{cc.clientId}:vDat #{cc.clientId}:srokDat #{cc.clientId}:lblSrok"
+									listener="#{cc.actionClickBezSrok}" />
+							 </p:selectBooleanCheckbox>							 					
+						</div>	
+						
+					
+						
+						<div class="p-col-12 p-md-12 p-lg-6 p-xl-4" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"> 						
+							<ui:remove><!-- <h:outputText id="lblVazl"	 value="#{(cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_REZOL) ? labels['task.vazlojitel'] :labels['tasks.assignCode']}" styleClass="form-label req" /> --></ui:remove>
+							<h:outputText id="lblVazl"	
+							 value="#{labels['tasks.assignCode']} / #{labels['task.vazlojitel']}" styleClass="form-label req" />
+							<ibg:selectOneModalA id="vazl" header="#{(cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_REZOL) ?'Въвел' :labels['tasks.assignCode']}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+								dateClassif="#{cc.currentDate}" styleAutoComp="width:99%;"
+								selectedCode="#{cc.task.codeAssign}" compType="2"
+								withBtnClear="true" saveStateTree="true"   
+							 	readonly="#{cc.attrs.readonly or !cc.editM or cc.defSigned}" 							 	
+								dopInfoAutoComp="true" 
+								isSelectNode="false"
+								specifics="#{cc.specificsAdm}"
+								itemtipAtPosition="center bottom"/>
+					
+						</div>
+						
+						<div class="p-col-12 p-md-12 p-lg-6 p-xl-4" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+						 	<h:outputText value="#{labels['tasks.ctrlCode']}" styleClass="form-label" />
+							<ibg:selectOneModalA id="ctrl" header="#{labels['tasks.ctrlCode']}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+								dateClassif="#{cc.currentDate}" styleAutoComp="width:99%;"
+								selectedCode="#{cc.task.codeControl}" compType="2"
+								withBtnClear="true" saveStateTree="true"   
+							 	readonly="#{cc.attrs.readonly or !cc.editM or cc.defSigned}"
+							 	isSelectNode="false"
+							 	dopInfoAutoComp="true" 
+							 	specifics="#{cc.specificsAdm}"
+								itemtipAtPosition="center bottom" />  
+						</div>
+						<div class="p-col-6 p-md-6 p-lg-4 p-xl-4" > 			
+							
+							<p:selectBooleanCheckbox id="chOneExec" styleClass="form-label" 
+				       			 value="#{cc.oneExec}" rendered="#{cc.task.id eq null}"
+								 itemLabel="#{labels['tasks.oneExec']}"
+								 disabled="#{cc.oneExecD or cc.defSigned}" />					
+					
+						</div>
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+							<ui:remove><!-- за съгласуване и подпис - при актуализация да се забрани възножността да вкарват повече от един изпълнител! --></ui:remove>
+							<h:panelGroup rendered="#{cc.task.id eq null or not(cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_SAGL or cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_PODPIS)}">
+								<h:outputText value="#{labels['tasks.execCodes']}" styleClass="form-label req"/>
+								<ibg:selectManyAdmStr id="lstIzp" compType="2" maxResults="50" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 								
+									dateClassif="#{cc.currentDate}" filtered="false"
+									showRadioBtn="false" 
+									selectedCodes="#{cc.task.codeExecs}"
+									selectedClassifs="#{cc.scList}"
+									styleAutoComp="width:100%;"             
+									withBtnClear="true"	
+									readonly="#{cc.attrs.readonly or !cc.editM or cc.defSigned}" 
+									
+									dopInfoAutoComp="true" 
+									itemtipAtPosition="center bottom"
+									header="#{labels['tasks.execCodes']}"
+									specifics="#{cc.specificsAdm}"
+									codeExtCheck="#{cc.codeExtCheck}" 
+									isSelectNode="false" 
+									modalPosition="top"/>
+							</h:panelGroup> 
+							<h:panelGroup rendered="#{cc.task.id ne null and (cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_SAGL or cc.task.taskType eq OmbConstants.CODE_ZNACHENIE_TASK_TYPE_PODPIS)}">
+								<h:outputText value="#{labels['tasks.oneExec1']}" styleClass="form-label req"/>
+								<ibg:selectOneModalA id="oneIzp" header="#{labels['tasks.oneExec1']}"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+									dateClassif="#{cc.currentDate}" styleAutoComp="width:99%;"
+									selectedCode="#{cc.task.codeExecs[0]}" compType="2"
+									withBtnClear="true" saveStateTree="true"   
+								 	readonly="#{cc.attrs.readonly or !cc.editM or cc.defSigned}"
+								 	dopInfoAutoComp="true" 
+									itemtipAtPosition="center bottom" />
+							</h:panelGroup>  
+						</div>
+						
+						<div class="p-col-8 p-md-8 p-lg-8 p-xl-8" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"> 
+							<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label" id="lablinf" />
+							<i jsf:id="procIcon" class="fas fa-info-circle"  style="font-size: 18px;" jsf:rendered="#{cc.task.procInfo ne null}" ></i>
+							<p:tooltip id="procIconT"  for="procIcon"  escape="false" value="#{cc.task.procInfo}"	/>
+							<p:selectOneMenu id="dopInfHelp" value="#{cc.dopInfHelp}" layout="responsive" autoWidth="false"
+								rendered="#{!(cc.attrs.readonly or !cc.editM or cc.defSigned)}">
+								<f:selectItem value="#{null}" itemValue="#{null}"/>
+								<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TASK_HELP_TEXT, now, cc.lang)}" 
+                         				var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />								
+													
+								<p:ajax event="itemSelect" update="#{cc.clientId}:taskInfo @this" 
+								        partialSubmit="true" process="@this"
+								   		listener="#{cc.selectDopInfHelp}" 
+								   		oncomplete="$(function(){PrimeFaces.focus('#{cc.clientId}:taskInfo');});"/>
+							</p:selectOneMenu>	
+						</div>
+						<div class="p-col-4 p-md-4 p-lg-4 p-xl-4" jsf:id="dPrikl"> 	
+								
+							<p:selectBooleanCheckbox id="docPrkl" styleClass="form-label" 
+								 rendered="#{cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_SAGL and
+								  			 cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_PODPIS and
+								  			 cc.task.taskType ne OmbConstants.CODE_ZNACHENIE_TASK_TYPE_REZOL}"
+				       			 value="#{cc.docReq}"
+								 itemLabel="#{labels['tasks.delDocReq']}" disabled="#{cc.attrs.readonly or !cc.editM or cc.defSigned}">						 
+							</p:selectBooleanCheckbox>	
+						</div>
+						<div class="p-col-12" jsf:id="dopInfoTsk"> 						
+							<ui:remove><!-- прехвъля избраното значение в текстовото поле и сетва курсора в края на текста --></ui:remove>
+							<p:inputTextarea   id="taskInfo"	value="#{cc.task.taskInfo}" autoResize="false" 
+									onfocus="this.setSelectionRange(this.value.length, this.value.length)"
+							 		rows="3" 
+							 		readonly="#{cc.attrs.readonly or !cc.editM or cc.defSigned}">							 							
+								<p:ajax event="blur" update="@this" partialSubmit="true" process="@this"/>
+							</p:inputTextarea>
+						</div>
+					</div>
+					
+				</div>		
+		
+			</div>
+				
+			<!-- Файлове  -->
+			<ui:remove><!-- 
+			<ibg:compFileUpload listObj="#{cc.filesListTsk}"
+				codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_TASK}" header="false" 
+				idObj="#{cc.task.id}" 
+				hideDel="#{cc.attrs.readonly or !(cc.editM or cc.editE) }" 
+				view="#{cc.attrs.readonly or !(cc.editM or cc.editE)}"
+				autoSave="#{(cc.task.id eq null) ? 'false' : 'true'}"
+				saveFirst="false" id="filesTask" display="list" 
+				viewOfficial="false" showUserUpload="false"
+				showPersonalData="false" showInfo="false"
+				downloadPDFiles="true"/>
+ --></ui:remove>
+		
+		</h:panelGroup>		
+	
+	</div>
+
+<h:panelGroup id="histp">
+	<p:dialog header="#{labels['task.titleHistory2']}" height="600"  widgetVar="historyModal" modal="true" closeOnEscape="true"  id="hist" appendTo="@form" responsive="true">
+	    
+	    <div class="container #{guestPreferences.containerPosition}">
+			
+			<div class="title-group">
+				<h:outputText value="#{labels['task.titleHistory2']} на задача: #{cc.task.rnTask} от вид: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, cc.task.taskType,  cc.lang, now)}" styleClass="form-label"/>
+			</div>
+					
+			<div class="table-toolbar">
+				<h:outputText value="#{ui_labels['general.reportResult']} #{cc.historyListH.size()}" styleClass="form-label"/>
+			</div>
+		
+			<p:dataTable id="tblEvnP" var="row" value="#{cc.historyListH}" 	 
+				rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rows="15" rowsPerPageTemplate="5,10,15,20" paginatorPosition="bottom"
+				paginatorAlwaysVisible="false" paginator="true">
+						
+				
+				<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>	
+				
+				<p:column width="90" sortBy="#{row[1]}" headerText="#{labels['task.statusData']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[1], cc.lang, now)}"/>					    
+				</p:column>
+				
+				<p:column width="120" sortBy="#{row[4]}" headerText="#{labels['delo.dateStatus']}" >									  
+					<h:outputText value="#{row[4]}">	
+						<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{cc.timeZone}"/>
+					</h:outputText>							    
+				</p:column>
+				
+				<p:column width="120" sortBy="#{row[2]}" headerText="#{labels['journal.jUser']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[2], cc.lang, now)}"/>					    
+				</p:column>
+				
+				<p:column  sortBy="#{row[3]}" headerText="#{labels['tasks.comment']}">
+					<h:outputText value="#{row[3]}"  />								    
+				</p:column>
+			  	
+				<p:column width="220" sortBy="#{row[6]}" headerText="#{labels['tasks.opinion']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_OPINION , row[6], cc.lang, now)}"  />								    
+				</p:column>
+				
+			</p:dataTable>
+						
+		</div>	
+	    
+	</p:dialog> 
+</h:panelGroup>
+
+<h:panelGroup id="defEditp">
+	<p:dialog header="#{labels['task.definitonCh']}" height="600" appendTo="@form" widgetVar="definitionEdit" modal="true"  responsive="true" closeOnEscape="true" id="defEdit">
+		
+		<div class="container #{guestPreferences.containerPosition}">
+			
+			<div class="title-group">
+				<h:outputText value="#{labels['task.definitonCh']} на задача: #{cc.task.rnTask} от вид: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, cc.task.taskType,  cc.lang, now)}" styleClass="form-label"/>
+			</div>
+		
+			<div class="table-toolbar">
+				<h:outputText value="#{ui_labels['general.reportResult']} #{cc.defEditListD.size()}" styleClass="form-label"/>
+			</div>
+		
+			<p:dataTable id="defList" var="row" value="#{cc.defEditListD}" 
+				rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rows="5" rowsPerPageTemplate="5,10,15,20" paginatorPosition="bottom"
+				paginatorAlwaysVisible="false" paginator="true">
+						
+				
+				<p:column width="10" exportable="false" >
+					<i class="fas fa-user" title="#{labels['task.userCh']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[1], cc.lang, now)}"></i>
+				</p:column>	
+				
+				<p:column  width="100" sortBy="#{row[3]}" headerText="#{labels['task.dateCh']}" >									  
+					<h:outputText value="#{row[3]}">	
+						<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{cc.timeZone}"/>
+					</h:outputText>							    
+				</p:column>
+				
+				<p:column width="110" sortBy="#{row[4]}" headerText="#{labels['tasks.assign']}" >									  
+					<h:outputText value="#{row[4]}">	
+						<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{cc.timeZone}"/>
+					</h:outputText>							    
+				</p:column>
+				
+				<p:column width="100" sortBy="#{row[5]}" headerText="#{labels['tasks.srok']}" >									  
+					<h:outputText value="#{row[5]}" >	
+						<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+					</h:outputText>							    
+				</p:column>
+				
+				<p:column  sortBy="#{row[6]}" headerText="#{labels['docu.dopInfo']}" style="width:100%" >
+					<h:outputText value="#{row[6]}" />								    
+				</p:column>
+				
+				<p:column width="200" headerText="#{labels['task.referents']}" style="width:100%" >
+					<h:outputText value="#{row[7]} #{row[8]} #{row[9]}" title="#{labels['tasks.vid']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[10], cc.lang, now)}" />					    
+				</p:column>
+				
+				<p:column width="220" sortBy="#{row[11]}" headerText="#{labels['tasks.delDocReq']}" style="width:100%" >
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_ZNACHENIE_NOTIFF_EVENTS_DOC_TASK_NASOCH_CHANGE, row[11], cc.lang, now)}" />								    
+				</p:column>
+			</p:dataTable>
+						
+		</div>	
+		
+	</p:dialog> 
+</h:panelGroup>
+	
+	
+		<ui:remove>	<!-- Търсене по деловоден номер (док. при приключване)-->		</ui:remove>
+	<h:panelGroup id="docEndPG">
+		<p:remoteCommand name="hideModalEndDoc" process="@this"
+			actionListener="#{cc.onHideModalDocEnd}"
+			update="#{cc.clientId}:divDocEnd" />
+
+		<p:dialog appendTo="@form" position="top"
+			header="#{labels['tasks.delDocReq']}" fitViewport="true" responsive="true"
+			resizable="true" closeOnEscape="true" widgetVar="docEndVar"
+			dynamic="true" id="docEndModal"
+			modal="true" onHide="hideModalEndDoc()" >
+
+			<ibg:compDocSearch id="compDocEndSearch"	
+			    searchDocS="#{cc.docEndObj}"
+			    searchRnDoc = "#{cc.task.rnDocEnd}"
+			    markRelDocId="#{cc.task.docId}" 		
+				buttonConfirmLabel="#{ui_labels['general.comfirmation']}"
+			    idRegistratura="#{userData.getRegistratura()}"
+				onComplete="PF('docEndVar').hide();"
+				docTypeArr="#{cc.docTypeArr}"/>
+				
+		</p:dialog>
+			
+	</h:panelGroup>
+	
+ <ui:remove>	<!-- 
+	<h:panelGroup id="pAccessDelo">
+				
+		<p:dialog appendTo="@form" position="top"
+			header="#{labels['task.accessPrep']}" fitViewport="true" responsive="true"
+			resizable="true" closeOnEscape="true" widgetVar="accessDeloVar"
+			dynamic="true" id="accessDeloModal"
+			modal="true" >
+				
+			<div class="container #{guestPreferences.containerPosition}">
+				<div class="p-grid  ui-fluid  p-align-end" >
+					<div class="p-col-12">
+						<h:outputText value="#{labels['task.accessListPrep']}"   styleClass="form-label req" />	
+						<p:message id="errMsgDA1"  	
+						    for="#{cc.clientId}:tblDeloList" showDetail="true" showSummary="true" escape="false">
+			      			<p:autoUpdate/>
+		      			</p:message>						
+						<p:dataTable id="tblDeloList" var="row" value="#{cc.prepList}" lazy="true" 	
+							rowIndexVar="idx" sortMode="single" reflow="true" scrollable="true"
+							emptyMessage="" 
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+							rows="5" rowsPerPageTemplate="5,10,15" paginatorPosition="bottom"
+							paginatorAlwaysVisible="false" paginator="true"
+							rowSelectMode="checkbox" 
+							selection="#{cc.deloSelectedTmp}">				
+											
+				
+							<p:ajax event="toggleSelect"	 	 listener="#{cc.onRowSelectAllDelo}" process="@this" />
+							<p:ajax event="rowSelectCheckbox"	 listener="#{cc.onRowSelectDelo}"   process="@this"  />
+							<p:ajax event="rowUnselectCheckbox"  listener="#{cc.onRowUnselectDelo}" process="@this"  />
+							<p:ajax event="page" listener="#{cc.onPageUpdateSelectedDelo}" />
+		
+										
+							<p:column selectionMode="multiple" style="width:30px;text-align:center;" />	
+							<p:column width="145" sortBy="#{row.a6}" >
+								<f:facet name="header">
+									 <h:outputText value="#{labels['docu.regNom']}"  />
+								</f:facet> 
+								#{row[6]}  						    
+							</p:column>
+							
+							<p:column width="145" sortBy="#{row.a7}">
+								<f:facet name="header">
+									 <h:outputText value="#{labels['docu.datPrep']}" />									  
+								</f:facet>  
+								<h:outputText value="#{row[7]}"  >	
+										<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+								</h:outputText>	
+							</p:column>
+							
+							<p:column width="110" sortBy="#{row.a8}">
+								<f:facet name="header">
+									 <h:outputText value="#{labels['docu.status']}" />									  
+								</f:facet>  
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[8], cc.lang, now)}"/>
+							</p:column>
+							
+							<p:column width="*" sortBy="#{row.a8}">
+								<f:facet name="header">
+									 <h:outputText value="#{labels['docu.nameDelo']}" />									  
+								</f:facet>  
+								#{row[11]}
+							</p:column>
+							
+							<p:column width="50" sortBy="#{row.a10}">
+								<f:facet name="header">
+									 <h:outputText value="Тип" />									  
+								</f:facet>  
+								<h:panelGroup rendered="#{row[10] eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+									<i class="fas fa-book" 
+									title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  row[10], cc.lang, now)}"></i>
+								</h:panelGroup>
+								<h:panelGroup rendered="#{row[10] ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+									<i class="fas fa-folder" 
+									title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row[10], cc.lang, now)}"></i>
+								</h:panelGroup>			
+							</p:column>
+					
+							
+						</p:dataTable>
+					</div>
+					
+					<div class="p-col-11 p-mt-2">
+						
+						<h:outputText value="#{labels['task.accessListLica']}"   styleClass="form-label req" />
+						<p:message id="errMsgDA2"  	
+						    for="#{cc.clientId}:lica" showDetail="true" showSummary="true" escape="false">
+			      			<p:autoUpdate/>
+		      			</p:message>
+						<p:selectManyCheckbox id="lica" value="#{cc.licaSelected}" immediate="true"  layout="responsive"  columns="2">
+					        <f:selectItems value="#{cc.licaList}"  />		
+					    </p:selectManyCheckbox>	
+					</div>
+					
+					<div class="p-col-1">
+						<p:commandButton   value="#{ui_labels['general.save']}" 
+								title="#{labels['taskAccessTitle']}" id="btnSaveA"
+								partialSubmit="true" process="#{cc.clientId}:tblDeloList #{cc.clientId}:lica @this"
+								actionListener="#{cc.actionSaveAccess()}"
+								rendered="#{!cc.attrs.readonly}" />
+					</div>	
+				</div>
+			
+			</div>		
+		</p:dialog>
+	
+	</h:panelGroup>
+-->		</ui:remove>		
+</cc:implementation>
+
+</ui:composition>

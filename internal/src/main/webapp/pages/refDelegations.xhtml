@@ -1,0 +1,357 @@
+<ui:composition 
+		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />	
+				<f:importConstants type="com.ib.system.SysConstants" />		
+				<f:viewAction action="#{userData.checkPageAccess(34)}" onPostback="false" />
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/refDelegations.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/refDelegations.xhtml']}</li>
+	    </ui:define> 
+
+ 		
+		<ui:define name="content">
+
+			<h:form id="delegForm">
+				<div class="container #{guestPreferences.containerPosition}">
+				
+					<h:panelGroup id="panelDataDelegations" layout="block">
+						<p:toolbar >
+							<f:facet name="left" >						
+								<p:commandButton icon="fas fa-file" rendered="#{!refDelegations.old}" action="#{refDelegations.actionNewSubst}" update="delegForm:panelNew" value="#{labels['refDeleg.newSubs']}" styleClass="ui-button-success p-mr-2" />
+								<p:commandButton icon="fas fa-file" rendered="#{(refDelegations.showAutoriz or refDelegations.delegRight) and !refDelegations.old}" action="#{refDelegations.actionNewAuthorization}" update="delegForm:panelNew" value="#{labels['refDeleg.newAuthorization']}" styleClass="ui-button-success" />								
+							</f:facet>
+							<f:facet name="right">
+								<p:commandButton icon="fas fa-info-circle" action="#{refDelegations.actionChangeActiveDialog}" update="delegForm:panelDataReplacements" onclick="PF('replacements').show();" value="#{labels['refDeleg.whoRepl']}" />		
+							</f:facet>
+						</p:toolbar>
+						
+						<p:selectOneRadio id="activeRadio" value="#{refDelegations.radioActive}"   columns="2">
+							<f:selectItem itemLabel="#{labels['refDeleg.active']}"    itemValue="1" />
+				           	<f:selectItem itemLabel="#{labels['refDeleg.all']}"  itemValue="2"/>
+							<p:ajax event="change"  update="delegForm:panelDataDelegations delegForm:panelTable delegForm:panelNew"
+							 	        process="@this " listener="#{refDelegations.actionChangeActive}"/>
+						</p:selectOneRadio>
+					
+						<h:panelGroup rendered="#{refDelegations.old}" >
+							<div class="card">
+								<div  class="p-grid  ui-fluid p-align-end">							
+									 						
+									<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">	
+										 <h:outputText value="#{labels['refDeleg.ot']}:" styleClass="form-label"/>														
+										 <p:datePicker id="dateOtSearch" showIcon="true"  pattern="dd.MM.yyyy"  mask="true" value="#{refDelegations.dataOt}"/>															 	
+									</div>								 
+									<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">	
+									 	<h:outputText value="#{labels['refDeleg.do']}:" styleClass="form-label"/>					
+										 <p:datePicker id="dateToSearch"  pattern="dd.MM.yyyy" showIcon="true" mask="true" value="#{refDelegations.dataDo}" />	
+										 	
+									</div>	
+									<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-2">
+										<div class="ui-inputgroup">								
+										 	<p:commandButton id="btnSearch"  styleClass="inputgroup-button" icon="fas fa-search" action="#{refDelegations.actionSearchButt}" update="delegForm:panelTable" value="#{labels['general.search']}"  />							 																 	
+										 	<p:commandButton title="#{labels['refDelegations.searchRule']}" id="btnInfo" icon="fas fa-info-circle"  styleClass="inputgroup-button"/>
+										 		<ui:remove>
+										 			<p:tooltip  for="btnInfo" value="#{labels['refDelegations.searchRule']}" 
+		              									 showEffect="clip" hideEffect="explode" position="bottom"/>			
+		              							</ui:remove>						
+										</div>	
+								   </div>
+								   
+									<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2" >		
+										<p:commandButton action="#{refDelegations.actionClear}" icon="fas fa-eraser" update="delegForm:panelDataDelegations" value="#{ui_labels['general.clear']}" styleClass="ui-button-warning" />								
+									</div>
+								</div>							
+							</div>							
+						</h:panelGroup>				
+					</h:panelGroup>
+				</div> 
+				
+				<!--Списък със замествания/ упълномощавания-->  								
+				<h:panelGroup id="panelTable" >
+					<h:panelGroup layout="block" styleClass="margin-top">		
+						<div class="p-col-12">
+							<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#delegList')">
+								<h:outputText value="#{labels['refDeleg.availableDeleg']}" rendered="#{!refDelegations.old}"/>
+								<h:outputText value="#{labels['refDeleg.replAutoriz']}" rendered="#{refDelegations.old}"/>									
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>	
+													
+							<p:dataTable id="tblRefDelegations" var="row" value="#{refDelegations.delegList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+								emptyMessage="#{labels['refDeleg.listIsEmpty']}" reflow="true"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+	
+								<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>
+				
+								<p:column width="15" rendered="#{!refDelegations.old}">
+									<p:commandButton icon="fas fa-edit"  action="#{refDelegations.actionEdit(row[0])}" update="delegForm:panelNew" ajax="true" title="#{ui_labels['general.edit']}" />
+								</p:column>
+				
+								<p:column width="90" sortBy="#{row.a1}" headerText="#{labels['refDeleg.employee']}">								
+									<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, row[1], refDelegations.currentLang, now)}" />
+								</p:column>
+				
+								<p:column width="110" sortBy="#{row.a3}" headerText="#{labels['refDeleg.right']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELEGATES, row[3], refDelegations.currentLang, now)}" />
+								</p:column>
+				
+								<p:column width="90" sortBy="#{row.a2}" headerText="#{labels['refDeleg.user']}">
+									<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, row[2], refDelegations.currentLang, now)}" />
+								</p:column>
+				
+								<p:column width="60" sortBy="#{row.a4}" headerText="#{labels['refDeleg.dateFrom']}">
+									<h:outputText value="#{row[4]}" >
+										<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />									
+									</h:outputText>
+								</p:column>
+										
+								<p:column width="60" sortBy="#{row.a5}" headerText="#{labels['refDeleg.dateTo']}">
+									<h:outputText value="#{row[5]}" >										
+										<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />
+									</h:outputText>		
+								</p:column>		
+												
+								<p:column width="100" sortBy="#{row.a6}" headerText="#{labels['docu.note']}">
+									<h:outputText value="#{row[6]}" />
+								</p:column> 
+										
+								<p:column width="110" sortBy="#{row.a7}" headerText="#{labels['refDeleg.regOrEdit']}" >
+									<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, row[7], refDelegations.currentLang, now)}" />											
+								</p:column>								
+								<p:column width="60" sortBy="#{row.a8}" headerText="#{labels['refDeleg.date']}">
+									<h:outputText value="#{row[8]}" >
+										<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />		
+									</h:outputText>											
+								</p:column>
+										
+								<p:column width="30" rendered="#{!refDelegations.old}" >
+									<p:commandButton icon="fas fa-trash" action="#{refDelegations.actionDelete(row[0])}"  rendered="#{row[4]>now}"
+										update="delegForm:panelTable" process="@this delegForm:panelTable" partialSubmit="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger">
+											<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['general.confirmDeleteMsg']}" icon="fas fa-exclamation-triangle" />		
+									</p:commandButton>
+								</p:column>
+										
+							</p:dataTable>									
+					
+					</h:panelGroup>
+				</h:panelGroup>
+			
+					<br/>
+					<!--Въвеждане на заместване/ упълномощаване-->
+					<h:panelGroup id="panelNew" >			
+						<h:panelGroup id="panelNewRule" rendered="#{refDelegations.delegRule !=null}">	
+																
+							<div class="table-toolbar">					
+								<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#delegRule1')">
+									<h:outputText value="#{labels['refDeleg.right']}" />
+									<i class="fas fa-caret-right"></i>
+								</p:commandLink>
+							</div>
+							<div class="card"> 		
+							<p:toolbar  id="panelButtons">
+								<f:facet name="left">
+									<p:commandButton icon="fas fa-save" action="#{refDelegations.actionSave}"
+									 update="delegForm:panelTable delegForm:panelNew" value="#{ui_labels['general.save']}" />
+								</f:facet>
+								<f:facet name="right">		
+								<h:panelGroup id="pRegInfoRefDeleg" rendered="#{refDelegations.delegRule.id != null}">
+									<ibg:compObjAudit idObj="#{refDelegations.delegRule.id}" 
+												 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DELEGATION}"
+												 	identInfo="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, refDelegations.delegRule.codeRef, refDelegations.currentLang, now)}"/>
+									</h:panelGroup>	
+								</f:facet>							
+							</p:toolbar>
+							
+							<br/>
+							<div id="delegRule1">			
+								<div class="p-grid">
+									<div class="p-col-12" style="display:flex; flex-wrap:wrap">
+									
+										<div style="margin-bottom:0.5em;">
+											<div style="display:flex; flex-wrap: wrap; align-items: flex-end;">
+												<!-- Потребител/ избор на потребител -->
+												<div style="display: flex; align-items: flex-end;">
+													<h:outputText value="#{refDelegations.liceNames}" rendered="#{!refDelegations.delegRight}" style="margin-right: 10px;" />
+													<ibg:selectOneModalA codeClassif="#{SysConstants.CODE_CLASSIF_USERS}" rendered="#{refDelegations.delegRight}"
+														id="userChoose" dateClassif="#{refDelegations.today}" filtered="false"
+														disabledInp="#{now > refDelegations.delegRule.dateOt }" specifics="#{refDelegations.specifics}"
+														selectedCode="#{refDelegations.delegRule.codeRef}" saveStateTree="true"
+														withBtnClear="#{refDelegations.delegRule.dateOt >  now or refDelegations.delegRule.id ==null}" compType="4" styleAutoComp="margin-right: 10px; min-width: 320px;" />
+													<p:message for="delegForm:userChoose" display="tooltip" escape="false">
+														<p:autoUpdate/>
+													</p:message>
+													<ui:remove>
+														<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, refDelegations.delegRule.codeRef, refDelegations.currentLang, now)}" />
+													</ui:remove>
+												</div>
+	
+												<!-- Избор на заместник -->
+												<div style="display: flex; align-items: flex-end;">
+													<h:outputText value="#{labels['refDeleg.isReplased']}:" rendered="#{refDelegations.replaced}" style="margin-right: 10px;"/>
+													<h:outputText value="#{labels['refDeleg.authorizes']}:" rendered="#{!refDelegations.replaced}" style="margin-right: 10px;"/>
+													<div style="display: inline-block; margin-right: 10px;">
+														<ibg:selectOneModalA codeClassif="#{SysConstants.CODE_CLASSIF_USERS}" specifics="#{refDelegations.specifics}"
+															id="zamestnik" dateClassif="#{refDelegations.today}" filtered="false" 
+															disabledInp="#{now > refDelegations.delegRule.dateOt }"
+															selectedCode="#{refDelegations.delegRule.userId}" saveStateTree="true"
+															withBtnClear="#{refDelegations.delegRule.dateOt >  now or refDelegations.delegRule.id ==null}" compType="4" styleAutoComp="min-width: 320px;"/>
+													</div>
+													<p:message for="delegForm:zamestnik" display="tooltip" escape="false">
+														<p:autoUpdate/>
+													</p:message>
+												</div>
+											</div>
+										</div>
+										
+										<div style="margin-bottom:0.5em;">
+											<div style="display:flex; flex-wrap: wrap; align-items: flex-end;">
+												<!-- Избор на дата от -->
+												<div style="display: flex; align-items: flex-end;">
+													<h:outputText value="#{labels['refDeleg.ot']}:" style="margin-right: 10px;" />
+													<p:datePicker id="dateOt" showIcon="true" disabled="#{now > refDelegations.delegRule.dateOt and refDelegations.delegRule.id!=null}"
+														pattern="dd.MM.yyyy"  mask="true" value="#{refDelegations.delegRule.dateOt}" style="margin-right: 10px;"/>
+												</div>
+	
+												<!-- Избор на дата до -->
+												<div style="display: flex; align-items: flex-end;">
+													<h:outputText value="#{labels['refDeleg.do']}:" style="margin-right: 10px;"/>
+													<p:datePicker id="dateTo"  pattern="dd.MM.yyyy"
+														showIcon="true" mask="true" value="#{refDelegations.delegRule.dateTo}"/>
+													<p:message for="dateTo" display="tooltip" escape="false">
+														<p:autoUpdate/>
+													</p:message>
+												</div>
+											</div>
+										</div>
+									
+									</div>								
+									
+									<!-- Забележка -->
+									<div class="p-col-12 ui-fluid">
+										<h:outputText value="#{labels['docu.note']}:" styleClass="form-label"/>
+										<p:inputTextarea rows="5" value="#{refDelegations.delegRule.delegationInfo}" />
+									</div>
+								</div>
+										
+							</div>		      						
+						</div> 													
+					</h:panelGroup>
+				</h:panelGroup>										
+				
+				<!-- Кого замества потребителят -->
+				 
+				<p:dialog header="#{labels['refDeleg.whoRepl']}" appendTo="@form"  responsive="true" resizable="true" closeOnEscape="true" widgetVar="replacements" modal="true" height="500">
+				   
+				    <p:messages id="messagesRepl" >
+				    	<p:autoUpdate />
+				    </p:messages>
+				    
+				    <div class="container #{guestPreferences.containerPosition}">
+					    <h:panelGroup id="panelDataReplacements">
+													
+							<p:selectOneRadio id="activeRadioRepl" value="#{refDelegations.radioActiveDialog}"   columns="2">
+								<f:selectItem itemLabel="#{labels['refDeleg.active']}"    itemValue="1" />
+						        <f:selectItem itemLabel="#{labels['refDeleg.all']}"  itemValue="2"/>
+								<p:ajax event="change"  update="delegForm:panelDataReplacements"
+									process="@this " listener="#{refDelegations.actionChangeActiveDialog}"/>
+							</p:selectOneRadio>	
+									
+							<h:panelGroup rendered="#{refDelegations.oldDialog}" layout="block">
+								<div class="card">
+									<div  class="p-grid  ui-fluid p-align-end">			
+											
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">	
+											<h:outputText value="#{labels['refDeleg.ot']}:" />												
+											<p:datePicker id="dateOtSearchDial" showIcon="true" pattern="dd.MM.yyyy"  mask="true" value="#{refDelegations.dataOtRepl}"/>															 	
+										</div>
+												 
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">	
+											<h:outputText value="#{labels['refDeleg.do']}:" />					
+											<p:datePicker id="dateToSearchDial" pattern="dd.MM.yyyy" showIcon="true" mask="true" value="#{refDelegations.dataDoRepl}" />												 	
+										</div>	
+												 
+										<div  class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">
+											<div class="ui-inputgroup">
+												<p:commandButton id="btnSearchDial" styleClass="inputgroup-button" icon="fas fa-search" action="#{refDelegations.actionSearchButtDial}"  update="delegForm:panelDataReplacements delegForm:messagesRepl" 
+													value="#{labels['general.search']}" />										 	
+												<p:commandButton  id="btnInfoDial" title="#{labels['refDelegations.searchRule']}" icon="fas fa-info-circle"  styleClass="inputgroup-button" />									
+				              				</div>
+										</div>	
+												
+										<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2">	
+											<p:commandButton action="#{refDelegations.actionClearDialog}" icon="fas fa-eraser" update="delegForm:panelDataReplacements" value="#{ui_labels['general.clear']}" styleClass="ui-button-warning" />
+										</div>
+									</div>	
+								</div>						
+							</h:panelGroup>	
+				
+							<h:panelGroup id="panelTableReplacements" layout="block" styleClass="margin-top">
+																	
+								<div id="replList" class="card">
+					
+									<p:dataTable id="tblReplacements" var="row" value="#{refDelegations.delegListRepl}" lazy="true" rowIndexVar="idx" sortMode="single" reflow="true"
+										emptyMessage="#{labels['refDeleg.listIsEmpty']}"
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="10" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+		
+										<p:column width="15" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+											<h:outputText value="#{idx + 1}" />
+										</p:column>
+																			
+										<p:column width="90" sortBy="#{row.a3}" headerText="#{labels['refDeleg.right']}">
+											<h:outputText value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_DELEGATES, row[3], refDelegations.currentLang, now)}" />
+										</p:column>
+												
+										<p:column width="90" sortBy="#{row.a1}" headerText="#{labels['refDeleg.employee']}">												
+											<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, row[1], refDelegations.currentLang, now)}" />
+										</p:column>
+					
+										<p:column width="60" sortBy="#{row.a4}" headerText="#{labels['refDeleg.dateFrom']}">
+											<h:outputText value="#{row[4]}" >
+												<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />									
+											</h:outputText>
+										</p:column>
+											
+										<p:column width="60" sortBy="#{row.a5}" headerText="#{labels['refDeleg.dateTo']}">
+											<h:outputText value="#{row[5]}" >										
+												<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />
+											</h:outputText>		
+										</p:column>		
+													
+										<p:column width="110" sortBy="#{row.a6}" headerText="#{labels['docu.note']}">
+											<h:outputText value="#{row[6]}" />
+										</p:column>
+											
+										<p:column width="70" sortBy="#{row.a7}" headerText="#{labels['refDeleg.regOrEdit']}" >
+											<h:outputText value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, row[7], refDelegations.currentLang, now)}" />											
+										</p:column>
+											
+										<p:column width="60" sortBy="#{row.a8}" headerText="#{labels['refDeleg.date']}">
+											<h:outputText value="#{row[8]}" >
+												<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{refDelegations.timeZone}" />		
+											</h:outputText>									
+										</p:column>																				
+									</p:dataTable>					
+								</div>					
+							</h:panelGroup>															
+						</h:panelGroup> 
+					</div>
+				</p:dialog>   
+		</h:form>
+	</ui:define>
+</ui:composition>

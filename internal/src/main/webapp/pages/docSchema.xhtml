@@ -1,0 +1,242 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				<f:viewAction action="#{userData.checkPageAccess(41)}" onPostback="false" />			
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/docSchema.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/docSchema.xhtml']}</li>
+	    </ui:define> 
+    
+		<ui:define name="content">	
+			<h:form id="schemaForm">	
+ 				<div class="container #{guestPreferences.containerPosition}">
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilterSchemas" >
+						<div class="card">
+							<div class="p-grid ui-fluid">														
+																			
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-1 p-xl-2 ui-fluid">														
+										<h:outputText value="#{labels['docSchema.year']}:" styleClass="form-label req " label="#{labels['docSchema.year']}"/>
+										<p:inputText id="yearSearch" value="#{docSchemaData.year}" maxlength="4"/>		
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-1 p-xl-2 ui-fluid">	
+										<h:outputText value="#{labels['register.prefix']}:" styleClass="form-label" label="#{labels['register.prefix']}"/>					
+										<p:inputText id="indexSearch" value="#{docSchemaData.index}" />	
+								</div>
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+										<h:outputText value="#{labels['refCorr.nameUL']}:" styleClass="form-label" label="#{labels['refCorr.nameUL']}"/>
+							
+										<p:inputText id="nameSearch" value="#{docSchemaData.name}" />		
+																										
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-7 p-xl-4 ui-fluid">	
+								
+								</div>
+								
+								
+							</div>
+							
+							<div class="filter-buttons" >
+										<p:commandButton icon="fas fa-search" action="#{docSchemaData.actionSearch}" update="schemaForm:panelRezult" value="#{labels['docSchema.show']}" styleClass="p-mr-3"/>																													
+										
+										<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+											id="btnClear" update="panelFilterSchemas panelRezult" partialSubmit="true"
+											process="@this panelRezult" actionListener="#{docSchemaData.actionClearFilter}"
+							 				styleClass="ui-button-warning" /> 
+										
+								</div>
+						</div>	
+					</h:panelGroup>		
+				</div>
+					<h:panelGroup id="panelRezult"  layout="block" styleClass="margin-top">
+						<h:panelGroup layout="block" styleClass="card">
+						
+				        																	
+						<div class="table-toolbar" >
+							<p:commandButton icon="fas fa-file" action="#{docSchemaData.actionNew}" update="schemaForm:panelNew"  value="#{labels['docSchema.newIndex']}" styleClass="ui-button-success" />		
+							
+							<span class="fas fa-ellipsis-v p-mx-2" />
+							
+							<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#schemaList')">
+								<h:outputText value="#{labels['docSchema.indexes']}" />					
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>		
+										
+						<div id="schemaList">			
+							<p:dataTable id="tblSchemas" var="row" value="#{docSchemaData.schemaList}" lazy="true" rowIndexVar="idx" sortMode="single" 
+									emptyMessage="#{ui_labels['general.norows']}" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+									
+								<f:facet name="{Exporters}">
+							
+									<div style="float: left">
+										
+										<h:commandLink id="excel">
+											<h:graphicImage library="images" name="excel2.png" />
+											<p:dataExporter type="xls" target="tblSchemas" fileName="schemaListXls" postProcessor="#{docSchemaData.postProcessXLS}"/>
+										</h:commandLink>
+			<ui:remove>
+										<h:commandLink id="pdf">
+											<h:graphicImage library="images" name="pdf.png" />
+											<p:dataExporter type="pdf" target="tblSchemas" fileName="schemaListPdf"	 encoding="windows-1251"
+					        					preProcessor="#{docSchemaData.preProcessPDF}" options="#{docSchemaData.pdfOptions()}"/>	
+									
+										</h:commandLink>
+			
+										<h:commandLink id="csv">
+											<h:graphicImage library="images" name="csv.png" />
+											<p:dataExporter type="csv" target="tblSchemas" fileName="schemaListCsv" encoding="CP1251" />
+										</h:commandLink>
+			</ui:remove>						
+									</div>
+								
+								</f:facet>										
+	
+								<p:column width="30" headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>
+				
+								<p:column width="30" exportable="false" >
+									<p:commandButton icon="fas fa-edit"  action="#{docSchemaData.actionEdit(row[0])}" update="schemaForm:panelNew" ajax="true" title="#{ui_labels['general.edit']}" />
+								</p:column>
+				
+								<p:column width="80" sortBy="#{row.a1}" headerText="#{labels['register.prefix']}">								
+									<h:outputText value="#{row[1]}" />
+								</p:column>
+				
+								<p:column width="*" sortBy="#{row.a2}" headerText="#{labels['refCorr.nameUL']}">
+									<h:outputText value="#{row[2]}" />
+								</p:column>
+				
+								<p:column width="100" sortBy="#{row.a3}" headerText="#{labels['docSchema.validFrom']}">
+									<h:outputText value="#{row[3]}" />
+								</p:column>
+				
+								<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docSchema.validTo']}">
+									<h:outputText value="#{row[4]}" />
+								</p:column>
+										
+								<p:column width="150" sortBy="#{row.a5}" headerText="#{labels['docSchema.complMethod']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOM_DELO_PRIKL, row[5], docSchemaData.currentLang, now)}" />											
+								</p:column>		
+												
+								<p:column width="160" sortBy="#{row.a6}" headerText="#{labels['docSchema.termStore']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_SHEMA_PERIOD, row[6], docSchemaData.currentLang, now)}" /> 							
+								</p:column>
+										
+								<p:column width="75" sortBy="#{row.a7}" headerText="#{labels['docSchema.years']}" >
+									<h:outputText value="#{row[7]}" />											
+								</p:column>																										
+							</p:dataTable>								
+						</div>
+					</h:panelGroup>
+					</h:panelGroup>																							
+
+					<br/>
+					<!--Дефиниция на индекс-->
+					<h:panelGroup id="panelNew" >				
+						<h:panelGroup id="panelNewIndex" rendered="#{docSchemaData.docSchema!=null}" layout="block" class="card">														              																				
+							<div class="table-toolbar">
+								<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#docIndex_')">
+									<h:outputText value="#{labels['docSchema.defIndex']}" />
+									<i class="fas fa-caret-right"></i>
+								</p:commandLink>
+							</div>									
+							<p:toolbar>
+								<f:facet name="left">
+									<p:commandButton icon="fas fa-save" action="#{docSchemaData.actionSave}" update="schemaForm:panelRezult schemaForm:panelNew" value="#{ui_labels['general.save']}" title="#{labels['registratura.save']}" styleClass="p-mr-2"/>
+									<p:commandButton icon="fas fa-file" action="#{docSchemaData.actionNew}" update="schemaForm:panelNew"  value="#{labels['docSchema.newIndex']}" styleClass="ui-button-success" />		
+								</f:facet>
+								<f:facet name="right">	
+									<h:panelGroup id="pRegInfoDocSchema" rendered="#{docSchemaData.docSchema.id != null}" styleClass="p-mr-2">
+									<ibg:compObjAudit idObj="#{docSchemaData.docSchema.id}" 
+												 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC_SHEMA}"
+												 	identInfo="#{docSchemaData.docSchema.shemaName}"/>
+									</h:panelGroup>									
+									<p:commandButton icon="fas fa-times"  action="#{docSchemaData.actionDelete}" 
+											rendered="#{docSchemaData.docSchema.id!=null}" update="schemaForm:panelRezult schemaForm:panelNew" value="#{ui_labels['general.delete']}" styleClass="ui-button-danger" > 											
+								   		<p:confirm message="#{beanMessages['general.confirm']}" icon="fas fa-exclamation-triangle" />
+								    </p:commandButton>
+								</f:facet>
+							</p:toolbar>
+							
+								<div id="docIndex_" class="p-grid  ui-fluid">									
+									<!-- Индекс -->
+									<div class="p-col-12 p-md-2">	
+										<h:outputText value="#{labels['register.prefix']}:" styleClass="form-label req" />
+										<p:inputText id="prefix" value="#{docSchemaData.docSchema.prefix}" />
+									</div>
+										
+									<!-- Валиден от -->
+									<div class="p-col-12 p-lg-2">	
+										<h:outputText value="#{labels['docSchema.validFrom']}:" styleClass="form-label req" />
+										<p:inputText id="fromYear" value="#{docSchemaData.docSchema.fromYear}" maxlength="4" label="#{labels['docSchema.validFrom']}"/>
+									</div>	
+										
+									<!-- Валиден до -->
+									<div class="p-col-12 p-lg-2">	
+										<h:outputText value="#{labels['refDeleg.do']}:" styleClass="form-label" />
+										<p:inputText value="#{docSchemaData.docSchema.toYear}" maxlength="4"/>									
+									</div> 
+											
+									<!-- Начин на приключване на номенклатурното дело -->
+									<div class="p-col-12 p-lg-6">	
+										<h:outputText value="#{labels['docSchema.complMethodLong']}:" styleClass="form-label req" />
+										<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_NOM_DELO_PRIKL}"								       
+												id="complMethod" dateClassif="#{docSchemaData.today}" filtered="false" 											
+												selectedCode="#{docSchemaData.docSchema.completeMethod}" saveStateTree="true"
+												withBtnClear="false" compType="4" styleAutoComp=""/>	
+										<p:message for="schemaForm:complMethod" display="tooltip" escape="false">
+										      <p:autoUpdate/>
+										</p:message>											
+									</div>
+										
+									<!-- Срок за съхранение -->
+									<div class="p-col-12 p-lg-4">	
+										<h:outputText value="#{labels['docSchema.termStore']}:" styleClass="form-label req" />
+										<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_SHEMA_PERIOD}"
+												id="termStore" dateClassif="#{docSchemaData.today}" filtered="false" 											
+												selectedCode="#{docSchemaData.docSchema.periodType}" saveStateTree="true"
+												withBtnClear="false" compType="4" styleAutoComp=""/>
+										<p:message for="schemaForm:termStore" display="tooltip" escape="false">
+										      <p:autoUpdate/>
+										</p:message>
+									</div>	
+										
+									<!-- Брой години -->
+									<div class="p-col-12 p-lg-2">	
+										<h:outputText  value="#{labels['docSchema.years']}:" styleClass="form-label" />
+										<p:inputText id="years" value="#{docSchemaData.docSchema.years}" label="#{labels['docSchema.years']}"/>
+									</div>
+										
+									<!-- Наименование -->
+									<div class="p-col-12 p-lg-6">	
+										<h:outputText value="#{labels['refCorr.nameUL']}:" styleClass="form-label req" />
+										<p:inputText id ="name" value="#{docSchemaData.docSchema.shemaName}" />
+									</div>
+											
+								</div>									
+							
+						</h:panelGroup>
+					</h:panelGroup>																			
+							
+		</h:form>
+	</ui:define>
+</ui:composition>

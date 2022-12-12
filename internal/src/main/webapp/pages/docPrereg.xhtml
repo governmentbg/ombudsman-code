@@ -1,0 +1,215 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	template="/template/template.xhtml">
+
+	<ui:param name="pageTitle"
+		value="#{navTexts['/pages/docPreregList.xhtml']}" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+
+	<ui:define name="viewname">
+		<li><p:commandLink title="#{ui_labels['general.back']}"
+				action="#{navigation.goBack()}"
+				rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink></li>
+		<li><h:panelGroup id="pTitle">
+				<h:outputText value="#{navTexts['/pages/docPreregList.xhtml']}" />
+			</h:panelGroup></li>
+	</ui:define>
+
+
+	<ui:define name="content">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:viewAction action="#{userData.checkPageAccess(23)}"
+				onPostback="false" />
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />
+		</f:metadata>
+
+		<h:form id="docPreregForm">
+			<!--Документ - основни регистрационни данни-->
+			<h:panelGroup id="docPreregPanel" layonachinut="block"
+				rendered="#{docPrereg.document ne null}">
+
+				<p:toolbar id="toolPreregbtn" styleClass="margin-bottom">
+					<f:facet name="left">
+						<p:commandButton icon="fas fa-save"
+							value="#{ui_labels['general.save']}" id="btnSavePrereg"
+							title="#{labels['doc.saveTitle']}" update="mainPanelPrereg"
+							process="mainPanelPrereg  @this"
+							actionListener="#{docPrereg.actionSavePrereg}">
+						</p:commandButton>
+					</f:facet>
+				</p:toolbar>
+
+				<h:panelGroup id="mainPanelPrereg">
+
+					<div class="title-group">
+						<p:commandLink styleClass="extended-search-toggle expanded "
+							onclick="toggleSection(this, '#docPreregForm:p1Prereg')">
+							<h:outputText value="#{labels['doc.regData']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+
+					<!-- Рег. номер, вид док., регистър, относно  -->
+					<div jsf:id="p1Prereg" class="p-grid ui-fluid p-align-end">
+						<!-- тип док.  -->
+						<div class="p-col-12 p-md-12">
+							<h:outputText
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, docPrereg.document.docType, docPrereg.currentLang, now)} документ"
+								styleClass="form-label"
+								rendered="#{docPrereg.document.id ne null}"
+								style="padding: 6px 12px;font-style: italic;background-color:rgba(216,222,233,0.35);border-radius: 4px;font-weight: bold;display:block;" />
+						</div>
+
+
+
+						<div class="p-col-12 p-md-12 p-lg-6">
+							<div class="p-grid  ui-fluid">
+								<h:panelGroup id="pRnDocPrereg"
+									styleClass="p-col-12 p-md-6 p-lg-6" layout="block">
+									<h:outputText value="#{labels['docu.regNom']}"
+										styleClass="form-label req" />
+									<div class="ui-inputgroup">
+										<p:inputText id="regNPrereg" readonly="#{docPrereg.avtomNo}"
+											value="#{docPrereg.document.rnDoc}"
+											style="display:inline-block;"
+											onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+											<p:ajax event="change" partialSubmit="true" update="dpDeloSearch pRnDocPrereg"
+												listener="#{docPrereg.actionSearchRnDelo(true)}" />
+										</p:inputText>
+										
+										<span class="fas  fa-hashtag  p-mr-1" jsf:rendered="#{systemData.isDocPoredDeloGen() and !docPrereg.avtomNo}" />
+										
+										<p:inputText id="poredDelo" readonly="#{docPrereg.deloDocPrep.deloId ne null}"
+										    rendered="#{systemData.isDocPoredDeloGen() and !docPrereg.avtomNo}"  
+											value="#{docPrereg.document.poredDelo}" title="Номер поред в преписка"
+											style="display:inline-block;width:40px"/>
+
+										<p:commandButton icon="fas fa-search" id="btnSrcRnDelog"  style="width:40px" ignoreAutoUpdate="true"
+											rendered="#{!docPrereg.avtomNo and docPrereg.deloDocPrep.deloId eq null}"
+											actionListener="#{docPrereg.actionSearchRnDeloBtn}"  
+											partialSubmit="true" process="dpDeloSearch @this"
+											update="dpDeloSearch " title="#{labels['docu.titleSrchPrep']}">
+										</p:commandButton>
+										<p:selectBooleanButton id="avtNomPrereg"
+											value="#{docPrereg.avtomNo}"
+											disabled="#{docPrereg.avtomNoDisabled}"
+											onLabel="#{ui_labels['general.yes']}"
+											offLabel="#{ui_labels['general.no']}"
+											title="#{labels['docu.avtomRegNom']}"
+											onIcon="fas fa-toggle-on"
+											offIcon="fas fa-toggle-off"
+											styleClass="inputgroup-button">
+											<p:ajax update="pRnDocPrereg otnosnoPrereg @this"
+												partialSubmit="true"
+												process="@this pRnDocPrereg  otnosnoPrereg"
+												listener="#{docPrereg.actionChangeAvtomNoPrereg}"
+												oncomplete="$(function(){PrimeFaces.focus('docForm:tabsDoc:regN');});" />
+										</p:selectBooleanButton>
+										
+										
+									</div>
+								</h:panelGroup>
+
+								<div class="p-col-12 p-md-4 p-lg-4">
+									<h:outputText value="#{labels['docu.docDatReg']}"
+										styleClass="form-label req" />
+									<p:datePicker id="regDatPrereg"  disabled="#{!docPrereg.nastrZadnaData}"
+										mask="true"  pattern="dd.MM.yyyy HH:mm:ss"  locale="bg" 
+										showIcon="#{isPrereg eq 1 ? '' :'true'}" showTime="true" showSeconds="true"
+										value="#{docPrereg.document.docDate}" />
+								</div>
+
+								<!-- вид документ -->
+								<div class=" p-col-12">
+									<h:outputText value="#{labels['docu.vid']}"
+										styleClass="form-label req" />
+									<p:remoteCommand name="cmdChangeDocVidPrereg"
+										update="mainPanelPrereg" partialSubmit="true"
+										process="mainPanelPrereg @this"
+										actionListener="#{docPrereg.actionChangeDocVidPrereg}" />
+									<ibg:selectOneModalA id="dVidPrereg"
+										dateClassif="#{docPrereg.decodeDate}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}"
+										filtered="true" selectedCode="#{docPrereg.document.docVid}"
+										styleAutoComp="width:99%;" saveStateTree="true"
+										withBtnClear="true" compType="2"
+										onComplete="cmdChangeDocVidPrereg()" header="#{labels['docVidSetting.typeDoc']}" />
+								</div>
+
+								<h:panelGroup id="pRegisterPrereg" styleClass="p-col-12"
+									layout="block">
+									<h:outputText value="#{labels['docu.register']}"
+										styleClass="form-label req" />
+									<p:remoteCommand name="cmdChangeRegisterPrereg"
+										update="p1Prereg" partialSubmit="true"
+										process="p1Prereg @this"
+										actionListener="#{docPrereg.actionChangeRegister}" />
+									<ibg:selectOneModalA id="registerIdPrereg"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+										dateClassif="#{docPrereg.decodeDate}"
+										selectedCode="#{docPrereg.document.registerId}"
+										saveStateTree="false" withBtnClear="true" minQueryLength="3" filtered="true"
+										styleAutoComp="width:99%;"
+										specifics="#{docPrereg.specificsRegister}" sortByName="true"
+										compType="2" onComplete="cmdChangeRegisterPrereg()" 
+										onClear="cmdChangeRegisterPrereg()" header="#{labels['docu.register']}" />
+								</h:panelGroup>
+							</div>
+						</div>
+
+						<div class="p-col-12 p-md-12 p-lg-6" jsf:id="otnosnoPrereg">
+							<h:outputText value="#{labels['docu.otnosno']}"
+								styleClass="form-label req" />
+							<p:inputTextarea id="otnPrereg"
+								value="#{docPrereg.document.otnosno}" rows="8"
+								readonly="#{docPrereg.document.id != null}" />
+						</div>
+
+						<!-- техен номер??? -->
+					</div>
+				</h:panelGroup>
+			</h:panelGroup>
+
+
+
+	<ui:remove>	<!--Tърсене на преписка/дело - ръчно въвеждане на номер	--></ui:remove>
+	<h:panelGroup id="dpDeloSearch">	
+		<p:remoteCommand name="cmdHideModalDP" 
+	 				process="@this"		
+	 				update="docPreregForm:pRnDocPrereg"
+	  				actionListener="#{docPrereg.actionHideModalDelo}" />
+	
+		<p:dialog appendTo="@form"  closeOnEscape="true"
+		    header="#{labels['docu.deloPrepiskaTitle']}" 
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 
+		    onHide="cmdHideModalDP()"
+			widgetVar="mDeloS" dynamic="true" id="modalDeloS" 
+			modal="true">
+				
+						
+			 	<ibg:compDeloSearch id="mDeloS1" 
+					 searchDeloS="#{docPrereg.selectedDelo}"
+					 searchRnDelo="#{docPrereg.document.rnDoc}"
+					 dateClassif="#{docPrereg.decodeDate}"
+					 onComplete = "PF('mDeloS').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>				
+			 
+							
+		</p:dialog>	
+	</h:panelGroup>
+
+
+		</h:form>
+	</ui:define>
+</ui:composition>
+

@@ -1,0 +1,753 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/docDvijeniaList.xhtml']}</ui:define>
+	<ui:define name="viewname">
+		<li>#{navTexts['/pages/docDvijeniaList.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+		<style>
+			.ui-datatable table {
+				table-layout : auto;
+			}
+			
+			.ui-autocomplete .ui-autocomplete-multiple-container .ui-autocomplete-token {
+				white-space: pre-wrap;
+			}
+		</style>
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(58)}"
+				onPostback="false" />
+		</f:metadata>
+		<h:form id="docDvijeniaListForm">
+
+			<div class="container #{guestPreferences.containerPosition}">
+				<!-- FILTER -->
+				<h:panelGroup id="panelFilter">
+					<div class="card">
+						<div class="p-grid">
+							<!--Период на предаване-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.perPred']}" styleClass="form-label"/>
+								<p:selectOneMenu id="idPerPredavane" value="#{docDvijeniaList.periodPredavane}" height="250">
+								     <f:selectItem value="#{null}" itemValue="#{null}"/>
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDvijeniaList.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								     <p:ajax event="change" update="idPerPredavane datPredavaneOt datPredavaneDo" listener="#{docDvijeniaList.changePeriodPredavane}"/>   
+							    </p:selectOneMenu>
+							</div>
+
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="datPredavaneOt" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg"  
+									value="#{docDvijeniaList.searchDocDvij.datPredavaneOt}"  >
+									<p:ajax event="change" update="idPerPredavane" listener="#{docDvijeniaList.changeDatePredavane}"/>
+									<p:ajax event="dateSelect" update="idPerPredavane" listener="#{docDvijeniaList.changeDatePredavane}"/>      
+								 </p:datePicker>
+							</div>
+													
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								<p:datePicker id="datPredavaneDo" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg" 
+									value="#{docDvijeniaList.searchDocDvij.datPredavaneDo}"  >
+									<p:ajax event="change" update="idPerPredavane" listener="#{docDvijeniaList.changeDatePredavane}"/>   
+									<p:ajax event="dateSelect" update="idPerPredavane" listener="#{docDvijeniaList.changeDatePredavane}"/>   
+								</p:datePicker>												    
+							</div>
+							<!-- Начин на предаване --> 
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-2 ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.nachin']}" styleClass="form-label"/>
+									<p:selectCheckboxMenu id="nachin" value="#{docDvijeniaList.searchDocDvij.nachin}" multiple="true">
+										<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, docDvijeniaList.searchDocDvij.datPredavaneDo eq null ? docDvijeniaList.currentDate : docDvijeniaList.searchDocDvij.datPredavaneDo, docDvijeniaList.currentLang)}"
+											 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+									</p:selectCheckboxMenu>									
+					        </div>
+
+
+					        <!--Регистратура-->	
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+								<h:outputText value="#{labels['dvij.regPredaden']}" styleClass="form-label"
+								 rendered="#{docDvijeniaList.showRegistaturiList}"/>
+								<p:selectOneMenu id="registratura" value="#{docDvijeniaList.searchDocDvij.regPredaden}" label="#{labels['dvij.regPredaden']}"
+			                        	 rendered="#{docDvijeniaList.showRegistaturiList}" >
+						            <f:selectItem itemValue="" />      
+						            <f:selectItems value="#{docDvijeniaList.registraturaList}" />
+						            <p:ajax event="change" update="docDvijeniaListForm:registratura" />
+						        </p:selectOneMenu>	
+					        </div>
+	
+							<!--Предаден на (множествен избор)-->						
+							<div  class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.predNa']}" styleClass="form-label"/>
+									<ibg:selectManyModalA id="lstPredadenNa" compType="2" maxResults="50"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 																
+										dateClassif="#{docDvijeniaList.currentDate}" filtered="false"
+										saveStateTree="false" showRadioBtn="true" 
+										selectedCodes="#{docDvijeniaList.predadenList}"
+										selectedClassifs="#{docDvijeniaList.predadenClassif}"
+										styleAutoComp="width:100%;"
+										withBtnClear="true" /> 	
+							</div>
+						 	<!--Предаден на (текст)-->		
+						 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6 ui-fluid">
+							<h:outputText value="#{labels['docDvijenie.txtPredaden']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+							<p:inputText id="txtPredaden" value="#{docDvijeniaList.searchDocDvij.predadenAsString}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+							    </div>
+						 	</div>
+							
+							<!-- Множествен избор кореспонденти предаден на-->
+							
+						 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6">
+						 		<h:panelGroup id="panelCorresp">
+								<h:outputText value="#{labels['docDvijenie.coresP']}" styleClass="form-label" />
+									<div class="select-modal-wrapper">
+										<ibg:selectManyModalA id="refCorrInpM" 
+											codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+											compType="3" 			
+											selectedCodes="#{docDvijeniaList.codeRefCorresp}"
+											selectedClassifs="#{docDvijeniaList.scList}"										
+										    withBtnClear="true" minQueryLength="3"
+											styleAutoComp="width:95%;" 
+											dopInfoAutoComp="true" itemtipAtPosition="center bottom"/>
+										<!--  Разширено търсене на кореспондент -->
+										<p:commandButton id="btnCorrP"
+											onmousemove="document.getElementById('docDvijeniaListForm:btnCorrP').focus();"
+											icon="fas fa-list-ul" partialSubmit="true"
+											process="docDvijeniaListForm:dpCorrSearchPredadeni @this"
+											update="docDvijeniaListForm:dpCorrSearchPredadeni"
+											styleClass="select-modal-button" style="margin-right: -5px;"
+											oncomplete="PF('mCorrSPredadeni').show();"
+											title="#{labels['search.extendRef']}" />
+								</div>
+								</h:panelGroup>
+							</div>
+						
+
+							<!-- Имейл -->
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid" >
+								<h:outputText value="#{labels['admStruct.email']}" styleClass="form-label" />
+								<div class="ui-inputgroup">
+									<p:inputText id="input-email" value="#{docDvijeniaList.searchDocDvij.email}"
+										onkeypress="if (event.keyCode === 13) { emailEnter(); return false; }" >
+										<p:ajax event="blur" partialSubmit="true" process="@this" 
+											update="@this" 
+											onstart="PrimeFaces.customFocus=true"
+											listener="#{docDvijeniaList.actionSelectEmailText()}" />	
+									</p:inputText>
+									<p:commandButton icon="fas fa-at" styleClass="inputgroup-button" 
+										action="#{docDvijeniaList.actionSelectEmailText()}"
+										partialSubmit="true" process="@this input-email"
+										update="input-email"/>
+								</div>
+								<p:remoteCommand name="emailEnter" action="#{docDvijeniaList.actionSelectEmailText()}"
+					                 partialSubmit="true" process="@this input-email" onstart="PrimeFaces.customFocus=true"
+					                 update="input-email"/>
+							</div>	
+							<!-- Допълнителна информация при предаване -->
+						 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['docu.dopInfoPred']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText id="dopInfo" value="#{docDvijeniaList.searchDocDvij.dopInfo}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+							    </div>
+						 	</div>
+
+						 
+
+							<div class="p-col-12">
+								<p:commandLink class="extended-search-toggle"
+									onclick="toggleSection(this, '#event-extended')">
+									<h:outputText value="#{ui_labels['search.extend']}" />
+									<i class="fas fa-caret-right"></i>
+								</p:commandLink>
+							</div>
+						</div>
+
+						<div class="p-grid extended-search p-align-end"
+							id="event-extended" style="display: none;">
+
+								<!--Период на дата на документа-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['docList.periodDateDoc']}" styleClass="form-label"/>
+								<p:selectOneMenu id="idPerDoc" value="#{docDvijeniaList.periodDoc}" height="250">
+								     <f:selectItem value="#{null}" itemValue="#{null}"/>
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDvijeniaList.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								     <p:ajax event="change" update="idPerDoc datDocOt datDocDo" listener="#{docDvijeniaList.changePeriodDoc}"/>   
+							    </p:selectOneMenu>
+							</div>
+
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="datDocOt" pattern="dd.MM.yyyy" mask="true"   showIcon="true" locale="bg"  
+									value="#{docDvijeniaList.searchDocDvij.datDocOt}"  >
+									<p:ajax event="change" update="idPerDoc" listener="#{docDvijeniaList.changeDateDoc}"/>
+									<p:ajax event="dateSelect" update="idPerDoc" listener="#{docDvijeniaList.changeDateDoc}"/>      
+								</p:datePicker>
+							</div>
+													
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								<p:datePicker id="datDocDo" pattern="dd.MM.yyyy" mask="true"   showIcon="true" locale="bg" 
+									value="#{docDvijeniaList.searchDocDvij.datDocDo}"  >
+									<p:ajax event="change" update="idPerDoc" listener="#{docDvijeniaList.changeDateDoc}"/>   
+									<p:ajax event="dateSelect" update="idPerDoc" listener="#{docDvijeniaList.changeDateDoc}"/>   
+								</p:datePicker>												    
+							</div>
+							<!-- Вид на документа -->
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+							<ibg:selectManyModalA compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}"
+								dateClassif="#{now}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{docDvijeniaList.searchDocDvij.docVidList}"
+								selectedClassifs="#{docDvijeniaList.docVid}"
+								styleAutoComp="" withBtnClear="true" />					    
+					 	</div>
+
+					 	<!-- Рег. номер на документ-->
+					 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{docDvijeniaList.searchDocDvij.rnDoc}" id="rnDoc"/>
+								<p:focus id="focusRnDoc" for="rnDoc" />	
+								<p:selectBooleanButton id="rndEq" value="#{docDvijeniaList.searchDocDvij.rnDocEQ}" 
+										onLabel="Да"
+										offLabel="Не"
+										title="Търсене по пълно съвпадение на рег. номер" 
+										onIcon="fas fa-toggle-on"  
+										offIcon="fas fa-toggle-off" 
+										styleClass="inputgroup-button" >
+										<p:ajax update="@this rnDoc" partialSubmit="true"	process="@this rnDoc"/>			
+									</p:selectBooleanButton>
+							</div>
+						</div>
+								
+							<!--Период на статус на предаване-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.srokPred']}" styleClass="form-label"/>
+								<p:selectOneMenu id="idPerStatus" value="#{docDvijeniaList.periodStatus}" height="250">
+								     <f:selectItem value="#{null}" itemValue="#{null}"/>
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDvijeniaList.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								     <p:ajax event="change" update="idPerStatus datStatusOt datStatusDo" listener="#{docDvijeniaList.changePeriodStatus}"/>   
+							    </p:selectOneMenu>
+							</div>
+
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="datStatusOt" pattern="dd.MM.yyyy" mask="true"  showIcon="true" locale="bg"  
+									value="#{docDvijeniaList.searchDocDvij.datStatusOt}"  >
+									<p:ajax event="change" update="idPerStatus" listener="#{docDvijeniaList.changeDateStatus}"/>
+									<p:ajax event="dateSelect" update="idPerStatus" listener="#{docDvijeniaList.changeDateStatus}"/>      
+								 </p:datePicker>
+							</div>
+													
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								<p:datePicker id="datStatusDo" pattern="dd.MM.yyyy" mask="true"   showIcon="true" locale="bg" 
+									value="#{docDvijeniaList.searchDocDvij.datStatusDo}"  >
+									<p:ajax event="change" update="idPerStatus" listener="#{docDvijeniaList.changeDateStatus}"/>   
+									<p:ajax event="dateSelect" update="idPerStatus" listener="#{docDvijeniaList.changeDateStatus}"/>   
+								</p:datePicker>												    
+							</div>
+
+							<!-- Статус на документа -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['docu.status']}" styleClass="form-label"/>
+								<p:selectCheckboxMenu id="status" value="#{docDvijeniaList.searchDocDvij.status}" multiple="true">
+									<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_PREDAVANE_STATUS, docDvijeniaList.currentDate, docDvijeniaList.currentLang)}"
+										 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+								</p:selectCheckboxMenu>	
+							
+					 	</div>
+					 	<!-- Доп. информация статус-->
+					 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['docDvijenie.dopInfoStatus']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText id="dopInfoStatus" value="#{docDvijeniaList.searchDocDvij.dopInfoStatus}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+						    </div>
+					 	</div>
+					 		<!--Период на на срок за връщане-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.perStatusVrashtane']}" styleClass="form-label"/>
+								<p:selectOneMenu id="idPerSrok" value="#{docDvijeniaList.periodSrok}" height="250">
+								     <f:selectItem value="#{null}" itemValue="#{null}"/>
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDvijeniaList.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								     <p:ajax event="change" update="idPerSrok datSrokOt datSrokDo" listener="#{docDvijeniaList.changePeriodSrok}"/>   
+							    </p:selectOneMenu>
+							</div>
+
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="datSrokOt" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+									value="#{docDvijeniaList.searchDocDvij.datSrokOt}"  >
+									<p:ajax event="change" update="idPerSrok" listener="#{docDvijeniaList.changeDateSrok}"/>
+									<p:ajax event="dateSelect" update="idPerSrok" listener="#{docDvijeniaList.changeDateSrok}"/>      
+								 </p:datePicker>
+							</div>
+													
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								<p:datePicker id="datSrokDo" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg" 
+									value="#{docDvijeniaList.searchDocDvij.datSrokDo}"  >
+									<p:ajax event="change" update="idPerSrok" listener="#{docDvijeniaList.changeDateSrok}"/>   
+									<p:ajax event="dateSelect" update="idPerSrok" listener="#{docDvijeniaList.changeDateSrok}"/>   
+								</p:datePicker>												    
+							</div>
+							<!-- Начин на връщане-->
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.nachinVr']}" styleClass="form-label"/>
+									<p:selectCheckboxMenu id="nachinVr" value="#{docDvijeniaList.searchDocDvij.nachinVr}" multiple="true">
+										<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, docDvijeniaList.currentDate, docDvijeniaList.currentLang)}"
+											 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+									</p:selectCheckboxMenu>		
+					 	</div>
+					 	<!-- Доп. информация връщане-->
+					 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+							<h:outputText value="#{labels['docDvijenie.dopInfoVr']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText id="dopInfoVr" value="#{docDvijeniaList.searchDocDvij.dopInfoVr}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+						    </div>
+					 	</div>
+					 		<!--Период  на връщане-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.perVrashtane']}" styleClass="form-label"/>
+								<p:selectOneMenu id="idPerVrastane" value="#{docDvijeniaList.periodVrastane}" height="250">
+								     <f:selectItem value="#{null}" itemValue="#{null}"/>
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDvijeniaList.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								     <p:ajax event="change" update="idPerVrastane datVrastaneOt datVrastaneDo" listener="#{docDvijeniaList.changePeriodVrastane}"/>   
+							    </p:selectOneMenu>
+							</div>
+
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+								<p:datePicker id="datVrastaneOt" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+									value="#{docDvijeniaList.searchDocDvij.datVrastaneOt}"  >
+									<p:ajax event="change" update="idPerVrastane" listener="#{docDvijeniaList.changeDateVrastane}"/>
+									<p:ajax event="dateSelect" update="idPerVrastane" listener="#{docDvijeniaList.changeDateVrastane}"/>      
+								 </p:datePicker>
+							</div>
+													
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+								<p:datePicker id="datVrastaneDo" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg" 
+									value="#{docDvijeniaList.searchDocDvij.datVrastaneDo}"  >
+									<p:ajax event="change" update="idPerVrastane" listener="#{docDvijeniaList.changeDateVrastane}"/>   
+									<p:ajax event="dateSelect" update="idPerVrastane" listener="#{docDvijeniaList.changeDateVrastane}"/>   
+								</p:datePicker>												    
+							</div>
+							<!-- Множествен избор кореспонденти върнат на-->
+							
+						 	<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6">
+						 		<h:panelGroup id="panelCorrespV">
+								<h:outputText value="#{labels['docDvijenie.coresV']}" styleClass="form-label" />
+									<div class="select-modal-wrapper">
+
+										<ibg:selectManyModalA id="refCorrInpV" 
+											codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+											compType="3" 			
+											selectedCodes="#{docDvijeniaList.codeRefCorrespV}"
+											selectedClassifs="#{docDvijeniaList.scListV}"										
+										    withBtnClear="true" minQueryLength="3"
+											styleAutoComp="width:95%;" 
+											dopInfoAutoComp="true" itemtipAtPosition="center bottom"/>
+									<!--  Разширено търсене на кореспондент -->
+										<p:commandButton id="btnCorrV"
+											onmousemove="document.getElementById('docDvijeniaListForm:btnCorrV').focus();"
+											icon="fas fa-list-ul" partialSubmit="true"
+											process="docDvijeniaListForm:dpCorrSearchVarnati @this"
+											update="docDvijeniaListForm:dpCorrSearchVarnati"
+											styleClass="select-modal-button" style="margin-right: -5px;"
+											oncomplete="PF('mCorrSVarnati').show();"
+											title="#{labels['search.extendRef']}" />
+
+									</div>
+									</h:panelGroup>
+								</div>
+							
+					 	<!--Върнат на (множествен избор)-->						
+							<div  class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6  ui-fluid">
+								<h:outputText value="#{labels['docDvijenie.VarOt']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="lstVarnatNa" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 																
+									dateClassif="#{docDvijeniaList.currentDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{docDvijeniaList.varnatList}"
+									selectedClassifs="#{docDvijeniaList.varnatClassif}"
+									styleAutoComp="width:100%;"
+									withBtnClear="true" /> 
+							</div>
+					 	<!-- Върнат от (текст)-->
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-6 ui-fluid">
+							<h:outputText value="#{labels['docDvijenie.varnatOtTxt']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText id="varnatAsString" value="#{docDvijeniaList.searchDocDvij.varnatAsString}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+						    </div>
+					 	</div>
+					 		
+					 	
+
+
+						</div>
+
+						<div class="filter-buttons">
+
+							<p:commandButton icon="fas fa-search"
+								value="#{ui_labels['general.search']}" id="btnSearchDoc"
+								update="pResult" partialSubmit="true"
+								process="@this panelFilter"
+								actionListener="#{docDvijeniaList.actionSearch}"
+								title="#{ui_labels['general.titleSearch']}" styleClass="p-mr-3"/>
+							<p:defaultCommand target="btnSearchDoc" />
+
+							<p:commandButton icon="fas fa-eraser"
+								value="#{ui_labels['general.clear']}" id="btnClear"
+								update="pResult panelFilter" partialSubmit="true"
+								process="@this panelFilter"
+								actionListener="#{docDvijeniaList.actionClear}"
+								title="#{ui_labels['general.titleClear']}"
+								styleClass="ui-button-warning" />
+						</div>
+					</div>
+				</h:panelGroup>
+			</div>
+			<!-- rendered="#{docDvijeniaList.docsList != null}" -->
+			<h:panelGroup id="pResult" layout="block" styleClass="margin-top">
+				<h:panelGroup id="pResult1" rendered="#{docDvijeniaList.docsList != null}"
+					 layout="block"
+					styleClass="card">
+					<div class="table-toolbar">
+						<h:outputText
+							value="#{ui_labels['general.reportResult']} #{docDvijeniaList.docsList.rowCount}"
+							styleClass="form-label" />
+					</div>
+					<p:dataTable id="tblEvnP" var="row"
+						value="#{docDvijeniaList.docsList}" lazy="true" rowIndexVar="idx"
+						sortMode="single" reflow="true"
+						emptyMessage="#{labels['doc.listEmptyMsg']}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25"
+						paginatorPosition="bottom" paginatorAlwaysVisible="true"
+						paginator="true">
+
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+								<h:commandLink id="excel"
+									rendered="#{docDvijeniaList.docsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblEvnP"
+										fileName="docDvijeniaXls"
+										postProcessor="#{docDvijeniaList.postProcessXLS}" />
+								</h:commandLink>
+
+							</div>
+						</f:facet>
+
+						<p:columnGroup type="header"> 
+					 		<p:row>						 		
+						 		<p:column rowspan="2"  width="20" exportable="false" headerText="#{ui_labels['general.No-symbol']}" />
+					 			<p:column rowspan="2"  width="20" exportable="false"  />
+					 			<p:column rowspan="2"  width="35" exportable="false"  />
+
+					 			<p:column  colspan="#{docDvijeniaList.withEkzNum?5:4}" headerText="#{labels['docu.document']}"/>
+					            <p:column  colspan="5" headerText="#{labels['delo.predavane']}"/>
+					             
+					            <p:column  colspan="3" headerText="#{labels['docu.status']}"/>
+					            
+					      <ui:remove>     <!--  <p:column rowspan="2" width="16" headerText="" exportable="false"/> --></ui:remove>
+					 		</p:row>
+					 		<p:row>
+					 								 			
+					 			<p:column width="100"  sortBy="#{row.a01}" headerText="#{labels['repDoc.regnom']}" />
+					 			<p:column width="110" sortBy="#{row.a02}" headerText="#{labels['docu.docDate']}"  />
+					 			<p:column width="55" sortBy="#{row.a19}" headerText="#{labels['docDvij.ekz']}" rendered="#{docDvijeniaList.withEkzNum}"   />
+					 			<p:column width="110"  sortBy="#{row.a03}" headerText="#{labels['docu.vid']}" />
+					 			<p:column width="*" styleClass="col200"  sortBy="#{row.a04}" headerText="#{labels['docu.otnosno']}"  />
+					 			
+					 			<p:column width="80" sortBy="#{row.a05}" headerText="#{labels['docu.dateDoc']}"  />
+					 			<p:column width="70"  sortBy="#{row.a06}" headerText="#{labels['dvijenie.nachin']}"  />
+					 			<p:column width="180"  sortBy="#{row.a07}" headerText="#{labels['docDvijenie.predNa']}" />
+					 			
+					 			<p:column width="10" headerText="" exportable="false"/>
+					 			<p:column width="110"   exportHeaderValue="#{labels['dvijenie.daSeVarneDo']}" exportable="true" style="display: none" />
+					 			
+					 			<p:column width="10" headerText="" exportable="false"/>
+					 			<p:column width="110"  exportHeaderValue="#{labels['dvijenie.dvijStatusShort']}" exportable="true" style="display: none"/>
+					 							
+				 				<p:column width="110"  sortBy="#{row.a10}" headerText="#{labels['docu.status']}" />
+				 				<p:column width="80" sortBy="#{row.a11}" headerText="#{labels['docu.dateDoc']}" />
+				 				
+				 				<p:column width="10" headerText="" exportable="false" />
+				 				<p:column width="110"   exportHeaderValue="#{labels['docDvijenie.dopInfoStatus']}" exportable="true" style="display: none" />
+				 							 					
+								<p:column width="110"   exportHeaderValue="#{labels['docDvijenie.datVrashtane']}" exportable="true" style="display: none" />
+								<p:column width="110"   exportHeaderValue="#{labels['docDvijenie.nachinVr']}" exportable="true" style="display: none" />
+								<p:column width="110"   exportHeaderValue="#{labels['docDvijenie.VarOt']}" exportable="true" style="display: none" />
+								<p:column width="110"   exportHeaderValue="#{labels['docDvijenie.dopInfoVr']}" exportable="true" style="display: none" />
+				
+					 		</p:row>
+					 	</p:columnGroup>
+					 	
+					 	<p:column width="20" exportable="false" >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>	
+						<p:column width="20" exportable="false"  >
+				            <p:rowToggler rendered="#{row[13] != null}" />
+				        </p:column>
+				        <p:column  width="35" exportable="false"  >	
+							<p:button  icon="fas fa-eye" href="#{docDvijeniaList.actionGoto(row[19])}" target="_blank" 
+							           title="#{ui_labels['general.view']}" >
+					  		</p:button>	
+					  	</p:column>
+					  	
+					  	<!-- ДОКУМЕНТ -->
+						<p:column width="100" sortBy="#{row.a01}" >
+							<h:outputText value="#{row[0]}"  />								    
+						</p:column>
+						<p:column width="110"  sortBy="#{row.a02}"  >									  
+							<h:outputText value="#{row[1]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						<p:column width="55" sortBy="#{row.a19}" rendered="#{docDvijeniaList.withEkzNum}" >
+							<h:outputText value="#{row[18]}"  />								    
+						</p:column>
+						<p:column width="110" sortBy="#{row.a03}"  >
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[2], docDvijeniaList.currentLang, now)}" />			 
+						</p:column>
+						<p:column width="*" styleClass="col200" sortBy="#{row.a04}"   >
+							<h:outputText value="#{row[3]}"  />								    
+						</p:column>
+						
+						<!-- ПРЕДАВАНЕ -->
+						<p:column width="80"  sortBy="#{row.a05}">
+							<h:outputText value="#{row[4]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						<p:column width="70"  sortBy="#{row.a06}"   exportable="false">						    	
+							<i class="#{docDataDvijenia.getMethodIcon(row[5])}" style="font-size:1.2em" jsf:id="nIcon" 
+									jsf:rendered="#{row[5] != null}" />		   					
+							<p:tooltip id="tnIcon" rendered="#{row[5] != null}"
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[5], docDvijeniaList.currentLang, now)}" 
+								for="nIcon"  escape="false"/>
+		   					
+						</p:column>
+						<p:column width="120"  sortBy="#{row.a06}"  style="display: none">						    	
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[5], docDvijeniaList.currentLang, now)}"/>			
+						</p:column>
+						<p:column  width="180" sortBy="#{row.a07}"   exportable="true">
+								<ui:remove><!-- Разглеждане на данни на кореспондент	 		--></ui:remove>	    	
+			    				<p:commandLink id="btnCorrDvij" style="font-size:1.2em" 
+			    				    rendered="#{row[21] ne null and docDvijeniaList.viewRefModal(row[21])}"
+									partialSubmit="true"
+									actionListener="#{docDvijeniaList.setIdRefModal(row[21] )}"
+									update="docDvijeniaListForm:dpCorrDvij"
+									oncomplete="PF('mCorrDvij').show();"
+									title="#{labels['docu.correspView']}">
+									<i class="fas fa-info-circle"></i>
+								</p:commandLink>
+						    	
+								<h:outputText value=" #{row[6]} " />	
+								<h:outputText value="(#{row[7]}) " rendered="#{row[5] == OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}" />
+								<h:outputText value=" #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI_REQDOC, row[17], docDvijeniaList.currentLang, now)} " style="font-size:1.2em" rendered="#{row[17] != null}"/>
+						</p:column>
+						
+						<p:column width="10"  sortBy="#{row.a13}"  exportable="false">
+						
+		   					<i class="fas fa-info-circle" style="font-size:1.2em" jsf:id="returnDateInfo" 
+							  jsf:rendered="#{row[12] != null}" />
+		   					
+							<p:tooltip id="treturnDateInfo" rendered="#{row[12] != null}"
+								value="#{docDvijeniaList.getInfoDateReturn(labels['dvijenie.daSeVarneDo'],row[12])}" 
+								for="returnDateInfo"  escape="false"/>
+		   					
+						</p:column>
+						
+						<p:column width="110"  exportable="true" style="display: none" >
+								<h:outputText value="#{row[12]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+								</h:outputText>								    
+						</p:column>
+						
+						<p:column width="10" exportable="false" >
+								<p:commandLink rendered="#{row[8] != null}" title="#{labels['dvijenie.dvijStatusShort']} : #{docDvijeniaList.getShortInfo(row[8], 30)}" actionListener="#{docDvijeniaList.setInformationText(labels['dvijenie.dvijStatus'], row[8])}" 
+									partialSubmit="true" process="@this" update="docDvijeniaListForm:dialog-details1" oncomplete="PF('dialog-details').show()" style="font-size:1.2em">
+									<i class="fas fa-info-circle"></i>
+								</p:commandLink>
+						</p:column>
+						
+						<p:column width="110"  exportable="true" style="display: none">
+								<h:outputText value="#{row[8]}"  />								    
+						</p:column>
+					 	
+					 	<!-- СТАТУС -->
+					 	<p:column width="110"  sortBy="#{row.a10}" headerText="#{labels['docu.status']}" >
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_PREDAVANE_STATUS, row[9], docDvijeniaList.currentLang, now)}"/>	
+						</p:column>
+						<p:column width="80"  sortBy="#{row.a11}" headerText="#{labels['docDvijenie.datStatus']}" >
+								<h:outputText value="#{row[10]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+								</h:outputText>								    
+						</p:column>
+						<p:column width="10" exportable="false">
+								 <p:commandLink rendered="#{row[11] != null}" title="#{docDvijeniaList.getShortInfo(row[11], 30)}" actionListener="#{docDvijeniaList.setInformationText(labels['docDvijenie.dopInfoStatus'], row[11])}" 
+									partialSubmit="true" process="@this" update="docDvijeniaListForm:dialog-details1" oncomplete="PF('dialog-details').show()" style="font-size:1.2em">
+									<i class="fas fa-info-circle"></i>
+								</p:commandLink> 		
+						</p:column>
+								
+					    <p:column width="110"   exportable="true" style="display: none">
+								<h:outputText value="#{row[11]}"  />								    
+						</p:column> 
+						
+						<!-- ВРЪЩАНЕ -->
+						<p:column width="80"  exportable="true" style="display: none" >
+								<h:outputText value="#{row[13]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+								</h:outputText>								    
+						</p:column>
+							
+						<p:column width="110"    exportable="true" style="display: none">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[14] , docDvijeniaList.currentLang, now)}"/>	
+						</p:column>
+						<p:column width="110"    exportable="true" style="display: none">
+								<h:outputText value="#{row[15]}"  />								    
+						</p:column>
+						<p:column width="110"   exportable="true" style="display: none">
+								<h:outputText value="#{row[16]}"  />								    
+						</p:column>
+						
+						<p:rowExpansion>
+					
+						<div>
+							<div jsf:rendered="#{row[13] != null}">
+								<span class="form-label">#{labels['docDvijenie.datVrashtane']} : </span>
+								<h:outputText value="#{row[13]}"> 
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDvijeniaList.timeZone}"/>
+								</h:outputText>
+							</div>
+							<div jsf:rendered="#{row[14] != null}">
+								<span class="form-label">#{labels['docDvijenie.nachinVr']} : </span>
+								<span class="p-mr-2">
+									<i class="#{docDvijeniaList.getMethodIcon(row[14])}"></i>
+								</span>	    	
+								
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[14] , docDvijeniaList.currentLang, now)}" />
+							</div>
+							<div jsf:rendered="#{row[15] != null}">
+								<span class="form-label">#{labels['docDvijenie.VarOt']} : </span>
+								<h:outputText value="#{row[15]}" />
+							</div>
+							<div jsf:rendered="#{row[16] != null}">
+								<span class="form-label">#{labels['docDvijenie.dopInfoVr']} : </span>
+								<h:outputText value="#{row[16]}" />
+							</div>
+						</div>
+						</p:rowExpansion>
+					</p:dataTable>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<!-- Модални панели -->
+			<!-- 01 модален панел Множествен избор кореспонденти предаден на-->
+			<div jsf:id="dpCorrSearchPredadeni">	
+				<p:remoteCommand name="cmdAddRefP" 
+				 				process="@this"		
+				 				update="docDvijeniaListForm:panelCorresp"
+				  				actionListener="#{docDvijeniaList.actionAddSelectRef}" />
+				  				
+					<p:dialog appendTo="@form"  closeOnEscape="true"
+					    header="#{labels['docu.titleExtSrchCoresp']}" 
+					    fitViewport="true"	
+					    resizable="true" 
+					    position="top"	
+						widgetVar="mCorrSPredadeni" dynamic="true" id="modalCorrP" 
+						modal="true">
+							
+							<ibg:refCorrespSearch id="mCorrSPredadeni1"  myId="cp1"
+							codeRef="#{docDvijeniaList.codeRefCorrSrch}"				
+							modal="true"
+							update="docDvijeniaListForm:panelCorresp"
+							onComplete = "cmdAddRefP()"/>
+					
+									
+					</p:dialog>	
+				</div>
+				<!-- 02 модален панел Множествен избор кореспонденти върнат на-->
+				<h:panelGroup id="dpCorrSearchVarnati">	
+					<p:remoteCommand name="cmdAddRefV" 
+					 				process="@this"		
+					 				update="docDvijeniaListForm:panelCorrespV"
+					  				actionListener="#{docDvijeniaList.actionAddSelectRefV}" />
+					  				
+					<p:dialog appendTo="@form"  closeOnEscape="true"
+					    header="#{labels['docu.titleExtSrchCoresp']}" 
+					    fitViewport="true"	
+					    resizable="true"
+					    position="top"	
+						widgetVar="mCorrSVarnati" dynamic="true" id="modalCorrV" 
+						modal="true">
+							<ibg:refCorrespSearch id="mCorrSVarnati1" myId="cp2"
+								codeRef="#{docDvijeniaList.codeRefCorrSrchV}"					
+								modal="true"
+								update="docDvijeniaListForm:panelCorrespV"
+								onComplete = "cmdAddRefV()"/>
+						 
+									
+					</p:dialog>	
+				</h:panelGroup>
+				<!-- 03 Модален извикваш се, за да покаже допълнителна информация, ако има -->
+				<h:panelGroup id="dialog-details1">
+					<p:dialog id="dialog-details" appendTo="@form" widgetVar="dialog-details" closeOnEscape="true" header="#{docDvijeniaList.informationText[0]}" 
+						    fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="center"
+						    modal="true" dynamic="true" style="max-width:600px;">
+						<h:outputText value="#{docDvijeniaList.informationText[1]}" escape="false" style="white-space: pre-wrap;" />
+					</p:dialog>
+				</h:panelGroup>
+
+			
+				<ui:remove> <!-- Модален за разглеждане данни за корепондент --> </ui:remove>
+				<h:panelGroup id="dpCorrDvij">	
+								
+					<p:dialog appendTo="@form"  closeOnEscape="true" 
+					    header="#{labels['docu.correspView']}"  
+					    fitViewport="true"	
+					    resizable="true"
+					    responsive="true" 
+					    position="top" 		
+						widgetVar="mCorrDvij" dynamic="true" id="modalCorrDvij" 
+						modal="true">
+						<div class="container #{guestPreferences.containerPosition}">	
+							
+						 		<ibg:refCorrespData id="btnCorrDvij1"  readonly="true"
+									 codeRef="#{docDvijeniaList.idRefModal}"
+									 modal="true"					
+									 onComplete = "PF('mCorrDvij').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+						</div>		
+				 		
+					</p:dialog>	
+	</h:panelGroup>
+
+		</h:form>
+	</ui:define>
+
+</ui:composition>

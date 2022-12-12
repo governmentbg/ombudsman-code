@@ -1,0 +1,482 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="title">#{navTexts['/pages/docArchive.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>
+			<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>#{navTexts['/pages/docArchive.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(60)}" onPostback="false" />
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="formDocArchive">
+		
+		<h:panelGroup rendered="#{docArchive.docProtArchive eq null}" layout="block" ><!-- styleClass="error-not-found" -->
+			#{labels['docu.titleDocNotFound']} 
+		</h:panelGroup>
+
+			<div class="#{guestPreferences.containerPosition}">
+
+				<div class="card" jsf:rendered="#{docArchive.docProtArchive ne null}">				
+
+					<p:toolbar id="tlbButton">
+						
+						<f:facet name="left">
+							
+							<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"
+								id="btnSave" update="formDocArchive" partialSubmit="true" 
+								process="formDocArchive:workProtocol @this" 
+								actionListener="#{docArchive.actionSave}" styleClass="p-mr-2">
+							</p:commandButton>
+
+							<span class="p-mr-2"  jsf:rendered="#{docArchive.docProtArchive.workOffId ne null}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+							
+							<p:commandLink action="#{docArchive.actionGotoDoc(docArchive.docProtArchive.workOffId)}" ajax="false" styleClass="p-mr-2">
+						       <h:outputText value="#{labels['docDestruction.officProtRegNum']} #{docArchive.docProtArchive.workOffData[1]} #{ui_labels['general.from']} " rendered="#{docArchive.docProtArchive.workOffId ne null}"/>
+								<h:outputText value="#{docArchive.docProtArchive.workOffData[2]}" rendered="#{docArchive.docProtArchive.workOffId ne null}">
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docArchive.timeZone}"/>	
+								</h:outputText>
+						    </p:commandLink> 
+						    
+						   
+							<p:commandButton icon="fas fa-times" id="btnDeleteWorkOffId"
+					            value="#{labels['docDestruction.disconnectWithWorkProt']}"
+					           	update="formDocArchive" partialSubmit="true" 
+								process="formDocArchive  @this"
+								rendered="#{docArchive.docProtArchive.workOffId ne null}"												
+								actionListener="#{docArchive.disconnectFromOfficialProt}" styleClass="ui-button-danger">
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docArchive.sureDisconnectFromOficProt']}" icon="fas fa-exclamation-triangle" escape="false"/>
+							</p:commandButton>	
+						</f:facet>
+
+						<f:facet name="right">
+
+							<p:commandButton icon="fas fa-file-invoice" value="#{labels['docDestruction.delReg']}" oncomplete="PF('docModalDelReg').show();" styleClass="p-mr-2"								
+											 rendered="#{docArchive.docProtArchive.id ne null and docArchive.docProtArchive.workOffId eq null and docArchive.existRegister and (docArchive.delaForArchive.rowCount > 0)}"/>
+
+							<span class="p-mr-2" jsf:rendered="#{docArchive.docProtArchive.id ne null and docArchive.docProtArchive.workOffId eq null and docArchive.existRegister and (docArchive.delaForArchive.rowCount > 0)}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+
+							<p:commandButton icon="fas fa-share-alt" value="#{labels['docDestruction.linkWithOfficProt']}" id="btnLinkWithOffic" styleClass="p-mr-2"
+											 rendered="#{docArchive.docProtArchive.id ne null and docArchive.docProtArchive.workOffId eq null and (docArchive.delaForArchive.rowCount > 0)}" oncomplete="PF('dlgLinkWithOfficProt').show();">
+							 	<p:tooltip for="btnLinkWithOffic" value="#{labels['docArchive.btnConnectOfficProt']}" position="bottom" />
+							 </p:commandButton>
+
+							<span class="p-mr-2" jsf:rendered="#{docArchive.docProtArchive.id ne null and docArchive.docProtArchive.workOffId eq null and (docArchive.delaForArchive.rowCount > 0)}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+							
+							<p:commandButton icon="fas fa-times" id="btnDelete"
+					            value="#{ui_labels['general.delete']}" 
+					           	update="formDocArchive" partialSubmit="true" 
+								process="formDocArchive  @this"
+								rendered="#{docArchive.docProtArchive.id ne null and docArchive.docProtArchive.workOffId eq null}"											
+								actionListener="#{docArchive.actionDelete}" styleClass="ui-button-danger" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docDestruction.deleteProt']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+
+						</f:facet>
+					
+					</p:toolbar>
+
+					<div class="p-col-12">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formDocArchive:workProtocol')">
+							<h:outputText value="#{labels['docArchive.vidWorkProt']}: #{docArchive.vidProt}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+
+					<div jsf:id="workProtocol" class="p-grid p-col-12 p-nogutter">
+
+						<div class="card">
+
+							<div class="p-grid ui-fluid" jsf:id="dataProtocol">
+
+								<!-- Рег. номер на работен протокол -->
+								<h:panelGroup id="regNumWorkProt" styleClass="p-col-12 p-md-4 p-lg-4"  layout="block" >		
+								<h:outputText value="#{labels['docDestruction.regNumWorkProt']}" styleClass="form-label req" />
+								<div class="ui-inputgroup"> 	
+									<p:inputText id="regN" value="#{docArchive.docProtArchive.rnDoc}" 
+									   readonly="#{docArchive.docProtArchive.id != null or docArchive.avtomNo}"
+									   style="display:inline-block;"
+									   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">									   		
+									</p:inputText>
+									
+									<p:commandButton icon="fas fa-external-link-alt" action="#{docArchive.actionGotoDoc(docArchive.docProtArchive.id)}" ajax="false" title="#{labels['docDestruction.openDocForEdit']}" 
+					  				   rendered="#{docArchive.docProtArchive.id ne null}" /> 
+							
+									<p:selectBooleanButton id="avtNom" value="#{docArchive.avtomNo}"  
+										disabled="#{docArchive.avtomNoDisabled}"
+									    onLabel="#{ui_labels['general.yes']}" 
+										offLabel="#{ui_labels['general.no']}"
+										rendered="#{docArchive.docProtArchive.id eq null}" 
+										title="#{labels['docu.avtomRegNom']}" 
+									    onIcon="fas fa-toggle-on"   
+										offIcon="fas fa-toggle-off" 
+										styleClass="inputgroup-button">	
+										<p:ajax update="regNumWorkProt dataProtocol otnosno @this" partialSubmit="true"
+											process="@this regNumWorkProt dataProtocol otnosno"
+											listener="#{docArchive.actionChangeAvtomNo}" 
+											oncomplete="$(function(){PrimeFaces.focus('formDocArchive:regN');});"/>											
+									</p:selectBooleanButton>
+								</div> 
+							</h:panelGroup>	
+								
+								<div class="p-col-12 p-lg-2">
+									<h:outputText value="#{labels['docDestruction.dateWorkProt']}" styleClass="form-label req" />
+									<p:datePicker id="dateProt"  mask="true" locale="bg" pattern="dd.MM.yyyy"
+												showIcon="true"  showTime="true" showSeconds="true"
+												value="#{docArchive.docProtArchive.docDate}">
+									</p:datePicker>
+								</div>
+								
+								<div class="p-col-12 p-lg-6">
+									<h:outputText value="#{labels['docu.register']}" styleClass="form-label req" />
+									<p:remoteCommand name="cmdChangeRegister" update="dataProtocol"
+										partialSubmit="true" process="dataProtocol @this"
+										actionListener="#{docArchive.actionChangeRegister}" />									 
+									<ibg:selectOneModalA id="registerId"
+										readonly="#{docArchive.docProtArchive.id ne null}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+										dateClassif="#{docArchive.decodeDate}"
+										selectedCode="#{docArchive.docProtArchive.registerId}"
+										saveStateTree="false" withBtnClear="true" minQueryLength="3"
+										styleAutoComp="width:99%;"
+										sortByName="true" compType="2" filtered="true"
+										specifics="#{docArchive.specificsRegister}"
+										onComplete="cmdChangeRegister()" onClear="cmdChangeRegister()" />
+								</div>
+								
+								<!-- относно-->
+								<div class="p-col-12 p-lg-6" >									
+									<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label req" />
+									<p:inputTextarea id="otnosno" value="#{docArchive.docProtArchive.otnosno}" rows="5"  />										
+								</div>
+								
+								<!-- забележка-->
+								<div class="p-col-12 p-lg-6" >									
+									<h:outputText value="#{labels['docDestruction.note']}" styleClass="form-label" />
+									<p:inputTextarea id="dopInfo" value="#{docArchive.docProtArchive.docInfo}" rows="5"  />										
+								</div>
+
+							</div>
+							
+							<div class="p-grid" >
+							
+								<!-- Файлове saveFirst="#{docArchive.docProtArchive.id == null}"-->		
+								<div class="p-col-12 p-lg-6" >		
+								<ibg:compFileUpload listObj="#{docArchive.filesListForWork}" headerLabel="#{labels['docDestruction.fileWorkProt']}"
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+									idObj="#{docArchive.docProtArchive.id}"			
+									autoSave="true" saveFirst="#{docArchive.docProtArchive.id == null}"
+									id="filesListForWork" display="list" />	
+								</div>
+									
+								<!-- Файлове saveFirst="#{docArchive.docProtArchive.id == null}"-->
+								<div class="p-col-12 p-lg-6" >				
+								<ibg:compFileUpload listObj="#{docArchive.filesListForOffic}" headerLabel="#{labels['docDestruction.fileOfficProt']}"
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+									idObj="#{docArchive.docProtArchive.workOffId}"			
+									autoSave="true" saveFirst="#{docArchive.docProtArchive.workOffId == null}"
+									id="filesListForOffic" display="list" />
+								</div>
+							
+							</div>
+
+						</div>
+
+					</div>
+					
+					<div class="p-col-12" jsf:rendered="#{docArchive.docProtArchive.id ne null}" jsf:id="searchDelaPanel">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formDocArchive:searchDela')">
+							<h:outputText value="#{labels['docArchive.delaSearch']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+						
+						<h:panelGroup id="panelSearchDela">
+							<p:remoteCommand name="cmdSelectDela" 
+										update="formDocArchive:searchDela formDocArchive:tlbButton"
+										process="formDocArchive:searchDela formDocArchive:tlbButton @this"
+										actionListener="#{docArchive.actionAddDelaInProtocol}" />
+							
+							<p:commandButton id="btnSearchDela" value="#{labels['docArchive.delaSearch']}" 								 
+								 onmousemove="document.getElementById('formDocArchive:btnSearchDela').focus();"
+								 icon="fas fa-list-ul" partialSubmit="true"
+								 process="formDocArchive:delaSearch"
+								 update="formDocArchive:delaSearch @this"								 
+							 	 oncomplete="PF('modalDelaSearchMany').show();">
+							</p:commandButton>	
+						</h:panelGroup>			
+								
+					</div>
+					
+					<div jsf:id="searchDela" class="p-grid p-col-12 p-nogutter" jsf:rendered="#{docArchive.docProtArchive.id ne null}">
+					
+						<div class="p-col-12 p-align-end" style="display: flex;">
+							<h:outputText value="#{ui_labels['general.reportResult']} #{docArchive.delaForArchive.rowCount} " styleClass="form-label" id="result" style="margin-right:10px; flex-grow:1;white-space: nowrap;"/>
+								
+							<h:outputText value="#{labels['docDestruction.countDoc']} #{docArchive.countDela} #{labels['docArchive.countDelaInProt']}"
+									  style="color: #ff7f00; font-size: 0.9rem; font-style: italic; margin-right: 10px;" rendered="#{docArchive.existNotArchiveDela and docArchive.docProtArchive.workOffId ne null}" />	
+								
+							<p:commandButton icon="fas fa-check-double" actionListener="#{docArchive.actionCompleteDelaForArchive}" 
+									value="#{labels['docArchive.markDelaForArchive']}" update="formDocArchive" partialSubmit="true" disabled="#{!docArchive.existNotArchiveDela or docArchive.docProtArchive.workOffId eq null}" />								
+						</div>
+						
+						<p:dataTable id="tblInclDelaList" var="row" value="#{docArchive.delaForArchive}" lazy="true"
+							rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+							paginatorAlwaysVisible="true" paginator="true">
+							
+							<f:facet name="{Exporters}">
+								
+								<div style="float: left">
+									<h:commandLink id="excel">
+										<h:graphicImage library="images" name="excel2.png" />
+										<p:dataExporter type="xls" target="tblInclDelaList" fileName="inclDelaListXls" />
+									</h:commandLink>
+								<ui:remove> <!-- 
+									<h:commandLink id="pdf">
+										<h:graphicImage library="images" name="pdf.png" />
+										<p:dataExporter type="pdf"   target="tblInclDelaList" fileName="inclDelaListPdf"	 encoding="windows-1251"
+					     				   				  options="#{docArchive.pdfOptions()}"/>	
+			        	 
+									</h:commandLink>
+
+									<h:commandLink id="csv">
+										<h:graphicImage library="images" name="csv.png" />
+										<p:dataExporter type="csv" target="tblInclDelaList" fileName="inclDelaListCsv" encoding="CP1251" />
+									</h:commandLink>
+							 --></ui:remove>
+								</div>
+							</f:facet>
+							
+							<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+							
+							<p:column  width="15" exportable="false" >	
+								<p:button  icon="fas fa-eye" href="#{docArchive.actionGotoDelo(row[1])}" target="_blank" title="#{ui_labels['general.view']}" />
+						  	</p:column>	
+
+							<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docDestruction.regNum']}">
+								<h:outputText value="#{row[2]}" />										
+							</p:column>
+							
+							<p:column width="70" sortBy="#{row.a3}" headerText="#{labels['docDestruction.dateReg']}">																			
+								<h:outputText value="#{row[3]}" >
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docArchive.timeZone}"/>	
+								</h:outputText>
+							</p:column>
+							
+							<p:column width="120" sortBy="#{row.a6}" headerText="#{labels['docu.nameDelo']}">																			
+								<h:outputText value="#{row[6]}" />	
+							</p:column>
+							
+							<p:column width="70" sortBy="#{row.a4}" headerText="#{labels['delo.brToms']}">
+								<h:outputText value="#{row[4]}" />
+							</p:column>
+							
+							<p:column width="100" sortBy="#{row.a8}" headerText="#{labels['docSchema.termStore']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_SHEMA_PERIOD, row[8], docArchive.currentLang, now)}"/>	
+							</p:column>
+							
+							<p:column width="70" sortBy="#{row.a9}" headerText="#{labels['docSchema.years']}" >																			
+								<h:outputText value="#{row[9]}" />	
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a5}" headerText="#{labels['docu.status']}">																			
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row[5], docArchive.currentLang, now)}"/>
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a7}" headerText="#{labels['docDestruction.inclOn']}">																			
+								<h:outputText value="#{row[7]}" >
+									<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docArchive.timeZone}"/>	
+								</h:outputText>	
+							</p:column>
+											
+							<p:column width="20" exportable="false">
+								<p:commandButton icon="fas fa-trash" action="#{docArchive.actionDeleteDelo(row[0], row[5])}" 
+									ajax="true" styleClass="ui-button-danger" update="formDocArchive:searchDela formDocArchive:tlbButton" >
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docArchive.deleteDela']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+							</p:column>
+							
+						</p:dataTable>							
+					
+					</div> 					
+
+				</div>
+
+			</div>
+
+			<p:dialog appendTo="@form" header="#{labels['docDestruction.linkWithOfficProt']}" 
+					  widgetVar="dlgLinkWithOfficProt" modal="true" closeOnEscape="true" 
+					  width="500" responsive="true" resizable="true">
+
+				<p:outputPanel id="panelDlgLink">
+
+					<div jsf:id="rnDocForOffic" class="p-grid  ui-fluid">
+
+						<div class="p-col-12 p-md-7 p-lg-7">
+
+							<h:outputText value="#{labels['docDestruction.regNumOfficProt']}" styleClass="form-label" />
+
+							<div class="ui-inputgroup">
+								<p:inputText id="regNumOffic" value="#{docArchive.searchRnDoc}" style="display:inline-block;"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+									
+								</p:inputText>
+
+								<p:commandButton icon="fas fa-search" id="btnSrcOfficProt"
+									actionListener="#{docArchive.actionSearchDoc}"									
+									update="formDocArchive:tlbButton formDocArchive:workProtocol" 														
+									title="#{labels['docDestruction.searchDocByNum']}">
+								</p:commandButton>
+
+							</div>
+
+						</div>
+					</div>
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<div class="p-grid p-nogutter">
+						<div class="p-col-12" align="right">
+							<p:commandButton id="bntCloseLink" update="panelDlgLink" process="@this panelDlgLink" icon="fas fa-times"
+								styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('dlgLinkWithOfficProt').hide();" />
+						</div>
+					</div>
+				</f:facet>
+			</p:dialog>
+
+				<!--Tърсене на документ -->
+				<h:panelGroup id="docSearchForOffic">
+				
+					<p:remoteCommand name="cmdHideDlg" process=" formDocArchive:tlbButton formDocArchive:searchDela @this"
+						update="formDocArchive:tlbButton formDocArchive:searchDela" partialSubmit="true" actionListener="#{docArchive.actionLoadSelectedDoc}" />
+				
+					<p:dialog appendTo="@form"
+						header="#{labels['docDestruction.docSearch']}" fitViewport="true"
+						closeOnEscape="true" responsive="true" resizable="true"
+						position="top" widgetVar="modalDocSearchForOffic" dynamic="true"
+						id="modalDocSearchForOfficId" modal="true" onHide="cmdHideDlg()">
+						
+						<ui:remove><!-- Дали да се добавят условия за достъп за компонентата за избор на документ???  --></ui:remove>
+	
+						<ibg:compDocSearch id="modalDocSearchComp"
+							searchDocS="#{docArchive.selectedDoc}"
+							searchRnDoc="#{docArchive.searchRnDoc}"
+							idRegistratura="#{docArchive.docProtArchive.registraturaId}"
+							dateClassif="#{docArchive.decodeDate}" modal="true"							
+							onComplete="PF('modalDocSearchForOffic').hide();" 
+							isWorkOff="true" docTypeArr="#{docArchive.docTypeArr}"/>
+					</p:dialog>
+				</h:panelGroup>
+			
+			<h:panelGroup id="delaSearch">
+				
+				<p:dialog appendTo="@form" position="top"
+				    header="#{labels['transferDeloDoc.dela']}" 
+				    responsive="true" fitViewport="true"		  							 
+				    resizable="true" closeOnEscape="true"				    
+					widgetVar="modalDelaSearchMany" 
+					dynamic="true" id="modalDelaSearchMId" 
+					modal="true">
+					
+				 	<ibg:compDeloSearch id="modalDelaSearchCompMany" 
+						 selectedDeloList="#{docArchive.selectedDela}"
+						 dateClassif="#{docArchive.decodeDate}"
+						 multi="true" modal="true"
+						 idProtocol="#{docArchive.docProtArchive.id}"					 
+						 typeDelo="#{OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"
+						 update="formDocArchive:searchDela formDocArchive:tblInclDelaList formDocArchive:tlbButton"				
+						 onComplete = "PF('modalDelaSearchMany').hide(); cmdSelectDela()"/>			
+						 	
+				</p:dialog>	
+					
+			</h:panelGroup>
+			
+			<h:panelGroup id="docDelRegForOfficProt">
+				
+					<p:dialog appendTo="@form" header="#{labels['docDestruction.titleModalDelReg']}" width="600"
+						widgetVar="docModalDelReg" dynamic="true" id="docDelRegDialog" modal="true">
+						
+						<p:messages>
+					        <p:autoUpdate />
+					    </p:messages>	
+						
+						<p:outputPanel id="panelDlgDelReg">
+	
+						<div class="p-grid ui-fluid p-col-12">
+	
+							<div class="p-col-12 p-md-12 p-lg-12">
+	
+								<div class="p-col-12 p-lg-5">
+									<h:outputText value="#{labels['docDestruction.dateReg']}" styleClass="form-label req" />
+									<p:datePicker id="dateDelReg"  mask="true"  locale="bg"  pattern="dd.MM.yyyy"
+												showIcon="true"  showTime="true" showSeconds="true"
+												value="#{docArchive.dateOfficProt}">
+									</p:datePicker>
+								</div>
+	
+							</div>
+							
+							<div class="p-col-12 p-md-12 p-lg-12">
+								<div class="p-col-12 p-lg-12">
+									<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label req" />
+									<p:inputTextarea id="otnosnoDelReg" value="#{docArchive.otnosnoOfficProt}" rows="5"  />	
+								</div>							
+							</div>
+						</div>
+		
+					</p:outputPanel>
+					
+					<f:facet name="footer">
+						
+						<div class="p-grid p-nogutter">					
+							<div class="p-col-6" align="left">
+								<p:commandButton icon="fas fa-file-invoice" action="#{docArchive.actionDelReg}"
+								process="formDocArchive:tlbButton formDocArchive:workProtocol formDocArchive:panelDlgDelReg formDocArchive:searchDela @this" partialSubmit="true"
+								update="formDocArchive:tlbButton formDocArchive:workProtocol formDocArchive:panelDlgDelReg formDocArchive:searchDela"  
+								value="#{labels['docDestruction.delReg']}" />						
+							</div>
+								
+							<div class="p-col-6" align="right">
+								<p:commandButton update="panelDlgDelReg" process="@this panelDlgDelReg" icon="fas fa-times"
+									styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('docModalDelReg').hide();" />
+							</div>
+						</div>
+					
+					</f:facet>
+						
+				</p:dialog>
+	
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

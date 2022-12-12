@@ -1,0 +1,377 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:c="http://java.sun.com/jstl/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"	 
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"	> 
+	  
+	  
+
+<cc:interface componentType="refCorrespSearch">
+   		  
+   <cc:attribute name="codeRef"	         	 type="java.lang.Integer" shortDescription="code на кореспондент" deafult="null" />
+   <cc:attribute name="searchTxt"	         type="java.lang.String"  shortDescription="Предварително подаден текст за търсене по име на кореспондент" deafult="null"/>
+   <cc:attribute name="dateClassif"   		 type="java.util.Date"    shortDescription="Дата, към която да се заредят класификации и за разкодиране. По подразбиране - днешна дата." />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="Полета, които трябва да се обновят" />
+   <cc:attribute name="readonly"       		 type="java.lang.Boolean" shortDescription="Само за разглеждане" default="false" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+   <cc:attribute name="correspForget"        type="java.lang.Boolean" shortDescription="За опцията за заличаване на кореспондента - да(true); не(false)." default="false" />
+   
+   <cc:attribute name="modal"       		 type="java.lang.Boolean" shortDescription="Tърсенето е отворено в модален диалог(true) или не(false)." default="true" />
+   <cc:attribute name="myId"       		 	 type="java.lang.String"  shortDescription="" />
+</cc:interface>
+
+<cc:implementation>
+
+ <f:event type="preRenderComponent" listener="#{cc.initRefCorrespS(true)}" /> <!--  За да се инициализира компонентата-->
+ 
+
+		<!-- Разширено търсене на кореспондент -->
+											
+  														
+	<h:panelGroup id="panelFilterCorr"  rendered="#{cc.showMe}"   
+        onkeypress="if(event.keyCode == 13) {event.preventDefault();  document.getElementById('#{cc.clientId}:btnSearchC1').click();}">
+    	
+    	<div class="card">
+	    	
+	    	<div class="p-grid ui-fluid"> 
+				
+				<div class="p-col-5" > 
+					<p:selectOneRadio id="vLice" value="#{cc.refSearch.refType}"  	layout="responsive" immediate="true" columns="2" disabled="#{cc.attrs.correspForget}">
+						 	 <f:selectItem itemLabel="#{labels['coresp.uLice']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" />
+		            		 <f:selectItem itemLabel="#{labels['coresp.fizLice']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+						 	 <p:ajax event="change"  update="#{cc.clientId}:ff1 #{cc.clientId}:panelTblCorr" partialSubmit="true"
+					 	             process="@this " listener="#{cc.actionChTypRef}"/>	
+					</p:selectOneRadio>				
+				</div>
+				
+				<div class="p-grid p-col-12" jsf:id="ff1">
+					
+					<div class="p-col-8">					
+						<h:outputText value="#{labels['refCorr.nameUL']}" styleClass="form-label" id="lablUL" rendered="#{cc.refSearch.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+						<h:outputText value="#{labels['refCorr.nameFL']}" styleClass="form-label" id="lablFL" rendered="#{cc.refSearch.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+						
+						<p:inputText id="nameCorr"	value="#{cc.refSearch.refName}" />
+					</div>
+					
+					<div class="p-col-2">						
+						<h:outputText value="#{ui_labels['general.eik']}" styleClass="form-label" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+						<h:outputText value="#{ui_labels['general.egn']}" styleClass="form-label" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}"/>
+						
+						<p:inputText id="eikegnnfl" value="#{cc.refSearch.eikEgn}"  style="width:99%"
+						  maxlength="13" onkeyup="onlyNumbersNoRestr('#{cc.clientId}:eikegn')" 
+						  rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+						
+						<p:inputText id="eikegnfzl" value="#{cc.refSearch.eikEgn}"  style="width:99%"
+						  maxlength="10" onkeyup="onlyNumbersNoRestr('#{cc.clientId}:eikegn')" 
+						  rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}"/>
+					</div>
+				
+					<div class="p-col-2" jsf:rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}">						
+						<h:outputText value="#{ui_labels['general.lnch']}" styleClass="form-label"/>
+						
+						<p:inputText id="lnch" value="#{cc.refSearch.lnc}"  style="width:99%"	onkeyup="onlyNumbersNoRestr('#{cc.clientId}:lnch')"/> 
+					</div>
+					
+
+<!-- TODO -->					
+<ui:remove><!-- 
+					<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" > 
+					 	<h:outputText value="Категория" styleClass="form-label " />
+				    	<p:selectOneMenu id="sKatNar" value=""   filter="false"  disabled="#{cc.attrs.readonly}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_KAT_NAR, now, cc.lang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					    </p:selectOneMenu>	
+					</div>
+					<div class="p-col-12 p-md-12 p-lg-8 p-xl-8" jsf:id="dVidNar">
+					 	<h:outputText value="Вид" styleClass="form-label " />
+				    	<p:selectOneMenu id="sVidNarr" value="#"   filter="false"  disabled="#{cc.attrs.readonly}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_VID_NAR, now, cc.lang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						        
+					    </p:selectOneMenu>	
+					</div>
+					<div class="p-col-12 p-md-12 p-lg-4 p-xl-4" jsf:id="dTipOrgan">
+					 	<h:outputText value="Тип на орган по НПМ" styleClass="form-label " />
+				    	<p:selectOneMenu id="sTipOrgan" value="#"   filter="false"  disabled="#{cc.attrs.readonly}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TIP_ORGAN, now, cc.lang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						        
+					    </p:selectOneMenu>	
+					</div>
+	 --></ui:remove>				
+					<!-- разширени критерии.... -->
+					<div class="p-col-12">
+						<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#srch-extended_#{cc.attrs.myId}')">
+							<h:outputText value="#{ui_labels['search.extend']}"/>
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+					
+					<div class="p-grid p-col-12 ui-fluid" id="srch-extended_#{cc.attrs.myId}" style="display: none;">
+								
+						<div class="p-col-4">
+							<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label" />
+							<ibg:selectOneModalA  id="mestoC" update="#{cc.clientId}:cOblObsh"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"								
+								selectedCode="#{cc.refSearch.ekatte}"
+								emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+								saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="3"
+								styleAutoComp=""
+								dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>	
+						
+						</div>
+													
+						<div class="p-col-4">
+							<h:outputText value="#{ui_labels['general.ekatteObshObl']}" styleClass="form-label" />
+							<h:panelGroup id="cOblObsh">
+								<p:inputText readonly="true" 
+									value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, cc.refSearch.ekatte, cc.lang, now)}" />
+							</h:panelGroup>
+						</div>
+						
+						<div class="p-col-4">
+							<h:outputText value="#{ui_labels['general.country']}" styleClass="form-label" />
+							<ibg:selectOneModalA  id="cntryC"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+								selectedCode="#{cc.refSearch.country}"
+								emptyMessage="#{labels['docu.countryEmptyMsg']}"
+								saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="2"
+								styleAutoComp=""/>	
+						</div>	
+						
+						<h:panelGroup rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+						
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" >
+							<h:outputText value="#{labels['complaint.kategNarush']}" styleClass="form-label " />
+							<ibg:selectManyModalA id="selectManyKatNar" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_KAT_NAR}"
+								dateClassif="#{cc.currentDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{cc.refSearch.katNarList}"
+								selectedClassifs="#{cc.katNarSc}"
+								styleAutoComp="" withBtnClear="true" />								
+						</div>	
+						
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" >
+							<h:outputText value="#{labels['complaint.vidNarush']}" styleClass="form-label " />
+							<ibg:selectManyModalA id="selectManyVidNar" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_VID_NAR}"
+								dateClassif="#{cc.currentDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{cc.refSearch.vidNarList}"
+								selectedClassifs="#{cc.vidNarSc}"
+								styleAutoComp="" withBtnClear="true" />						        
+					   							
+						</div>	
+						
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" >
+							<h:outputText value="#{labels['refCorr.typeNpm']}" styleClass="form-label " />
+							<ibg:selectManyModalA id="selectManyTipOrgan" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_TIP_ORGAN}"
+								dateClassif="#{cc.currentDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{cc.refSearch.tipOrganList}"
+								selectedClassifs="#{cc.tipOrganSc}"
+								styleAutoComp="" withBtnClear="true" />	
+						</div>	
+						
+						</h:panelGroup>					
+					
+					</div>
+				
+				</div>		
+			
+			</div>
+			
+			<div class="filter-buttons">
+				
+				<p:commandButton id="btnSearchC1" 						
+					    actionListener="#{cc.actionSearchCorresp}"
+						partialSubmit="true" 
+						process="@this  #{cc.clientId}:panelFilterCorr" 
+						update="#{cc.clientId}:panelTblCorr" 
+						icon="fas fa-search"  styleClass="p-mr-3"
+						value="#{ui_labels['general.search']}"/>
+				<p:defaultCommand target="btnSearchC1" />
+			
+				<p:commandButton 					    
+						id="btnClearC1" 
+						actionListener="#{cc.actionClearCorresp}"
+						partialSubmit="true"
+						process="@this  #{cc.clientId}:panelFilterCorr" 
+						update="#{cc.clientId}:panelFilterCorr"
+						icon="fas fa-eraser"  	styleClass="ui-button-warning"
+					    value="#{ui_labels['general.clear']}" /> 
+			
+			</div>
+			
+		</div>
+	
+		<h:panelGroup id="panelTblCorr" layout="block" styleClass="margin-top">	  
+			
+			<h:panelGroup layout="block" >
+				
+				<div class="table-toolbar">
+				
+					<p:commandButton id="btnNewCorrNfl" value="#{labels['docu.refCorrNew']}"
+								action="#{cc.actionGotoNewCorr}" partialSubmit="true" styleClass="ui-button-success p-mr-2"
+								process="@this  #{cc.clientId}:panelFilterCorr"  update="#{cc.clientId}:panelFilterCorr" icon="fas fa-file" ajax="false" 
+								rendered="#{!cc.attrs.modal and !cc.attrs.correspForget and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP) and cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+					
+					<p:commandButton id="btnNewCorrFzl" value="#{labels['docu.refCorrNew']}"
+								action="#{cc.actionGotoNewCorr}" partialSubmit="true" styleClass="ui-button-success p-mr-2"
+								process="@this  #{cc.clientId}:panelFilterCorr"  update="#{cc.clientId}:panelFilterCorr" icon="fas fa-file" ajax="false" 
+								rendered="#{!cc.attrs.modal and !cc.attrs.correspForget and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP) and cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}"/>
+					
+					<span style="padding-right: 5px;" jsf:rendered="#{cc.correspList ne null and cc.correspList.rowCount gt 0 and !cc.attrs.modal and !cc.attrs.correspForget and cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+						<span class="fas fa-ellipsis-v" />
+					</span>
+					
+					<span style="padding-right: 5px;" jsf:rendered="#{cc.correspList ne null and cc.correspList.rowCount gt 0 and !cc.attrs.modal and !cc.attrs.correspForget and cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}">
+						<span class="fas fa-ellipsis-v" />
+					</span>
+					
+					<h:outputText value="#{ui_labels['general.reportResult']} #{cc.correspList.rowCount}" 
+						rendered="#{cc.correspList ne null and cc.correspList.rowCount gt 0 and !cc.attrs.modal and !cc.attrs.correspForget}" id="result"/>		
+				
+				</div>
+			
+				<p:dataTable id="tblCorrList" var="row" value="#{cc.correspList}" lazy="true" 	 rendered="#{cc.correspList != null}"
+							rowIndexVar="idx" sortMode="single" reflow="true" 							
+							emptyMessage="#{cc.correspList eq null ? '' : labels['refCorr.srchEmptyMsg']}" 
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+							paginatorAlwaysVisible="false" paginator="true"  scrollable="true" scrollWidth="100%">
+					
+													
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{!cc.attrs.modal and cc.correspList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblCorrList" fileName="corespList"	
+					        			postProcessor="#{cc.postProcessXLS}" />
+					    		</h:commandLink>
+				
+								<ui:remove> <!--  
+									<h:commandLink id="pdf"  rendered="#{!cc.attrs.modal and cc.correspList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+						        	 	  <h:graphicImage library="images" name="pdf.png" />
+						        	 	  <p:dataExporter type="pdf" target="tblCorrList" fileName="corespList"	 encoding="windows-1251"
+						        			preProcessor="#{cc.preProcessPDF}" options="#{cc.pdfOptions()}"/>
+						        	</h:commandLink>
+					    		--></ui:remove>
+				            </div>
+				       	</f:facet>	
+												
+							
+				<p:column style="text-align: center" width="50" exportable="false" rendered="#{cc.attrs.modal}" >
+				
+				<p:commandButton id="btnChCorr" rendered="#{cc.attrs.modal}" 
+					    title="#{ui_labels['general.choise']}"									
+					    action="#{cc.actionModalSelectCorr(row)}"					
+					    partialSubmit="true"
+					    process="#{cc.attrs.update}  #{cc.clientId}:panelFilterCorr @this"
+						update="#{cc.attrs.update}  #{cc.clientId}:panelFilterCorr"
+						icon="fas fa-hand-point-down" styleClass="btn-normal"/>											
+				</p:column>
+						
+				<p:column style="text-align: center" width="50" exportable="false" rendered="#{!cc.attrs.modal}" >
+				
+					<p:commandButton id="btnEditCorr" title="#{ui_labels['general.edit']}"									
+					   action="#{cc.actionGotoEditCorr(row)}" ajax="false"							
+					    partialSubmit="true" 
+					    process="#{cc.attrs.update} @this"
+						update="#{cc.attrs.update}"
+						icon="fas fa-edit" styleClass="btn-new"/>																
+				</p:column>
+	
+				<p:column width="90" sortBy="#{row.a2}" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+					<f:facet name="header">
+						 <h:outputText value="#{ui_labels['general.eik']}" style="margin-left:-8px" />
+					</f:facet>
+					<h:outputText value="#{row[2]}"  title="id: #{row[0]}"/>																		    
+				</p:column>
+				
+				<p:column width="90" sortBy="#{row.a2}" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}">
+					<f:facet name="header">
+						 <h:outputText value="#{ui_labels['general.egn']}" style="margin-left:-8px" />										  
+					</f:facet>
+					<h:outputText value="#{row[2]}"  title="id: #{row[0]}"/>
+					<h:outputText value=" ЛНЧ: #{row[3]}" rendered="#{row[3] ne null}"/>													    
+				</p:column>
+				
+				<p:column sortBy="#{row.a4}" styleClass="col150">
+					<f:facet name="header" >
+						 <h:outputText value="#{labels['refCorr.name1']}" style="margin-left:-8px" />
+					</f:facet>
+					<h:outputText value="#{row[4]}"  />								    
+				</p:column>
+				
+				<p:column styleClass="col100" sortBy="#{row.a13}" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+					<f:facet name="header" >
+						 <h:outputText value="#{labels['complaint.kategNarush']}" style="margin-left:-8px" />
+					</f:facet>
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_KAT_NAR, row[13], cc.lang, cc.currentDate)}" />								    
+				</p:column>
+				
+				<p:column styleClass="col100" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+					<f:facet name="header" >
+						 <h:outputText value="#{labels['complaint.vidNarush']}" style="margin-left:-8px" />
+					</f:facet>
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_VID_NAR, row[14], cc.lang, cc.currentDate)}"/>								    
+				</p:column>
+				
+				<p:column width="90" sortBy="#{row.a15}" rendered="#{cc.refSearch.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+					<f:facet name="header" >
+						 <h:outputText value="#{labels['refCorr.typeNpm']}" style="margin-left:-8px" />
+					</f:facet>
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TIP_ORGAN, row[15], cc.lang, cc.currentDate)}"/>								    
+				</p:column>
+				
+				<p:column width="150" sortBy="#{row.a7}">
+					<f:facet name="header">
+						 <h:outputText value="#{ui_labels['general.ekatte']}" style="margin-left:-8px"/>									  
+					</f:facet>  
+					
+					<h:outputText value="#{row[6]} #{row[7]}" title="#{cc.titleContancts(row[10],row[11],row[12])}" rendered="#{cc.seePersonalData}"/>	
+					<h:outputText value="#{row[6]} #{row[7]}" rendered="#{!cc.seePersonalData}"/>	
+		   		    
+		   		    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COUNTRIES, row[5], cc.lang, cc.currentDate)}"
+		   		                  rendered="#{row[5] ne cc.countryBG and cc.seePersonalData}"
+		   		                  title="#{cc.titleContancts(row[10],row[11],row[12])} "/>	
+		   		    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COUNTRIES, row[5], cc.lang, cc.currentDate)}"
+		   		                  rendered="#{row[5] ne cc.countryBG and !cc.seePersonalData}"/>		   		    
+				</p:column>
+				
+				<p:column width="90" sortBy="#{row.a8}">
+					<f:facet name="header">
+						 <h:outputText value="#{ui_labels['general.ekatteObsh']}" style="margin-left:-8px"/>									  
+					</f:facet>
+		   		    <h:outputText value="#{row[8]}" />	
+				</p:column>
+				
+				<p:column width="90" sortBy="#{row.a9}">
+					<f:facet name="header">
+						 <h:outputText value="#{ui_labels['general.ekatteObl']}" style="margin-left:-8px"/>									  
+					</f:facet>
+		   		    <h:outputText value="#{row[9]}" />	
+				</p:column>
+		
+			</p:dataTable>
+		
+		</h:panelGroup>	
+	
+		</h:panelGroup>
+	
+	</h:panelGroup>
+	
+</cc:implementation>
+	
+</ui:composition>

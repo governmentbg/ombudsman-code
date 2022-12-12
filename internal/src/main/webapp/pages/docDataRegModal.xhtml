@@ -1,0 +1,309 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+
+	<ui:remove><!-- Разширено търсене на кореспондент	--></ui:remove>
+	
+	<div jsf:id="dpCorrSearch" >
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{labels['docu.titleExtSrchCoresp']}" 
+		    fitViewport="true"	
+		    resizable="true" 
+		    position="top"	
+			widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+			modal="true">
+			 	<ibg:refCorrespSearch id="mCorrS1" myId="mCS1"
+						 codeRef="#{docData.document.codeRefCorresp}"
+						 searchTxt="#{docData.txtCorresp}" 
+						 dateClassif="#{docData.decodeDate}"
+						 modal="true"
+						 update="docForm:tabsDoc:refCorrAdr docForm:tabsDoc:refCorrInp docForm:tabsDoc:refCorr"
+						 onComplete = "PF('mCorrS').hide();"/>
+				
+		</p:dialog>
+		</div>				
+			
+
+				
+
+				
+	<ui:remove><!--Редактиране на данни за кореспонден	--></ui:remove>
+	<h:panelGroup id="dpCorrData">	
+		
+		<ui:remove><!-- ако има съобщения за грешка, изведено от модалния, при затваряне - да се скрие съобщението -но скрива и съобщ. за запис..
+			TODO - проверка дали потребителя има право за редакция и въвеждане на нов кореспондент!!!
+				<p:remoteCommand name="cmdHideModalD" process="@this" />
+				onHide="cmdHideModalD()" 	
+		--></ui:remove>
+					
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) ? labels['docu.titleEditCoresp'] : labels['docu.correspView']) : labels['docu.correspView']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrD" dynamic="true" id="modalCorrD" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+				
+			 		<ibg:refCorrespData id="btnCorrD1"  readonly="#{isView eq 1}"
+						 codeRef="#{docData.document.codeRefCorresp}"
+						 searchTxt="#{docData.txtCorresp}" 
+						 dateClassif="#{docData.decodeDate}"
+						 modal="true"
+						 update="docForm:tabsDoc:refCorrAdr docForm:tabsDoc:refCorrInp docForm:tabsDoc:refCorr"	
+						 onComplete = "PF('mCorrD').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+
+	
+	<ui:remove>	<!--Tърсене на преписка/дело - ръчно въвеждане на номер	--></ui:remove>
+	<h:panelGroup id="dpDeloSearch">	
+		<p:remoteCommand name="cmdHideModalDP" 
+	 				process="@this"		
+	 				update="docForm:tabsDoc:p1RegD docForm:tabsDoc:p2RegD"
+	  				actionListener="#{docData.actionHideModalDelo}" />
+	
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{labels['docu.deloPrepiskaTitle']}" 
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 
+		    onHide="cmdHideModalDP()"
+			widgetVar="mDeloS" dynamic="true" id="modalDeloS" 
+			modal="true">
+				
+						
+			 	<ibg:compDeloSearch id="mDeloS1" 
+					 searchDeloS="#{docData.selectedDelo}"
+					 searchRnDelo="#{docData.document.rnDoc}"
+					 dateClassif="#{docData.decodeDate}"
+					 onComplete = "PF('mDeloS').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>				
+			 
+							
+		</p:dialog>	
+	</h:panelGroup>
+	
+	
+	<ui:remove><!-- потвърждение при смяна на състоянието на "Обработен / Необработен" --></ui:remove>
+	<h:panelGroup id="conifrmPrp">
+	  	<p:dialog appendTo="@form"  closeOnEscape="false" closable="flase" positionType="absolute"
+			    header="#{ui_labels['general.comfirmation']}" 
+			    fitViewport="true" width="450"
+				widgetVar="confirmProcessed" dynamic="true" id="conifrmPr" 
+				modal="true">
+				<div  class="p-grid">									
+					<div class="p-col-12" >
+						<h:panelGroup id="inDoc" rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">	
+							<h:outputLabel value="#{labels['docu.msgConfirmProcessedYin']}" rendered="#{docData.processedCh}" escape="false"/>
+							<h:outputLabel value="#{labels['docu.msgConfirmProcessedNin']}" rendered="#{!docData.processedCh}" escape="false"/>
+						</h:panelGroup>
+						<h:panelGroup id="wrkDoc" rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}">	
+							<h:outputLabel value="#{labels['docu.msgConfirmProcessedYwrk']}" rendered="#{docData.processedCh}" escape="false"/>
+							<h:outputLabel value="#{labels['docu.msgConfirmProcessedNwrk']}" rendered="#{!docData.processedCh}" escape="false"/>
+						</h:panelGroup>
+					</div>
+					<div class="p-col-12" >	
+						<h:outputLabel value="#{labels['docu.msgConfirmProcessed']}"  escape="false"/>	
+						<p:separator />	
+					</div>											
+			        <div class="p-col-12 filter-buttons">
+		               <div class="left">
+		                  <p:commandButton value="#{ui_labels['general.da']}"
+		                     actionListener="#{docData.actionConfirmProcessed(docData.processedCh, OmbConstants.CODE_ZNACHENIE_DA)}"
+		                     partialSubmit="true" 
+		                     update="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK ? 'panelDopData ':''}" 
+		                   	 oncomplete = "PF('confirmProcessed').hide();" 
+		                  	 styleClass="ui-confirmdialog-yes p-mr-2"  icon="fas fa-check" />
+		               </div>
+		               <div class="right">
+		                  <p:commandButton value="#{ui_labels['general.ne']}"  
+		                     actionListener="#{docData.actionConfirmProcessed(docData.processedCh, OmbConstants.CODE_ZNACHENIE_NE)}"
+		                     partialSubmit="true" 
+		                     update="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK ? 'panelDopData prCh':'prCh'}"
+		                     oncomplete = "PF('confirmProcessed').hide();"
+		                     styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+		               </div>
+		            </div>	
+		          </div>					
+			</p:dialog>
+	</h:panelGroup>
+		
+	<ui:remove>	<!-- Търсене по техен номер -->		</ui:remove>
+	<h:panelGroup id="docTehNPG">
+			<p:remoteCommand name="hideModal" process="@this"
+				actionListener="#{docData.onHideModalTehN}"
+				update="docForm:tabsDoc:tdPanel0" />
+
+			<p:dialog appendTo="@form" position="top"
+				header="#{labels['docu.docTehNSrchTitle']}" fitViewport="true" responsive="true"
+				resizable="true" closeOnEscape="true" widgetVar="docTehNVar"
+				dynamic="true" id="docTehNModal"
+				modal="true" onHide="hideModal()" >
+
+				<ibg:compDocSearch id="compDocSearchReg"	
+				    markRelDocId="#{docData.document.id}" 		
+					buttonConfirmLabel="#{ui_labels['general.comfirmation']}"
+					searchTehNomDoc="#{docData.document.tehNomer}"
+					multi="true" 
+					selectedDocList="#{docData.selectedDocsTn}"
+					idRegistratura="#{docData.document.registraturaId}"
+					onComplete="PF('docTehNVar').hide(); "
+					update="docForm:tabsDoc:tdPanel0"
+					readonly="#{isView eq 1}" 
+					buttonConfirmTitle="#{labels['docu.titleConfirmVrazDoc']}"/>
+					
+			</p:dialog>
+			
+	</h:panelGroup>
+
+	<ui:remove>	<!-- "За запознаване - изричен достъп до документ + инструкция" --></ui:remove>
+	<h:panelGroup id="pAccessDoc">
+	
+		<p:remoteCommand name="hideModalAcc" process="@this noteAcc tdPanel0" actionListener="#{docData.actionConfirmAccess}"	/>
+				
+		<p:dialog appendTo="@form"
+		    header="#{labels['docu.ZaZapoznavane']}" 
+		    responsive="true"	  fitViewport="true" closeOnEscape="true" 	
+		   	position="top" style="margin-top:50px !important"
+			widgetVar="modalAccess" dynamic="true" resizable="true" 
+			id="modalAccessId" 
+			modal="true">
+		
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+				<div class="p-grid  ui-fluid" jsf:rendered="#{isView ne 1}">
+					<div class=" p-col-12">
+						<p:message id="errMsgA1"  	
+					    	for="docForm:tabsDoc:docAccessComp:tblDeloList" showDetail="true" showSummary="true" escape="false">
+			     			<p:autoUpdate/>
+			    		</p:message>
+						<p:message id="errMsgA"  	
+					    	for="docForm:tabsDoc:noteAcc" showDetail="true" showSummary="true" escape="false">
+			     			<p:autoUpdate/>
+			     		</p:message>	
+						<h:outputText value="#{labels['docu.ukazania']}"	styleClass="form-label req" />
+						<p:inputText value="#{docData.noteAccess}" id="noteAcc" />			
+					</div>		
+						
+				</div>
+				
+				<ibg:compAccess id="docAccessComp"  	
+								valueConfirmBtn="#{ui_labels['general.save']}"
+								dateClassif="#{docData.currentDate}" 	
+								saveStateTree="false" showRadioBtn="true" 
+								listDocAccess="#{docData.document.docAccess}"
+								typeDocDelo="2"			
+								showCheckboxZvena="true"					 
+								styleAutoComp="width:100%;"
+								onComplete = "#{isView ne 1} ?  hideModalAcc() :  PF('modalAccess').hide(); "
+								readonly="#{isView eq 1}"	/> 	
+		 			
+			</div>
+		
+		</p:dialog>
+	</h:panelGroup>
+
+	<ui:remove><!-- "Изричен достъп - Справка за достъп" --></ui:remove>
+	<h:panelGroup id="pAccessDocSpr">
+
+		<p:dialog appendTo="@form" header="#{labels['docu.repAccess']}"
+			responsive="true" fitViewport="true" closeOnEscape="true"
+			position="top" style="margin-top:50px !important"
+			widgetVar="modalAccessSpr" dynamic="true" resizable="true"
+			id="modalAccessSprId" modal="true">
+
+			<div class="container #{guestPreferences.containerPosition}">
+
+				<p:dataTable id="tblAccess" var="row"
+					value="#{docData.docAccessList}" lazy="true" rowIndexVar="idx"
+					scrollable="true" sortMode="single" reflow="true"
+					emptyMessage="#{labels['docu.emptyAccess']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="10" rowsPerPageTemplate="10,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+
+					<p:column headerText="#{labels['docu.accessName']}" sortBy="#{row.a1}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+
+					<p:column headerText="#{labels['docu.accessPosition']}" sortBy="#{row.a2}">
+						<h:outputText
+							value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row[2], docData.currentLang, now)}" />
+					</p:column>
+
+					<p:column headerText="#{labels['docu.accessZveno']}" sortBy="#{row.a3}">
+						<h:outputText rendered="#{row[3] != null and row[3] != 0}"
+							value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[3], docData.currentLang, now)}" />
+					</p:column>
+				</p:dataTable>
+			</div>
+		</p:dialog>
+	</h:panelGroup>
+
+
+	<ui:remove><!-- "За резолюция - бързи задачи от тип резолюция --></ui:remove>
+	<h:panelGroup id="pRezolDoc"  >
+		<ui:remove><!-- 					 
+		<p:remoteCommand name="cmdHideModalRezol" process="@this" />
+	 		onHide="cmdHideModalRezol()"	
+	 		 --></ui:remove>
+	 		 
+		<p:dialog appendTo="@form" width="650px"
+		    header="#{labels['docu.forRezol']}" 
+		    fitViewport="true" closeOnEscape="true"
+		    style="margin-top:50px !important"
+			widgetVar="modalRezol" dynamic="true" id="modalRezolId" 
+			modal="true" >	
+			  
+			<div class="p-grid  ui-fluid">				
+				<div class=" p-col-12">
+				
+					<h:outputText value="#{labels['task.rezolExec']}"	styleClass="form-label req" />
+					<p:message id="errMsg"  	
+						    for="docForm:tabsDoc:lstIzpR:autoComplM" showDetail="true" showSummary="true" escape="false">
+			      			<p:autoUpdate/>
+			      	</p:message>
+					<ibg:selectManyAdmStr id="lstIzpR" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 								
+							filtered="false"
+							showRadioBtn="false"  withBtnClear="true"
+							selectedCodes="#{docData.rezolTask.codeExecs}"
+							selectedClassifs="#{docData.rezolExecClassif}"
+							specifics="#{docData.specificsAdm}"
+							codeExtCheck="#{docData.codeExtCheck}" 
+							dateClassif="#{docData.currentDate}" 							 
+							onAddItemDelegate="#{docData.currentDate}" 
+							header="#{labels['tasks.execCodes']}"
+							dopInfoAutoComp="true" 
+						    itemtipAtPosition="center bottom"						 
+							isSelectNode="false" styleAutoComp="100%"/> 
+					
+							
+				</div>
+				<div class=" p-col-12">
+					<h:outputText value="#{labels['task.dopInfo']}"	styleClass="form-label" />
+					<p:inputText value="#{docData.rezolTask.taskInfo}" id="noteRezolId" />
+				</div>
+			</div>
+			<f:facet name="footer">		
+				<p:commandButton value="#{ui_labels['general.save']}" icon="fas fa-save"
+					partialSubmit="true"
+					process="noteRezolId  @this" 	update="lstIzpR errMsg docForm:tabsDoc:prCh"			
+					actionListener="#{docData.actionSaveRezol}" />
+				
+			</f:facet>
+		</p:dialog>	 
+	</h:panelGroup>
+			
+	
+</ui:composition>

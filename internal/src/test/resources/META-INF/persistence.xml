@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+	xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
+	<!-- настройки за БД източник Деловодна система на Омбудсмана -->
+	<persistence-unit name="sourceEdsd" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="db.vendor.name" 							value="POSTGRESQL" />
+			<property name="hibernate.connection.driver_class" 			value="org.postgresql.Driver" />
+			<property name="hibernate.connection.url" 					value="jdbc:postgresql://10.29.1.43:5432/ombucman_edsd" />
+			<property name="hibernate.connection.username" 				value="oldomb" />
+			<property name="hibernate.connection.password" 				value="oldomb" />
+			<property name="hibernate.connection.isolation" 			value="2" />
+			<property name="hibernate.dialect" 							value="org.hibernate.dialect.PostgreSQL95Dialect" />
+			<property name="hibernate.current_session_context_class" 	value="thread" />
+			<property name="hibernate.show_sql" 						value="false" />
+			<property name="hibernate.format_sql"						value="false" />
+		</properties>
+	</persistence-unit>
+	
+	
+	<!-- настройки за БД източник Регистър жалби на Омбудсмана -->
+	<persistence-unit name="sourceReg" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="db.vendor.name" 							value="MYSQL" />
+			<property name="hibernate.connection.driver_class" 			value="com.mysql.cj.jdbc.Driver" />
+			<property name="hibernate.connection.url" 					value="jdbc:mysql://10.29.1.166:3306/omb_register" />
+			<property name="hibernate.connection.username" 				value="dbadmin" />
+			<property name="hibernate.connection.password" 				value="P@ssw0rd" />
+			<property name="hibernate.connection.isolation" 			value="2" />
+			<property name="hibernate.dialect" 							value="org.hibernate.dialect.MySQL8Dialect" />
+			<property name="hibernate.current_session_context_class"	value="thread" />
+			<property name="hibernate.show_sql" 						value="false" />
+		</properties>
+	</persistence-unit>
+
+
+	<!-- настройки за БД източник за БД източник Стар Регистър жалби/Деловодна система на Омбудсмана -->
+	<persistence-unit name="sourceMssql" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="db.vendor.name" 							value="SQLServer" />
+			<property name="hibernate.connection.driver_class" 			value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+			<property name="hibernate.connection.url" 					value="jdbc:sqlserver://10.29.1.235:1433;DatabaseName=omb" />
+			<property name="hibernate.connection.username" 				value="omb" />
+			<property name="hibernate.connection.password" 				value="omb" />
+			<property name="hibernate.connection.isolation" 			value="2" />
+			<property name="hibernate.dialect" 							value="org.hibernate.dialect.SQLServer2008Dialect" />
+			<property name="hibernate.current_session_context_class" 	value="thread" />
+			<property name="hibernate.show_sql" 						value="false" />
+			<property name="hibernate.format_sql"						value="false" />
+		</properties>
+	</persistence-unit>
+
+
+	<!-- настройки за БД на нашата система -->
+	<persistence-unit name="dest" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="db.vendor.name" 							value="POSTGRESQL" />
+			<property name="hibernate.connection.driver_class" 			value="org.postgresql.Driver" />
+			<property name="hibernate.connection.url"					value="jdbc:postgresql://10.29.1.43:5432/omb_trans" />
+			<property name="hibernate.connection.username" 				value="omb" />
+			<property name="hibernate.connection.password"				value="omb" />
+			<property name="hibernate.connection.isolation" 			value="2" />
+			<property name="hibernate.dialect" 							value="org.hibernate.dialect.PostgreSQL95Dialect" />
+			<property name="hibernate.current_session_context_class" 	value="thread" />
+			<property name="hibernate.show_sql" 						value="false" />
+			<property name="hibernate.format_sql" 						value="false" />
+		</properties>
+	</persistence-unit>
+
+	<!-- настройки за БД за унит тестове към базата в офиса -->
+	<persistence-unit name="hibernate" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+		<mapping-file>META-INF/orm.xml</mapping-file>
+
+		<class>com.ib.system.db.dto.SystemJournal</class>
+		<class>com.ib.system.db.dto.SystemOption</class>
+		<class>com.ib.system.db.dto.SystemClassifOpis</class>
+		<class>com.ib.system.db.dto.SystemClassif</class>
+		<class>com.ib.system.db.dto.SyslogicListOpisEntity</class>
+		<class>com.ib.system.db.dto.SyslogicListEntity</class>
+		<class>com.ib.system.db.dto.Files</class>
+		<class>com.ib.system.db.dto.FileObject</class>
+
+		<class>com.ib.indexui.db.dto.AdmGroupRole</class>
+		<class>com.ib.indexui.db.dto.AdmGroup</class>
+		<class>com.ib.indexui.db.dto.AdmUserRole</class>
+		<class>com.ib.indexui.db.dto.AdmUser</class>
+		<class>com.ib.omb.db.dto.AdmUserCert</class>
+
+		<class>com.ib.indexui.db.dto.ModelAis</class>
+		<class>com.ib.indexui.db.dto.ModelAttribute</class>
+		<class>com.ib.indexui.db.dto.ModelMultilang</class>
+		<class>com.ib.indexui.db.dto.ModelObject</class>
+		<class>com.ib.indexui.db.dto.ModelTable</class>
+		<class>com.ib.indexui.db.dto.ModelTableJoin</class>
+		<class>com.ib.indexui.db.dto.MultilangKey</class>
+		<class>com.ib.indexui.db.dto.ModelPersistence</class>
+
+		<class>com.ib.indexui.db.dto.StatElement</class>
+		<class>com.ib.indexui.db.dto.StatTable</class>
+		<class>com.ib.indexui.db.dto.ResultRequest</class>
+
+		<class>com.ib.indexui.db.dto.UniversalReport</class>
+
+		<class>com.ib.system.db.dto.JobHistory</class>
+
+		<class>com.ib.omb.db.dto.Delo</class>
+		<class>com.ib.omb.db.dto.DeloDelo</class>
+		<class>com.ib.omb.db.dto.DeloDoc</class>
+		<class>com.ib.omb.db.dto.DeloDvij</class>
+		<class>com.ib.omb.db.dto.DeloAccess</class>
+		<class>com.ib.omb.db.dto.DeloArchive</class>
+		<class>com.ib.omb.db.dto.DeloStorage</class>
+		<class>com.ib.omb.db.dto.Doc</class>
+		<class>com.ib.omb.db.dto.DocOcr</class>
+		<class>com.ib.omb.db.dto.DocDoc</class>
+		<class>com.ib.omb.db.dto.DocDvij</class>
+		<class>com.ib.omb.db.dto.DocWSOptions</class>
+		<class>com.ib.omb.db.dto.DocPril</class>
+		<class>com.ib.omb.db.dto.DocReferent</class>
+		<class>com.ib.omb.db.dto.DocShema</class>
+		<class>com.ib.omb.db.dto.DocAccess</class>
+		<class>com.ib.omb.db.dto.DocVidSetting</class>
+		<class>com.ib.omb.db.dto.DocDestruct</class>
+		<class>com.ib.omb.db.dto.Referent</class>
+		<class>com.ib.omb.db.dto.ReferentAddress</class>
+		<class>com.ib.omb.db.dto.ReferentDelegation</class>
+		<class>com.ib.omb.db.dto.Register</class>
+		<class>com.ib.omb.db.dto.Registratura</class>
+		<class>com.ib.omb.db.dto.RegistraturaGroup</class>
+		<class>com.ib.omb.db.dto.RegistraturaReferent</class>
+		<class>com.ib.omb.db.dto.RegistraturaSetting</class>
+		<class>com.ib.omb.db.dto.RegistraturaMailBox</class>
+		<class>com.ib.omb.db.dto.RegistraturaMailBoxVar</class>
+		<class>com.ib.omb.db.dto.Task</class>
+		<class>com.ib.omb.db.dto.TaskOcr</class>
+		<class>com.ib.omb.db.dto.TaskReferent</class>
+		<class>com.ib.omb.db.dto.TaskSchedule</class>
+		
+		<class>com.ib.omb.db.dto.NotificationPatterns</class>
+		<class>com.ib.omb.db.dto.NotificationPatternVariables</class>
+
+		<class>com.ib.omb.db.dto.UserNotifications</class>
+		
+		<class>com.ib.omb.db.dto.EgovMessages</class>
+		<class>com.ib.omb.db.dto.EgovMessagesFiles</class>
+		<class>com.ib.omb.db.dto.EgovMessagesCoresp</class>
+
+		<class>com.ib.omb.db.dto.ProcDef</class>
+		<class>com.ib.omb.db.dto.ProcDefEtap</class>
+		<class>com.ib.omb.db.dto.ProcDefTask</class>
+		<class>com.ib.omb.db.dto.ProcDefTaskIzp</class>
+		<class>com.ib.omb.db.dto.ProcExe</class>
+		<class>com.ib.omb.db.dto.ProcExeEtap</class>
+		<class>com.ib.omb.db.dto.ProcExeTask</class>
+		<class>com.ib.omb.db.dto.Praznici</class>
+		<class>com.ib.omb.db.dto.Event</class>
+
+		<class>com.ib.omb.db.dto.DocDopdata</class>
+		<class>com.ib.omb.db.dto.DocMember</class>
+
+		<class>com.ib.omb.db.dto.DocJalba</class>
+		<class>com.ib.omb.db.dto.DocJalbaResult</class>
+
+		<class>com.ib.omb.db.dto.DocSpec</class>
+		<class>com.ib.omb.db.dto.DocSpecOrgan</class>
+
+		<properties>
+			<property name="db.vendor.name" value="POSTGRESQL" />
+			
+			<property name="hibernate.connection.driver_class" value="org.postgresql.Driver" />
+			<property name="hibernate.connection.url" value="jdbc:postgresql://10.29.1.43:5432/omb" />
+			<property name="hibernate.connection.username" value="omb" />
+			<property name="hibernate.connection.password" value="omb" />
+			<property name="hibernate.connection.isolation" value="2" />
+			
+			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect" />
+			<property name="hibernate.current_session_context_class" value="thread" />
+			<property name="hibernate.show_sql" value="false" />
+			<property name="hibernate.format_sql" value="false" />
+
+			<!-- експериментално -->
+			<property name="hibernate.jdbc.batch_size" value="10" />
+			<property name="hibernate.order_inserts" value="true" />
+			<property name="hibernate.order_updates" value="true" />
+			<property name="hibernate.jdbc.fetch_size" value="40" />
+
+		</properties>
+	</persistence-unit>
+</persistence>

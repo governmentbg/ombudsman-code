@@ -1,0 +1,494 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/template/template.xhtml"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components"
+				xmlns:jsf="http://xmlns.jcp.org/jsf">
+     
+    
+                
+    <ui:define name="title">#{navTexts['/pages/mergingCoresps.xhtml']}</ui:define>
+    <ui:define name="viewname">
+        <li>#{navTexts['/pages/mergingCoresps.xhtml']}</li> 
+    </ui:define>
+	
+	<ui:define name="content">
+	
+		  	<f:metadata>
+				<f:viewAction action="#{userData.checkPageAccess(37)}" onPostback="false" />
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				<f:importConstants type="com.ib.indexui.system.Constants"/>
+			</f:metadata>
+			
+			
+			<h:form id="mergeCorespForm" >
+				<div >
+							
+					<p:toolbar >
+						<f:facet name="left">	
+							<p:commandButton icon="fas fa-save" value="Обединяване"
+								actionListener="#{mergingCoresps.save()}"
+								title="Обединяване към активния кореспондент" update="panelData corrList corrList2 modalCoresp modalCoresp2">
+								<p:confirm header="#{beanMessages['general.confirm']}" message="Моля, потвърдете обединяването!" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+							
+							<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                            							
+							<p:commandButton icon="fas fa-edit" value="#{ui_labels['general.clear']}" update="panelData"
+									actionListener="#{mergingCoresps.actionClear()}" styleClass="ui-button-success" title="#{ui_labels['general.clear']}" >
+							</p:commandButton>
+						
+							<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                            							
+							<p:commandButton icon="fas fa-edit" value="#{labels['docu.corespondent']} 1"  oncomplete="PF('coresp1').show()"
+									actionListener="#" styleClass="ui-button-success" title="Избор на Кореспондент 1 за обединяване" >
+							</p:commandButton>
+						
+							<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                                                        
+							<p:commandButton icon="fas fa-edit" value="#{labels['docu.corespondent']} 2"  oncomplete="PF('coresp2').show()"
+									actionListener="#" styleClass="ui-button-success" title="Избор на Кореспондент 2 за обединяване" >
+							</p:commandButton>
+						
+					    </f:facet>
+					</p:toolbar>
+				
+					<div class="card">
+					
+						<h:panelGroup id="panelData">
+							<div class="p-grid">
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-6 ui-fluid">
+									<div class="card" >		
+									
+										<div class="p-grid ui-fluid" jsf:id="corr1" jsf:rendered="#{mergingCoresps.codeCorresp != null}">	
+										
+											<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{labels['docu.corespondent']} 1" styleClass="form-label "/>
+					                    		<p:separator />
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<p:selectBooleanCheckbox value="#{mergingCoresps.active1}" itemLabel="Остава активен" id="check1" styleClass="form-label">
+										            <p:ajax update="check1 check2" listener="#{mergingCoresps.changeActiveCoresp1}" />
+										        </p:selectBooleanCheckbox>
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-4">
+					                    	</div>
+					                    	<div  class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{labels['docu.type']}" styleClass="form-label "/>
+					                    		<p:inputText value="#{labels['coresp.uLice']}"  id="lablUL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" readonly="true"/>
+												<p:inputText value="#{labels['coresp.fizLice']}"  id="lablFL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" readonly="true"/>
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-6">
+					                    		<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label "/>
+					                    		<p:inputText value="#{mergingCoresps.coresp1.refName}"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-2">
+					                    		<h:outputText value="#{ui_labels['general.egn']} / #{ui_labels['general.lnch']}" styleClass="form-label " rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.fzlEgn} #{mergingCoresps.coresp1.fzlLnc}" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" readonly="true"/>
+					                    		<h:outputText value="EIK" styleClass="form-label "  rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.nflEik}"  rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" readonly="true"/>
+					                    	</div>
+					                    	
+											<div class="p-col-12">
+												<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#cd2-contacts')" >
+													<h:outputText value="#{labels['refCorr.contacts']}"/>
+													<i class="fas fa-caret-right"></i>
+												</p:commandLink>
+											</div>		
+											
+										<div class="p-grid extended-search" id="cd2-contacts">
+											<div class="p-col-4">
+					                    		<h:outputText value="#{ui_labels['general.country']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COUNTRIES, mergingCoresps.coresp1.address.addrCountry, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-4">
+					                    		<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EKATTE, mergingCoresps.coresp1.address.ekatte, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-4">
+					                    		<h:outputText value="#{ui_labels['general.ekatteObshObl']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, mergingCoresps.coresp1.address.ekatte, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-12">
+					                    		<h:outputText value="#{ui_labels['general.adres']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.address.addrText}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-2">
+					                    		<h:outputText value="#{ui_labels['general.adrPostCode']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.address.postCode}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-3">
+					                    		<h:outputText value="#{ui_labels['general.adrPostBox']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.address.postBox}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{ui_labels['general.email']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.contactEmail}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-3">
+					                    		<h:outputText value="#{ui_labels['general.phone']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp1.contactPhone}" readonly="true"/>
+					                    	</div>
+					                    </div>
+					                    
+					                    <div class="p-col-12">
+											<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd3-dopInfo')">
+												<h:outputText value="#{labels['docu.dopInfo']}"/>
+												<i class="fas fa-caret-right"></i>
+											</p:commandLink>
+										</div>
+										
+										<div class="p-grid ui-fluid" id="cd3-dopInfo" style="display: none;">
+											
+											<h:panelGroup layout="block" styleClass="p-grid p-col-12" id="dopInfo">				
+												
+												<div class="p-grid p-col-12">
+													<div class="p-col-7">
+														<h:outputText value="#{labels['refCorr.regCountry']}" styleClass="form-label" id="countryUL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+														<h:outputText value="#{labels['refCorr.citizenship']}" styleClass="form-label" id="grjFL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+														
+														<ibg:selectOneModalA id="refGrj" readonly="true"
+															codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+															selectedCode="#{mergingCoresps.coresp1.refGrj}" 
+															emptyMessage="#{labels['docu.countryEmptyMsg']}"
+															saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="2"
+															styleAutoComp=""  />						
+													</div>	
+												</div>
+												
+												<div class="p-col-7">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.nameLatinUL']}" styleClass="form-label" id="latinUL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+														<h:outputText value="#{labels['refCorr.nameLatinFL']}" styleClass="form-label" id="latinFL" rendered="#{mergingCoresps.coresp1.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+													</div>
+													<p:inputText id="nameLatinCorr"	value="#{mergingCoresps.coresp1.refLatin}" />						
+												</div>
+												
+												<div class="p-col-5" jsf:rendered="#{mergingCoresps.coresp1.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" jsf:id="taxOfficeN">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.taxOfficeNum']}"  />
+													</div> 
+													<p:inputText id="taxOffice" value="#{mergingCoresps.coresp1.taxOfficeNo}" style="width:99%"/>						
+												</div>
+												
+												<div class="p-col-4" jsf:rendered="#{mergingCoresps.coresp1.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" jsf:id="fzlLnEs">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.fzlLnEs']}"  />
+													</div> 
+													<p:inputText id="fzlLn" value="#{mergingCoresps.coresp1.fzlLnEs}" style="width:99%"/>						
+												</div>
+												
+												<div class="p-col-12"> 
+													<div class="form-label">
+														<h:outputText value="#{labels['docu.note']}"  />
+													</div> 
+													<p:inputText id="refInfo" value="#{mergingCoresps.coresp1.refInfo}" style="width:99%"/>						
+												</div>
+												
+											</h:panelGroup>			
+										</div>
+					                    
+					                    <div class="p-col-12">
+											<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd4-docsList')" >
+												<h:outputText value="#{labels['refCorr.titlePanelDocs']}"/>
+												<i class="fas fa-caret-right"></i>
+											</p:commandLink>
+										</div>
+										
+										<div class="p-grid extended-search" id="cd4-docsList" >
+					                    	<div class="p-col-12 p-lg-12">
+					                    		<div class="table-toolbar">
+													<h:outputText value="#{ui_labels['general.reportResult']} #{mergingCoresps.docsList.rowCount}" styleClass="form-label"/>	
+												</div>
+					                    		<p:dataTable id="tblDocs" var="row" value="#{mergingCoresps.docsList}" lazy="true" 	 
+													rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['refCorr.docsEmptyMsg']}" 
+													paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+													rows="5" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+													paginatorAlwaysVisible="true" paginator="true">										
+																		
+												  	<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+														<h:outputText value="#{idx + 1}" />
+													</p:column>	
+													
+													<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+														<h:outputText value="#{row[1]}"  />								    
+													</p:column>
+													
+													<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+														<h:outputText value="#{row[4]}">	
+															<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+														</h:outputText>							    
+													</p:column>
+													
+													<p:column  sortBy="#{row.a5}" headerText="#{labels['docu.otnosno']}">
+														<h:outputText value="#{row[5]}"  />								    
+													</p:column>
+													
+													<p:column width="60" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+														<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], mergingCoresps.currentLang, now)}"/>					    
+													</p:column>
+													
+													<p:column width="60" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+														<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], mergingCoresps.currentLang, now)}"/>					    
+													</p:column>
+												
+												</p:dataTable>
+					                    	</div>
+					                    	</div>
+				                    	</div>
+									</div>
+								</div>
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-6 ui-fluid">
+									<div class="card" >		
+										
+										<div class="p-grid ui-fluid" jsf:id="corr2" jsf:rendered="#{mergingCoresps.codeCorresp2 != null}">	
+										
+											<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{labels['docu.corespondent']} 2" styleClass="form-label "/>
+					                    		<p:separator />
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<p:selectBooleanCheckbox value="#{mergingCoresps.active2}" itemLabel="Остава активен" id="check2" styleClass="form-label">
+										            <p:ajax update="check1 check2" listener="#{mergingCoresps.changeActiveCoresp2}" />
+										        </p:selectBooleanCheckbox>
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-4">
+					                    	</div>
+					                    	<div  class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{labels['docu.type']}" styleClass="form-label "/>
+					                    		<p:inputText value="#{labels['coresp.uLice']}"  id="lablUL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" readonly="true"/>
+												<p:inputText value="#{labels['coresp.fizLice']}"  id="lablFL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" readonly="true"/>
+					                    	</div>
+					                    	<div class="p-col-12 p-lg-6">
+					                    		<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label "/>
+					                    		<p:inputText value="#{mergingCoresps.coresp2.refName}"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-2">
+					                    		<h:outputText value="#{ui_labels['general.egn']} / #{ui_labels['general.lnch']}" styleClass="form-label " rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.fzlEgn} #{mergingCoresps.coresp2.fzlLnc}" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" readonly="true"/>
+					                    		<h:outputText value="EIK" styleClass="form-label " rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.nflEik}" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12">
+												<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#cd2-contacts2')" >
+													<h:outputText value="#{labels['refCorr.contacts']}"/>
+													<i class="fas fa-caret-right"></i>
+												</p:commandLink>
+											</div>		
+											
+										<div class="p-grid extended-search" id="cd2-contacts2">
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{ui_labels['general.country']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COUNTRIES, mergingCoresps.coresp2.address.addrCountry, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EKATTE, mergingCoresps.coresp2.address.ekatte, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{ui_labels['general.ekatteObshObl'] }" styleClass="form-label "/>
+					                    		<p:inputText  value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, mergingCoresps.coresp2.address.ekatte, mergingCoresps.currentLang, now)}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-12">
+					                    		<h:outputText value="#{ui_labels['general.adres']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.address.addrText}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-2">
+					                    		<h:outputText value="#{ui_labels['general.adrPostCode'] }" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.address.postCode}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-3">
+					                    		<h:outputText value="#{ui_labels['general.adrPostBox'] }" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.address.postBox}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-4">
+					                    		<h:outputText value="#{ui_labels['general.email']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.contactEmail}" readonly="true"/>
+					                    	</div>
+					                    	
+					                    	<div class="p-col-12 p-lg-3">
+					                    		<h:outputText value="#{ui_labels['general.phone']}" styleClass="form-label "/>
+					                    		<p:inputText  value="#{mergingCoresps.coresp2.contactPhone}" readonly="true"/>
+					                    	</div>
+					                    </div>
+					                    
+					                    
+					                    <div class="p-col-12">
+											<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd3-dopInfo2')">
+												<h:outputText value="#{labels['docu.dopInfo']}"/>
+												<i class="fas fa-caret-right"></i>
+											</p:commandLink>
+										</div>
+					                    <div class="p-grid ui-fluid" id="cd3-dopInfo2" style="display: none;">
+											
+											<h:panelGroup layout="block" styleClass="p-grid p-col-12" id="dopInfo2">				
+												
+												<div class="p-grid p-col-12">
+													<div class="p-col-7">
+														<h:outputText value="#{labels['refCorr.regCountry']}" styleClass="form-label" id="countryUL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+														<h:outputText value="#{labels['refCorr.citizenship']}" styleClass="form-label" id="grjFL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+														
+														<ibg:selectOneModalA id="refGrj2" readonly="true"
+															codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+															selectedCode="#{mergingCoresps.coresp2.refGrj}" 
+															emptyMessage="#{labels['docu.countryEmptyMsg']}"
+															saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="2"
+															styleAutoComp=""  />						
+													</div>	
+												</div>
+												
+												<div class="p-col-7">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.nameLatinUL']}" styleClass="form-label" id="latinUL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+														<h:outputText value="#{labels['refCorr.nameLatinFL']}" styleClass="form-label" id="latinFL2" rendered="#{mergingCoresps.coresp2.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+													</div>
+													<p:inputText id="nameLatinCorr2"	value="#{mergingCoresps.coresp2.refLatin}" />						
+												</div>
+												
+												<div class="p-col-5" jsf:rendered="#{mergingCoresps.coresp2.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" jsf:id="taxOfficeN2">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.taxOfficeNum']}"  />
+													</div> 
+													<p:inputText id="taxOffice2" value="#{mergingCoresps.coresp2.taxOfficeNo}" style="width:99%"/>						
+												</div>
+												
+												<div class="p-col-4" jsf:rendered="#{mergingCoresps.coresp2.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" jsf:id="fzlLnEs2">
+													<div class="form-label">
+														<h:outputText value="#{labels['refCorr.fzlLnEs']}"  />
+													</div> 
+													<p:inputText id="fzlLn2" value="#{mergingCoresps.coresp2.fzlLnEs}" style="width:99%"/>						
+												</div>
+												
+												<div class="p-col-12"> 
+													<div class="form-label">
+														<h:outputText value="#{labels['docu.note']}"  />
+													</div> 
+													<p:inputText id="refInfo2" value="#{mergingCoresps.coresp2.refInfo}" style="width:99%"/>						
+												</div>
+												
+											</h:panelGroup>			
+										</div>
+					                    
+					                    <div class="p-col-12">
+											<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd4-docsList2')" >
+												<h:outputText value="#{labels['refCorr.titlePanelDocs']}"/>
+												<i class="fas fa-caret-right"></i>
+											</p:commandLink>
+										</div>
+										
+										<div class="p-grid extended-search" id="cd4-docsList2" >
+					                    	<div class="p-col-12 p-lg-12">
+					                    		<div class="table-toolbar">
+													<h:outputText value="#{ui_labels['general.reportResult']} #{mergingCoresps.docsList2.rowCount}" styleClass="form-label"/>	
+												</div>
+					                    		<p:dataTable id="tblDocs2" var="row" value="#{mergingCoresps.docsList2}" lazy="true" 	 
+													rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['refCorr.docsEmptyMsg'] }" 
+													paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+													rows="5" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+													paginatorAlwaysVisible="true" paginator="true">										
+																		
+												  	<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol'] }" >
+														<h:outputText value="#{idx + 1}" />
+													</p:column>	
+													
+													<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+														<h:outputText value="#{row[1]}"  />								    
+													</p:column>
+													
+													<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+														<h:outputText value="#{row[4]}">	
+															<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+														</h:outputText>							    
+													</p:column>
+													
+													<p:column  sortBy="#{row.a7}" headerText="#{labels['docu.otnosno']}">
+														<h:outputText value="#{row[7]}"  />								    
+													</p:column>
+													
+													<p:column width="60" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+														<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], mergingCoresps.currentLang, now)}"/>					    
+													</p:column>
+													
+													<p:column width="60" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+														<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], mergingCoresps.currentLang, now)}"/>					    
+													</p:column>
+												
+												</p:dataTable>
+					                    	</div>
+				                    	</div>
+									</div>
+									</div>
+								</div>
+							</div>
+						</h:panelGroup>
+						
+					
+						<h:panelGroup id="coresp1PG">
+		                
+							<p:remoteCommand name="hideModal1" process="@this coresp1PG" update="panelData" partialSubmit="true"
+											 actionListener="#{mergingCoresps.actionHideModalCoresp1}" />
+					
+							<p:dialog appendTo="@form" position="top" widgetVar="coresp1" header="Избор на кореспондент 1"
+								fitViewport="true" responsive="true" resizable="true"
+								closeOnEscape="true"  onHide="hideModal1()" id="modalCoresp" modal="true">
+									<div class="container #{guestPreferences.containerPosition}">		
+										<ibg:refCorrespSearch id="corrList" myId="corr1"  
+											codeRef="#{mergingCoresps.codeCorresp}" onComplete="PF('coresp1').hide();"
+											dateClassif="#{mergingCoresps.decodeDate}" modal="true" update="mergeCorespForm:panelData"/>
+									</div>
+							</p:dialog>
+						</h:panelGroup>
+					
+							
+						<h:panelGroup id="coresp2PG">
+		                
+							<p:remoteCommand name="hideModal2" process="@this coresp2PG" update="panelData coresp2PG" partialSubmit="true"
+											 actionListener="#{mergingCoresps.actionHideModalCoresp2}" />
+					
+							<p:dialog appendTo="@form" position="top" widgetVar="coresp2" header="Избор на кореспондент 2" 
+								fitViewport="true" responsive="true" resizable="true"
+								closeOnEscape="true"  onHide="hideModal2()" id="modalCoresp2" modal="true">
+									<div class="container #{guestPreferences.containerPosition}">		
+										<ibg:refCorrespSearch id="corrList2"  myId="corr2"  
+										codeRef="#{mergingCoresps.codeCorresp2}" onComplete="PF('coresp2').hide();"
+										dateClassif="#{mergingCoresps.decodeDate2}" modal="true" update="mergeCorespForm:panelData"/>
+									</div>
+							</p:dialog>
+						</h:panelGroup>
+					
+					</div>
+				</div>	
+				<p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+					<div class="ui-g-12">
+			               <div class="ui-g-12 ui-md-6">
+			       			<p:commandButton value="#{labels['general.ne']}" type="button" styleClass="ui-confirmdialog-no" icon="fas fa-times" />        	
+			               </div>
+			               <div class="ui-g-12 ui-md-6" align="right">
+			       			<p:commandButton value="#{labels['general.da']}" type="button" styleClass="ui-confirmdialog-yes" icon="fas fa-check" />        	
+			               </div>			
+					</div>
+			    </p:confirmDialog>
+			</h:form>
+			
+	</ui:define>
+	
+	
+</ui:composition>

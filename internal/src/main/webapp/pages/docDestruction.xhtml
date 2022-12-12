@@ -1,0 +1,532 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="title">#{navTexts['/pages/docDestruction.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>
+			<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>#{navTexts['/pages/docDestruction.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(59)}" onPostback="false" /> 
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />			
+		</f:metadata>
+
+		<h:form id="formDocDestruction">
+		
+		<h:panelGroup rendered="#{docDestruction.docProtDestruc eq null}" layout="block" ><!-- styleClass="error-not-found" -->
+			#{labels['docu.titleDocNotFound']} 
+		</h:panelGroup>
+
+			<div class="#{guestPreferences.containerPosition}" >
+
+				<div class="card" jsf:rendered="#{docDestruction.docProtDestruc ne null}">
+
+					<p:toolbar id="tlbButton">
+						
+						<f:facet name="left">
+							
+							<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"
+								id="btnSave" update="formDocDestruction" partialSubmit="true" 
+								process="formDocDestruction:workProtocol @this"  styleClass="p-mr-2"
+								actionListener="#{docDestruction.actionSave}" >
+							</p:commandButton>
+
+							<span class="p-mr-2"  jsf:rendered="#{docDestruction.docProtDestruc.workOffId ne null}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+														
+							<p:commandLink action="#{docDestruction.actionGotoDoc(docDestruction.docProtDestruc.workOffId)}" ajax="false" styleClass="p-mr-2">
+						       <h:outputText value="#{labels['docDestruction.officProtRegNum']} #{docDestruction.docProtDestruc.workOffData[1]} #{ui_labels['general.from']} " rendered="#{docDestruction.docProtDestruc.workOffId ne null}"/>
+								<h:outputText value="#{docDestruction.docProtDestruc.workOffData[2]}" rendered="#{docDestruction.docProtDestruc.workOffId ne null}">
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDestruction.timeZone}"/>	
+								</h:outputText>
+						    </p:commandLink> 						   
+							
+							
+							<p:commandButton icon="fas fa-times" id="btnDeleteWorkOffId"
+					            value="#{labels['docDestruction.disconnectWithWorkProt']}" 
+					           	update="formDocDestruction" partialSubmit="true" 
+								process="formDocDestruction  @this"
+								rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId ne null}"											
+								actionListener="#{docDestruction.disconnectFromOfficialProt}" styleClass="ui-button-danger p-ml-2" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docDestruction.sureDisconnectFromOficProt']}" icon="fas fa-exclamation-triangle" escape="false"/>
+							</p:commandButton>
+						</f:facet>
+
+						<f:facet name="right">
+
+							<p:commandButton icon="fas fa-file-invoice" value="#{labels['docDestruction.delReg']}" oncomplete="PF('docModalDelReg').show();"	styleClass="p-mr-2"							
+											 rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId eq null and docDestruction.existRegister and (docDestruction.docsForDestruction.rowCount > 0)}"/>
+
+							<span class="p-mr-2"  jsf:rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId eq null and docDestruction.existRegister and (docDestruction.docsForDestruction.rowCount > 0)}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+
+							<p:commandButton icon="fas fa-share-alt" value="#{labels['docDestruction.linkWithOfficProt']}" id="btnLinkWithOffic" styleClass="p-mr-2"
+											 rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId eq null and (docDestruction.docsForDestruction.rowCount > 0)}" oncomplete="PF('dlgLinkWithOfficProt').show();">
+							 	<p:tooltip for="btnLinkWithOffic" value="#{labels['docDestruction.btnConnectOfficProt']}" position="bottom" />
+							 </p:commandButton>
+
+							<span class="p-mr-2" jsf:rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId eq null and (docDestruction.docsForDestruction.rowCount > 0)}"> 
+								<span class="fas fa-ellipsis-v SoftGray" />
+							</span>
+							
+							<p:commandButton icon="fas fa-times" id="btnDelete"
+					            value="#{ui_labels['general.delete']}" 
+					           	update="formDocDestruction" partialSubmit="true" 
+								process="formDocDestruction  @this"
+								rendered="#{docDestruction.docProtDestruc.id ne null and docDestruction.docProtDestruc.workOffId eq null}"											
+								actionListener="#{docDestruction.actionDelete}" styleClass="ui-button-danger" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docDestruction.deleteProt']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+
+						</f:facet>
+					
+					</p:toolbar>
+
+					<div class="p-col-12">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formDocDestruction:workProtocol')">
+							<h:outputText value="#{labels['docDestruction.workProt']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+
+					<div jsf:id="workProtocol" class="p-grid p-col-12 p-nogutter">
+
+						<div class="card">
+
+							<div class="p-grid ui-fluid" jsf:id="dataProtocol">
+
+								<!-- Рег. номер на работен протокол -->
+								<h:panelGroup id="regNumWorkProt" styleClass="p-col-12 p-md-4 p-lg-4"  layout="block" >		
+								<h:outputText value="#{labels['docDestruction.regNumWorkProt']}" styleClass="form-label req" />
+								<div class="ui-inputgroup"> 	
+									<p:inputText id="regN" value="#{docDestruction.docProtDestruc.rnDoc}" 
+									   readonly="#{docDestruction.docProtDestruc.id != null or docDestruction.avtomNo}"
+									   style="display:inline-block;"
+									   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">									   		
+									</p:inputText>
+									
+									<p:commandButton icon="fas fa-external-link-alt" action="#{docDestruction.actionGotoDoc(docDestruction.docProtDestruc.id)}" ajax="false" title="#{labels['docDestruction.openDocForEdit']}" 
+					  				   rendered="#{docDestruction.docProtDestruc.id ne null}" /> 
+							
+									<p:selectBooleanButton id="avtNom" value="#{docDestruction.avtomNo}"  
+										disabled="#{docDestruction.avtomNoDisabled}"
+									    onLabel="#{ui_labels['general.yes']}" 
+										offLabel="#{ui_labels['general.no']}"
+										rendered="#{docDestruction.docProtDestruc.id eq null}" 
+										title="#{labels['docu.avtomRegNom']}" 
+									    onIcon="fas fa-toggle-on"   
+										offIcon="fas fa-toggle-off" 
+										styleClass="inputgroup-button">	
+										<p:ajax update="regNumWorkProt dataProtocol otnosno @this" partialSubmit="true"
+											process="@this regNumWorkProt dataProtocol otnosno"
+											listener="#{docDestruction.actionChangeAvtomNo}" 
+											oncomplete="$(function(){PrimeFaces.focus('formDocDestruction:regN');});"/>											
+									</p:selectBooleanButton>
+								</div> 
+							</h:panelGroup>	
+								
+								<div class="p-col-12 p-lg-2">
+									<h:outputText value="#{labels['docDestruction.dateWorkProt']}" styleClass="form-label req" />
+									<p:datePicker id="dateProt"  mask="true" showIcon="true" showTime="true" showSeconds="true" locale="bg" pattern="dd.MM.yyyy HH:mm:ss"
+												value="#{docDestruction.docProtDestruc.docDate}">
+									</p:datePicker>
+								</div>
+								
+								<div class="p-col-12 p-lg-6">
+									<h:outputText value="#{labels['docu.register']}" styleClass="form-label req" />
+									<p:remoteCommand name="cmdChangeRegister" update="dataProtocol"
+										partialSubmit="true" process="dataProtocol @this"
+										actionListener="#{docDestruction.actionChangeRegister}" />									 
+									<ibg:selectOneModalA id="registerId"
+										readonly="#{docDestruction.docProtDestruc.id ne null}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+										dateClassif="#{docDestruction.decodeDate}"
+										selectedCode="#{docDestruction.docProtDestruc.registerId}"
+										saveStateTree="false" withBtnClear="true" minQueryLength="3"
+										styleAutoComp="width:99%;"
+										sortByName="true" compType="2" filtered="true"
+										specifics="#{docDestruction.specificsRegister}"
+										onComplete="cmdChangeRegister()" onClear="cmdChangeRegister()" />
+								</div>
+								
+								<!-- относно-->
+								<div class="p-col-12 p-lg-6" >									
+									<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label req" />
+									<p:inputTextarea id="otnosno" value="#{docDestruction.docProtDestruc.otnosno}" rows="5"  />										
+								</div>
+								
+								<!-- забележка-->
+								<div class="p-col-12 p-lg-6" >									
+									<h:outputText value="#{labels['docDestruction.note']}" styleClass="form-label" />
+									<p:inputTextarea id="dopInfo" value="#{docDestruction.docProtDestruc.docInfo}" rows="5"  />										
+								</div>
+
+							</div>
+							
+							<div class="p-grid" >
+							
+								<!-- Файлове saveFirst="#{docDestruction.docProtDestruc.id == null}"-->		
+								<div class="p-col-12 p-lg-6" >		
+								<ibg:compFileUpload listObj="#{docDestruction.filesListForWork}" headerLabel="#{labels['docDestruction.fileWorkProt']}"
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+									idObj="#{docDestruction.docProtDestruc.id}"			
+									autoSave="true" saveFirst="#{docDestruction.docProtDestruc.id == null}"
+									id="filesListForWork" display="list" />	
+								</div>
+									
+								<!-- Файлове saveFirst="#{docDestruction.docProtDestruc.id == null}"-->
+								<div class="p-col-12 p-lg-6" >				
+								<ibg:compFileUpload listObj="#{docDestruction.filesListForOffic}" headerLabel="#{labels['docDestruction.fileOfficProt']}"
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+									idObj="#{docDestruction.docProtDestruc.workOffId}"			
+									autoSave="true" saveFirst="#{docDestruction.docProtDestruc.workOffId == null}"
+									id="filesListForOffic" display="list" />
+								</div>
+							
+							</div>
+
+						</div>
+
+					</div>
+					
+					<div class="p-col-12" jsf:rendered="#{docDestruction.docProtDestruc.id ne null}" jsf:id="searchDocsPanel">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formDocDestruction:searchDocs')">
+							<h:outputText value="#{labels['docDestruction.docSearch']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+						
+						<h:panelGroup id="panelSearchDocs">
+							<p:remoteCommand name="cmdSelectDocs" 
+										update="formDocDestruction:searchDocs formDocDestruction:tlbButton"
+										process="formDocDestruction:searchDocs formDocDestruction:tlbButton @this"
+										actionListener="#{docDestruction.actionAddDocsInProtocol}" />
+							
+							<p:commandButton id="btnSearchDocs" value="#{labels['docDestruction.docSearch']}" 								 
+								 onmousemove="document.getElementById('formDocDestruction:btnSearchDocs').focus();"
+								 icon="fas fa-list-ul" partialSubmit="true"
+								 process="formDocDestruction:docSearch"
+								 update="formDocDestruction:docSearch @this"								 
+							 	 oncomplete="PF('modalDocSearchMany').show();">
+							</p:commandButton>	
+						</h:panelGroup>			
+								
+					</div>
+					
+					<div jsf:id="searchDocs" class="p-grid p-col-12 p-nogutter" jsf:rendered="#{docDestruction.docProtDestruc.id ne null}">
+					
+						<div class="p-col-12 p-align-end" style="display: flex;">
+							<h:outputText value="#{ui_labels['general.reportResult']} #{docDestruction.docsForDestruction.rowCount} " styleClass="form-label" id="result" style="margin-right:10px; flex-grow:1;white-space: nowrap;"/>
+								
+							<h:outputText value="#{labels['docDestruction.countDoc']} #{docDestruction.countDoc} #{labels['docDestruction.countDocInProt']}"
+									  style="color: #ff7f00; font-size: 0.9rem; font-style: italic; margin-right: 10px;" rendered="#{docDestruction.existNotDeastrucDoc and docDestruction.docProtDestruc.workOffId ne null}" />	
+								
+							<p:commandButton icon="fas fa-check-double" actionListener="#{docDestruction.actionCompleteDocsForDestruction}" 
+									value="#{labels['docDestruction.markDocForDestruc']}" update="formDocDestruction" partialSubmit="true" disabled="#{!docDestruction.existNotDeastrucDoc or docDestruction.docProtDestruc.workOffId eq null}" />								
+						</div>
+						
+						<p:dataTable id="tblInclDocsList" var="row" value="#{docDestruction.docsForDestruction}" lazy="true"
+							rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+							paginatorAlwaysVisible="true" paginator="true">
+							
+							<f:facet name="{Exporters}">
+								
+								<div style="float: left">
+									<h:commandLink id="excel">
+										<h:graphicImage library="images" name="excel2.png" />
+										<p:dataExporter type="xls" target="tblInclDocsList" fileName="destrDocsListXls" />
+									</h:commandLink>
+									
+									<ui:remove>
+
+									<h:commandLink id="pdf">
+										<h:graphicImage library="images" name="pdf.png" />
+										<p:dataExporter type="pdf"  target="tblInclDocsList" fileName="destrDocsListPdf"	 encoding="windows-1251"
+					        						    options="#{docDestruction.pdfOptions()}"/>
+									</h:commandLink>
+
+									<h:commandLink id="csv">
+										<h:graphicImage library="images" name="csv.png" />
+										<p:dataExporter type="csv" target="tblInclDocsList" fileName="destrDocsListCsv" encoding="CP1251" />
+									</h:commandLink>
+									</ui:remove>
+								</div>
+							</f:facet>
+							
+							<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+								<h:outputText value="#{idx + 1}" />
+							</p:column>
+							
+							<p:column  width="20" exportable="false" >	
+								<p:button  icon="fas fa-eye" href="#{docDestruction.actionGotoDocView(row[1])}" target="_blank" title="#{ui_labels['general.view']}" />
+						  	</p:column>
+
+							<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docDestruction.regNum']}">
+								<h:outputText value="#{row[2]}" />										
+							</p:column>
+							
+							<p:column width="70" sortBy="#{row.a3}" headerText="#{labels['docDestruction.dateReg']}">																			
+								<h:outputText value="#{row[3]}" >
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDestruction.timeZone}"/>	
+								</h:outputText>
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a7}" headerText="#{labels['docu.otnosno']}">																			
+								<h:outputText value="#{row[7]}" />	
+							</p:column>
+							
+							<p:column width="120" sortBy="#{row.a8}" headerText="#{labels['docList.idvaOtAvtori']}">
+							<h:outputText rendered="#{row[4]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}" value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REFERENTS, row[8], docDestruction.currentLang, now)}"/>					    
+							<h:outputText rendered="#{row[4]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN or row[4]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}" value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], docDestruction.currentLang, now)}"/>
+						</p:column>
+							
+							<p:column width="80" sortBy="#{row.a5}" headerText="#{labels['docu.vid']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[5], docDestruction.currentLang, now)}"/>	
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a11}" headerText="#{labels['docDestruction.ekzNum']}" rendered="#{systemData.getSettingsValue('delo.docWithExemplars')==1}">																			
+								<h:outputText value="#{row[11]}" />	
+							</p:column>
+							
+							<p:column width="30" sortBy="#{row.a12}" headerText="#{labels['docDestruction.numPage']}">																			
+								<h:outputText value="#{row[12]}" />	
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a6}" headerText="#{labels['docDestruction.valid']}">																			
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VALID, row[6], docDestruction.currentLang, now)}"/>
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a10}" headerText="#{labels['docDestruction.inclOn']}">																			
+								<h:outputText value="#{row[10]}" >
+									<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docDestruction.timeZone}"/>	
+								</h:outputText>	
+							</p:column>
+							
+							<p:column width="20" exportable="false" rendered="#{systemData.getSettingsValue('delo.docWithExemplars')==1}">
+								<p:commandButton icon="fas fa-edit" action="#{docDestruction.actionEditDoc(row[0], row[11])}" title="#{labels['docDestruction.change']}" styleClass="btn-new" 
+												 oncomplete="PF('docModalEdit').show();" update="formDocDestruction:tblInclDocsList formDocDestruction:docDialog"/>
+							</p:column>
+														
+							<p:column width="20" exportable="false">
+								<p:commandButton icon="fas fa-trash" action="#{docDestruction.actionDeleteDoc(row[0], row[6])}" 
+									ajax="true" styleClass="ui-button-danger" update="formDocDestruction:searchDocs formDocDestruction:tlbButton" >
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docDestruction.deleteDoc']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+							</p:column>
+							
+						</p:dataTable>							
+					
+					</div> 					
+
+				</div>
+
+			</div>
+
+			<p:dialog appendTo="@form" header="#{labels['docDestruction.linkWithOfficProt']}" 
+					  widgetVar="dlgLinkWithOfficProt" modal="true" closeOnEscape="true" 
+					  width="500" responsive="true" resizable="true">
+
+				<p:outputPanel id="panelDlgLink">
+
+					<div jsf:id="rnDocForOffic" class="p-grid  ui-fluid">
+
+						<div class="p-col-12 p-md-7 p-lg-7">
+
+							<h:outputText value="#{labels['docDestruction.regNumOfficProt']}" styleClass="form-label" />
+
+							<div class="ui-inputgroup">
+								<p:inputText id="regNumOffic" value="#{docDestruction.searchRnDoc}" style="display:inline-block;"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+									
+								</p:inputText>
+
+								<p:commandButton icon="fas fa-search" id="btnSrcOfficProt"
+									actionListener="#{docDestruction.actionSearchDoc}"									
+									update="formDocDestruction:tlbButton formDocDestruction:workProtocol" 														
+									title="#{labels['docDestruction.searchDocByNum']}">
+								</p:commandButton>
+
+							</div>
+
+						</div>
+					</div>
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<div class="p-grid p-nogutter">
+						<div class="p-col-12" align="right">
+							<p:commandButton id="bntCloseLink" update="panelDlgLink" process="@this panelDlgLink" icon="fas fa-times"
+								styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('dlgLinkWithOfficProt').hide();" />
+						</div>
+					</div>
+				</f:facet>
+			</p:dialog>
+
+				<!--Tърсене на документ -->
+				<h:panelGroup id="docSearchForOffic">
+				
+					<p:remoteCommand name="cmdHideDlg" process=" formDocDestruction:tlbButton formDocDestruction:searchDocs @this"
+						update="formDocDestruction:tlbButton formDocDestruction:searchDocs" partialSubmit="true" actionListener="#{docDestruction.actionLoadSelectedDoc}" />
+				
+					<p:dialog appendTo="@form"
+						header="#{labels['docDestruction.docSearch']}" fitViewport="true"
+						closeOnEscape="true" responsive="true" resizable="true"
+						position="top" widgetVar="modalDocSearchForOffic" dynamic="true"
+						id="modalDocSearchForOfficId" modal="true" onHide="cmdHideDlg()">
+						
+						<ui:remove><!-- Дали да се добавят условия за достъп за компонентата за избор на документ???  --></ui:remove>
+	
+						<ibg:compDocSearch id="modalDocSearchComp"
+							searchDocS="#{docDestruction.selectedDoc}"
+							searchRnDoc="#{docDestruction.searchRnDoc}"
+							idRegistratura="#{docDestruction.docProtDestruc.registraturaId}"
+							dateClassif="#{docDestruction.decodeDate}" modal="true"							
+							onComplete="PF('modalDocSearchForOffic').hide();" 
+							isWorkOff="true" docTypeArr="#{docDestruction.docTypeArr}"/>
+					</p:dialog>
+				</h:panelGroup>
+	
+				<h:panelGroup id="docDestrucForEdit">
+				
+					<p:dialog appendTo="@form" header="#{labels['docDestruction.addEkzNum']}" width="450"
+						widgetVar="docModalEdit" dynamic="true" id="docDialog" modal="true">
+						
+						<p:outputPanel id="panelDlgEkzNum">
+	
+						<div class="p-grid p-col-12 p-nogutter">
+	
+							<div class=" p-col-12 p-md-12 p-lg-12">
+	
+								<h:outputText value="#{labels['docDestruction.ekzNum']}" styleClass="form-label" />
+	
+								<div class="ui-inputgroup">
+									<p:inputText id="ekzNomDoc" value="#{docDestruction.ekzNumber}"
+										onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+									</p:inputText>
+								</div>
+	
+							</div>
+						</div>
+		
+					</p:outputPanel>
+					
+					<f:facet name="footer">
+						
+						<div class="p-grid p-nogutter">					
+							<div class="p-col-6" align="left">
+								<p:commandButton icon="fas fa-save" action="#{docDestruction.actionSaveDoc}"
+								update="formDocDestruction:tblInclDocsList" process="docDialog  @this" ajax="true"
+								value="#{ui_labels['general.save']}" styleClass="btn-save" />						
+							</div>
+								
+							<div class="p-col-6" align="right">
+								<p:commandButton id="bntCloseEkzNum" update="panelDlgEkzNum" process="@this panelDlgEkzNum" icon="fas fa-times"
+									styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('docModalEdit').hide();" />
+							</div>
+						</div>
+					
+					</f:facet>
+						
+				</p:dialog>
+	
+			</h:panelGroup>
+			
+			<h:panelGroup id="docSearch">
+				
+				<p:dialog appendTo="@form" header="#{labels['docDestruction.docSearch']}" fitViewport="true"
+					closeOnEscape="true" responsive="true" resizable="true"
+					position="top" widgetVar="modalDocSearchMany" dynamic="true"
+					id="modalDocSearchIdM" modal="true">
+					
+					<ui:remove><!-- Дали да се добавят условия за достъп за компонентата за избор на документ???  --></ui:remove>
+	
+					<ibg:compDocSearch id="modalDocSearchCompMany"
+						selectedDocList="#{docDestruction.selectedDocs}"
+						dateClassif="#{docDestruction.decodeDate}" modal="true"
+						multi="true" idProtocol="#{docDestruction.docProtDestruc.id}"
+						update="formDocDestruction:searchDocs formDocDestruction:tblInclDocsList formDocDestruction:tlbButton"
+						onComplete="PF('modalDocSearchMany').hide(); cmdSelectDocs()" />
+				</p:dialog>
+			
+			</h:panelGroup>
+			
+			<h:panelGroup id="docDelRegForOfficProt">
+				
+					<p:dialog appendTo="@form" header="#{labels['docDestruction.titleModalDelReg']}" width="600"
+						widgetVar="docModalDelReg" dynamic="true" id="docDelRegDialog" modal="true">
+						
+						<p:messages>
+					        <p:autoUpdate />
+					    </p:messages>	
+						
+						<p:outputPanel id="panelDlgDelReg">
+	
+						<div class="p-grid ui-fluid p-col-12">
+	
+							<div class="p-col-12 p-md-12 p-lg-12">
+	
+								<div class="p-col-12 p-lg-5">
+									<h:outputText value="#{labels['docDestruction.dateReg']}" styleClass="form-label req" />
+									<p:datePicker id="dateDelReg"  mask="true" showIcon="true" showTime="true" showSeconds="true" locale="bg" pattern="dd.MM.yyyy HH:mm:ss"		
+												value="#{docDestruction.dateOfficProt}">
+									</p:datePicker>
+								</div>
+	
+							</div>
+							
+							<div class="p-col-12 p-md-12 p-lg-12">
+								<div class="p-col-12 p-lg-12">
+									<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label req" />
+									<p:inputTextarea id="otnosnoDelReg" value="#{docDestruction.otnosnoOfficProt}" rows="5"  />	
+								</div>							
+							</div>
+						</div>
+		
+					</p:outputPanel>
+					
+					<f:facet name="footer">
+						
+						<div class="p-grid p-nogutter">					
+							<div class="p-col-6" align="left">
+								<p:commandButton icon="fas fa-file-invoice" action="#{docDestruction.actionDelReg}"
+								process="formDocDestruction:tlbButton formDocDestruction:workProtocol formDocDestruction:panelDlgDelReg formDocDestruction:searchDocs @this" partialSubmit="true"
+								update="formDocDestruction:tlbButton formDocDestruction:workProtocol formDocDestruction:panelDlgDelReg formDocDestruction:searchDocs"  
+								value="#{labels['docDestruction.delReg']}" />						
+							</div>
+								
+							<div class="p-col-6" align="right">
+								<p:commandButton update="panelDlgDelReg" process="@this panelDlgDelReg" icon="fas fa-times"
+									styleClass="ui-button-secondary" value="#{ui_labels['general.cancel']}" oncomplete="PF('docModalDelReg').hide();" />
+							</div>
+						</div>
+					
+					</f:facet>
+						
+				</p:dialog>
+	
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

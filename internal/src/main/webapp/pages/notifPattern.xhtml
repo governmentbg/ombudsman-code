@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ibg="http://java.sun.com/jsf/composite/components"
+>
+<ui:composition template="/template/template.xhtml">
+    <ui:define name="title">
+        Шаблон за нотификации
+    </ui:define>
+    <ui:define name="viewname">
+        <li>
+            <p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+                <i class="fas fa-caret-left" />
+            </p:commandLink>
+        </li>
+        <li><i class="fas fa-angle-right"></i></li>
+        <li><p:link outcome="notifPattern">Шаблон за нотификация</p:link></li>
+    </ui:define>
+    <ui:define name="content">
+        <f:metadata>
+            <f:importConstants type="com.ib.omb.system.OmbConstants" />
+        </f:metadata>
+        <h:form id="notifPatternForm">
+            <p:outputPanel id="panelData"  styleClass="card">
+                <div class="card">
+                    <div class="p-grid ui-fluid">
+                        <div class="p-col-1 p-lg-1">
+                            <p:commandButton ajax="true" update="messagesGl" process="notifPatternForm" action="#{notifPattern.saveNotifPattern}" value="Запис"/>
+                        </div>
+                        <div class="p-col-12 p-lg-12"></div>
+                        <div class="p-col-12 p-lg-4">
+                            <h:outputText value="Събитие" styleClass="form-label req"/>
+                            <ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_NOTIFF_EVENTS}"
+                                                 id="event" dateClassif="#{now}" filtered="true"
+                                                 selectedCode="#{notifPattern.notifPattern.eventId}" saveStateTree="true"
+                                                 withBtnClear="true" compType="4" styleAutoComp="" />
+                        </div>
+                        <div class="p-col-12 p-lg-4">
+                            <h:outputText value="Роля" styleClass="form-label req"/>
+                            <ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_NOTIFF_ROLI}"
+                                                 id="rolia" dateClassif="#{now}" filtered="true"
+                                                 selectedCode="#{notifPattern.notifPattern.rolia}" saveStateTree="true"
+                                                 withBtnClear="true" compType="4" styleAutoComp="" />
+                        </div>
+                        <div class="p-col-12 p-lg-4">
+                            <h:outputText value="Заглавие" styleClass="form-label req"/>
+                            <p:inputText id="subject" value="#{notifPattern.notifPattern.subject}" />
+                        </div>
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Текст на нотификацията (1500 символа)" styleClass="form-label req"/>
+                            <p:inputTextarea value="#{notifPattern.notifPattern.body}" rows="5" maxlength="1500" />
+                        </div>
+                        <div class="p-col-12"></div>
+                        <div class="p-col-2 p-lg-2">
+                            <p:commandButton ajax="true" value="Нова променлива" oncomplete="PF('newNotifPatternVariables').show()" update="notifPatternForm:newNotifPatternVariables"
+                                             action="#{notifPattern.addNewNotifPatternVariable}" process="@this" />
+                        </div>
+                        <div class="p-col-12">
+                            <p:dataTable id="notifVariablesTable" value="#{notifPattern.notifPattern.variables}" editable="true" editMode="cell"
+                                         rowIndexVar="idx" var="variable" emptyMessage="#{labels['doc.listEmptyMsg']}" paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         rows="10" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+                                         paginator="true" >
+                                <f:facet name="header">
+                                    Списък с променливи на шаблона
+                                </f:facet>
+                                <p:column width="15" exportable="false"  headerText="#{ui_labels['general.No-symbol']}">
+                                    <h:outputText value="#{idx + 1}" />
+                                </p:column>
+                                <p:column width="200" exportable="false" headerText="Име"  style="text-align: center">
+                                    <h:outputText value="#{variable.varName}" />
+                                </p:column>
+                                <p:column width="200" exportable="false" headerText="Стойност" style="text-align: center">
+                                    <h:outputText value="#{variable.varRefl}" />
+                                </p:column>
+                                <p:column width="200" exportable="false" headerText="Класификация" style="text-align: center">
+                                    <h:outputText value="#{variable.codeClassif!=null?systemData.getNameClassification(variable.codeClassif, notifPattern.currentLang):''}" />
+                                </p:column>
+                                <p:column width="10" exportable="false" headerText="#">
+                                    <p:commandButton icon="fas fa-edit" title="Модификация" action="#{notifPattern.editNotifPattern(variable)}" ajax="true" process="notifPatternForm:notifVariablesTable" oncomplete="PF('newEditNotifPatternVariables').show()" update="notifPatternForm:newEditNotifPatternVariables"/>
+                                </p:column>
+                                <p:column width="10" exportable="false" headerText="#">
+                                    <p:commandButton icon="fas fa-trash" title="Изтриване" action="#{notifPattern.deleteNotifVariable(variable)}" ajax="true" update="notifPatternForm:notifVariablesTable" styleClass="ui-button-danger">
+                                        <p:confirm header="Потвърждение на изтриване" message="Сигурни ли сте?" icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable></div>
+                    </div>
+                </div>
+            </p:outputPanel>
+            <p:dialog appendTo="notifPatternForm" header="Промяна на променлива" responsive="true" width="600"
+                      widgetVar="newEditNotifPatternVariables" modal="true" resizable="true" height="300px"
+                      id="newEditNotifPatternVariables" closable="true" draggable="true" closeOnEscape="true">
+                <div class="card">
+                    <div class="p-grid ui-fluid">
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Име на променлива" styleClass="form-label req"/>
+                            <p:inputText value="#{notifPattern.editVariable.varName}" id="varName" rendered="#{notifPattern.editVariable != null}"/>
+                        </div>
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Стойност на променлива" styleClass="form-label req"/>
+                            <p:inputText id="varRefl" value="#{notifPattern.editVariable.varRefl}" rendered="#{notifPattern.editVariable != null}"/>
+                        </div>
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Класификация" styleClass="form-label"/>
+                            <p:selectOneMenu value="#{notifPattern.editVariable.codeClassif}" id="codeClassif" rendered="#{notifPattern.editVariable != null}">
+                                <f:selectItem value="#{null}" itemLabel="" />
+                                <f:selectItems var="item" itemValue="#{item.id}" itemLabel="#{item.tekst}" value="#{systemData.getAllClassifications(notifPattern.currentLang)}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="p-col-4 p-lg-4">
+                            <p:commandButton ajax="true" process="notifPatternForm:newEditNotifPatternVariables" value="Запис" action="#{notifPattern.saveNotifPatternVariable}" update="notifPatternForm:notifVariablesTable"/>
+                        </div>
+                    </div>
+                </div>
+            </p:dialog>
+            <p:dialog appendTo="notifPatternForm" header="Нова променлива" responsive="true" width="600"
+                      widgetVar="newNotifPatternVariables" modal="true" resizable="true" height="300px"
+                      id="newNotifPatternVariables" closable="true" draggable="true" closeOnEscape="true">
+                <div class="card">
+                    <div class="p-grid ui-fluid">
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Име на променлива" styleClass="form-label req"/>
+                            <p:inputText value="#{notifPattern.varName}" id="varNameNew" />
+                        </div>
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Стойност на променлива" styleClass="form-label req"/>
+                            <p:inputText id="varReflNew" value="#{notifPattern.varRefl}" />
+                        </div>
+                        <div class="p-col-12 p-lg-12">
+                            <h:outputText value="Класификация" styleClass="form-label"/>
+                            <p:selectOneMenu value="#{notifPattern.codeClassif}" id="codeClassifNew" >
+                                <f:selectItem value="#{null}" itemLabel="" />
+                                <f:selectItems var="item" itemValue="#{item.id}" itemLabel="#{item.tekst}" value="#{systemData.getAllClassifications(notifPattern.currentLang)}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="p-col-4 p-lg-4">
+                            <p:commandButton ajax="true" process="notifPatternForm:newNotifPatternVariables" value="Запис" action="#{notifPattern.saveNewNotifPatternVariable}" update="notifPatternForm:notifVariablesTable"/>
+                        </div>
+                    </div>
+                </div>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

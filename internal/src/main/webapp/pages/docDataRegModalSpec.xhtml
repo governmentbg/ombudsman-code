@@ -1,0 +1,161 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+			
+	<ui:remove><!--Въвеждане на нов кореспондент - орган по НПМ--></ui:remove>
+	<h:panelGroup id="dpOrganN">	
+		
+		<ui:remove><!-- ако има съобщения за грешка, изведено от модалния, при затваряне - да се скрие съобщението -но скрива и съобщ. за запис..
+			TODO - проверка дали потребителя има право за редакция и въвеждане на нов кореспондент!!!
+				<p:remoteCommand name="cmdHideModalD" process="@this" />
+				onHide="cmdHideModalD()" 	
+		--></ui:remove>
+					
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{labels['docspec.addOrganTitle']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mOrganN" dynamic="true" id="modalOrganN" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+				
+			 		<ibg:refCorrespData id="btnOrganN1"  readonly="false" 	 modal="true" update=""	npm="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm}"
+						 onComplete = "PF('mOrganN').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+
+	
+
+				
+	<ui:remove><!--Редактиране на данни за орган нпм --></ui:remove>
+	<h:panelGroup id="dpCorrOrgan">	
+					
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) ? labels['specDoc.titleEditNpmS'] : labels['specDoc.titleViewNpmS']) : labels['specDoc.titleViewNpmS']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrOrganD" dynamic="true" id="modalCorrOrganD" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+				
+			 		<ibg:refCorrespData id="btnCorrOrganD1"  readonly="#{isView eq 1}" npm="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm}"
+						 codeRef="#{docDataSpec.rowOrgan}"
+						 modal="true"
+						 update="docForm:tabsDoc:organiList"	
+						 onComplete = "PF('mCorrOrganD').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+
+
+	<ui:remove><!-- " Справка за документи в преписката по нпм / самосезиране "	 --></ui:remove>
+	<h:panelGroup id="pSpravka">
+
+		<p:dialog appendTo="@form" header="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['specDoc.spravkaBtnTitle1'] : labels['specDoc.spravkaBtnTitle2']}"
+			responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" 
+			position="top" style="margin-top:50px !important" 
+			widgetVar="modalSpravka" dynamic="true" resizable="true"
+			id="modalSpravkaId" modal="true">
+			
+			<div class="container #{guestPreferences.containerPosition}">	
+				<p:dataTable id="tblSpravka" var="row" 
+					value="#{docDataSpec.spravkaList}" lazy="false" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{labels['jp.emptySpravka']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+					<p:column style="width:2rem">
+		                <p:rowToggler rendered="#{(row[5] ne null and (row[5]).size() > 0) or row[6] eq OmbConstants.CODE_ZNACHENIE_NE}"/>
+		            </p:column>			   	
+				   	<p:column  width="40" exportable="false" >
+				    	<p:button  icon="fas fa-eye" href="#{docDataSpec.actionGotoViewJ(row[1], row[0], row[7])}" target="_blank"  title="#{ui_labels['general.view']}" />
+					</p:column> 		  
+					<p:column width="180"  headerText="#{labels['jp.rnFullSpr']}" sortBy="#{row[2]}">
+						<h:outputText value="#{row[2]}" />
+					</p:column>
+					<p:column width="110" headerText="#{labels['docu.docDatReg']}" sortBy="#{row[3]}">
+						<h:outputText value="#{row[3]}" >
+					 	  <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataSpec.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="*"  headerText="#{labels['docu.dopInfo']}"  sortBy="#{row[4]}" >
+						<h:outputText value="#{row[4]}"/>					    
+					</p:column>
+					
+					<p:rowExpansion>				
+						<div class="list-container"  jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_DA}">
+							<p:repeat varStatus="rkv" value="#{row[5]}" var="file" id="rflst" >
+								<h:panelGroup styleClass="file-list" layout="block" id="lst">
+							
+									<p:commandLink ajax="false" action="#{docDataSpec.download(file[0])}" id="btnF" >
+										<div class="file-details">									
+											<span class="filename">#{file[1]}</span>									
+										</div>
+									</p:commandLink>
+										
+								</h:panelGroup>
+							</p:repeat>
+						</div>
+						<div class="list-container" jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_NE}">
+						 	<h:outputText value="#{labels['docu.docAccessDenied']}"/>
+						</div>
+					</p:rowExpansion>
+					
+				</p:dataTable>
+		
+			</div>
+		</p:dialog>
+	</h:panelGroup>
+
+	<ui:remove><!-- " История на състоянията "	 --></ui:remove>
+	<h:panelGroup id="pSastHistory">
+
+		<p:dialog appendTo="@form" header="#{labels['docspec.sastHistory']}"
+			responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" 
+			position="top" style="margin-top:50px !important" 
+			widgetVar="modalSast" dynamic="true" resizable="true"
+			id="modalSastId" modal="true">
+			
+			<div class="container #{guestPreferences.containerPosition}">	
+				<p:dataTable id="tblSast" var="row" 
+					value="#{docDataSpec.sastHistoryList}" lazy="false" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{labels['jp.emptySpravka']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+				  
+					<p:column width="200"  headerText="#{labels['docspec.sast']}" sortBy="#{row[0]}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROVERKA_SAST, row[0], docDataSpec.currentLang, now)}" />
+					</p:column>
+					<p:column width="200" headerText="#{labels['jp.sastDate']}" sortBy="#{row[1]}">
+						<h:outputText value="#{row[1]}" >
+					 	  <f:convertDateTime  pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docDataSpec.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="*"  headerText="#{labels['specDoc.userH']}"  sortBy="#{row[2]}" >
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[2], docDataSpec.currentLang, now)}" />					    
+					</p:column>
+					
+				</p:dataTable>
+		
+			</div>
+		</p:dialog>
+		
+	</h:panelGroup>
+</ui:composition>

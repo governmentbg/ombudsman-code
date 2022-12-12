@@ -1,0 +1,361 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="/template/template.xhtml"> 
+                
+	  		<ui:define name="metadata">
+				<f:metadata>
+					<f:importConstants type="com.ib.omb.system.OmbConstants" />
+					 <f:viewAction action="#{userData.checkPageAccess(44)}" onPostback="false" />						
+				</f:metadata>
+			</ui:define>
+			
+			<ui:define name="title">#{navTexts['/pages/taskSchedule.xhtml']}</ui:define>
+    		<ui:define name="viewname">       
+		        <li>
+		        	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+						<i class="fas fa-caret-left" />
+					</p:commandLink>
+				</li>
+		        <li>#{navTexts['/pages/taskSchedule.xhtml']}</li>
+		    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="taskForm">
+            		
+            	<p:toolbar id="panelButtons">
+					<f:facet name="left">									
+						<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}" styleClass="p-mr-2"
+							action="#{taskScheduleBean.save}" id="btnSave" update="taskForm"  process="@this taskForm" partialSubmit="true"/>
+			
+						<p:commandButton widgetVar="hiddenZveno" id="btnCnfZveno" style="display:none" actionListener="#{taskScheduleBean.actionSave}"
+							update="taskForm" styleClass="p-mr-2">
+							<p:confirm message="#{beanMessages['taskSchedule.onlyZveno']}" icon="fas fa-exclamation-triangle" /> 
+						</p:commandButton>
+						<p:commandButton widgetVar="hiddenZvenoPosition" id="btnCnfZvenoPos" style="display:none" actionListener="#{taskScheduleBean.actionSave}"
+							update="taskForm" >
+							<p:confirm message="#{beanMessages['taskSchedule.zvenoAndPosition']}" icon="fas fa-exclamation-triangle" /> 
+						</p:commandButton>
+						
+						<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                              
+                        <p:commandButton icon="fas fa-plus" id="btnNew" value="#{labels['delo.newButton']}" update="taskForm" process="@this" partialSubmit="true"
+							actionListener="#{taskScheduleBean.actionNew}" styleClass="ui-button-success">
+						</p:commandButton>
+										
+						<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+						
+						<p:commandButton id="btnNextReg" rendered="#{taskScheduleBean.task.id!=null}" actionListener="#{taskScheduleBean.actionNextDatesReg}" value="#{labels['taskSchedule.showNextReg']}"
+							update="taskForm:panelDates" onclick="PF('nextDatesReg').show();">
+						</p:commandButton>
+																		
+					</f:facet>
+					<f:facet name="right">								
+						<h:panelGroup id="pRegInfoRaskSchedule" rendered="#{taskScheduleBean.task.id != null}" styleClass="p-mr-2">
+							<ibg:compObjAudit idObj="#{taskScheduleBean.task.id}" id="history"
+										 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_TASK_SCHEDULE}"
+										 	identInfo="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_PERIOD, taskScheduleBean.task.regPeriod, taskScheduleBean.currentLang, now)}"/>
+						</h:panelGroup>	
+						
+						<p:commandButton id="btnDelete" icon="fas fa-times" value="#{ui_labels['general.delete']}" rendered="#{taskScheduleBean.task.id ne null}"
+				           	styleClass="ui-button-danger" actionListener="#{taskScheduleBean.actionDelete}" update="taskForm" process="@this" partialSubmit="true" >
+							<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['taskSchedule.delete']}" icon="fas fa-exclamation-triangle" />
+						</p:commandButton>
+					</f:facet>
+				</p:toolbar>
+                <div class="card">
+                
+                    <div class="p-grid ui-fluid p-align-end">
+                    
+                    	<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.nomer']}"  styleClass="form-label" rendered="#{taskScheduleBean.task.id ne null}"/>
+					        <p:inputText value="#{taskScheduleBean.task.id}" id="nomer" styleClass="form-control" readonly="true" rendered="#{taskScheduleBean.task.id ne null}"/> 
+						</div>
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-10">
+						</div>
+						
+                    	<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">	
+							<h:outputText value="#{labels['taskSchedule.validFromDef']}" styleClass="form-label req"/>
+							<p:datePicker id="dateOtValid" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg"  
+								value="#{taskScheduleBean.task.validFrom}" styleClass="form-control" >							     
+							</p:datePicker>
+						</div>
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">	
+							<h:outputText value="#{labels['taskSchedule.validToDef']}" styleClass="form-label req"/>
+							<p:datePicker id="dateToValid" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg"  
+								value="#{taskScheduleBean.task.validTo}" styleClass="form-control" >							     
+							</p:datePicker>
+						</div>
+                   	    
+                   	   
+                    	<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2" jsf:id="rnDoc">
+                    	 	 
+							<h:outputText value="#{labels['docDoc.regNum']}" styleClass="form-label" />
+							<div class="ui-inputgroup">
+								<p:inputText id="vrN1" style=" display:inline-block;"
+									onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur(); }"
+									value="#{taskScheduleBean.rnDoc}">
+									<p:ajax event="change" update="rnDoc docPG cmdConfirm" 
+									    process="rnDoc   @this" partialSubmit="true"
+										listener="#{taskScheduleBean.actionSearchDocBtn(true)}"/>
+								</p:inputText>
+	
+								<p:commandButton id="btnIn" icon="fas fa-search" style="width:40px"
+									actionListener="#{taskScheduleBean.actionSearchDocBtn(false)}"
+									partialSubmit="true" process="rnDoc docPG  @this"  
+									title="#{labels['docDoc.searchDoc']}">
+								</p:commandButton>
+	
+							</div>	
+											
+						</div>
+					
+		     	
+					<p:confirmDialog id="cmdConfirm" appendTo="@form" widgetVar="confirmWV"
+						closeOnEscape="true"  modal="true"
+						resizable="false" responsive="true"
+						header="#{ui_labels['general.comfirmation']}"
+						message="#{labels['docu.findDocMsg1']} #{taskScheduleBean.rnFullDoc}. #{labels['docu.findDocMsg2']}">
+			
+						<div class="p-col-12 p-md-12 p-lg-12 cc-right">
+							<p:commandButton id="btnConfSave" styleClass="btn-save"
+								icon="fas fa-check" value="#{ui_labels['general.yes']}"
+								action="#{taskScheduleBean.actionConfirmDoc}" partialSubmit="true" oncomplete="PF('confirmWV').hide();"
+								process="rnDoc @this" update="rnDoc docPG " />
+							<p:commandButton value="#{ui_labels['general.no']}" onclick="PF('confirmWV').hide();"
+								icon="fas fa-times" action="#{taskScheduleBean.cancel(true)}" 
+								process="rnDoc @this" update="rnDoc docPG " />
+								<p:focus for="btnConfSave" id="fYes"></p:focus>
+						</div>
+					</p:confirmDialog>
+				
+					<h:panelGroup id="docPG">
+		
+						<p:remoteCommand id="remHideModal" name="hideModal" process="taskForm:rnDoc @this" update="taskForm:rnDoc"
+										 partialSubmit="true" actionListener="#{taskScheduleBean.actionHideModal}"  />
+				
+						<p:dialog appendTo="@form" position="top" widgetVar="mDoc" header="#{labels['docDestruction.docSearch']}"
+							fitViewport="true" responsive="true" resizable="true"
+							closeOnEscape="true"  onHide="hideModal()"
+							id="modalDoc" modal="true">
+				
+							<ibg:compDocSearch id="docSearch" searchRnDoc="#{taskScheduleBean.rnDoc}" searchDocS="#{taskScheduleBean.docObj}"
+								idRegistratura="#{taskScheduleBean.registraturaId}"
+								buttonConfirmLabel="#{ui_labels['general.save']}"
+								onComplete="PF('mDoc').hide();" />
+						</p:dialog>
+				
+					</h:panelGroup>
+									
+					<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-6">
+                    	<p:selectBooleanCheckbox id="valid" value="#{taskScheduleBean.valid}" styleClass="form-label" itemLabel="#{labels['regList.valid']}" /> 
+                    </div>
+				
+                    	
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.regPeriod']}"  styleClass ="form-label req"/>
+				            <p:selectOneMenu id="regPeriod" value="#{taskScheduleBean.task.regPeriod}" disabled="#{taskScheduleBean.task.lastRegDate ne null}">
+					            <f:selectItem value="#{null}" itemValue="#{null}"/>
+					            <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TASK_PERIOD, now, taskScheduleBean.currentLang)}" 
+					                var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+					            <p:ajax event="change" update="taskForm:intervalGroup taskForm:dayGroup taskForm:monthGroup taskForm:workDays" />   
+				         	</p:selectOneMenu>
+						</div>
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2" jsf:id="intervalGroup">						
+							    <h:outputText  value="#{labels['taskSchedule.interval']}"  styleClass="form-label req" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod != OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_DAY}"/>
+						        <p:inputNumber minValue="0" decimalPlaces="0" value="#{taskScheduleBean.task.regInterval}" id="interval" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod !=OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_DAY}"/> 				
+						</div>
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+							<h:panelGroup id="dayGroup">
+							    <h:outputText  value="#{labels['taskSchedule.day']}"  styleClass="form-label req" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod !=OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_DAY}"/>
+						        <p:selectOneMenu id="regDayMenu" value="#{taskScheduleBean.task.regDay}" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod ==OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_WEEK}">
+						            <f:selectItem value="#{null}" itemValue="#{null}"/>
+						            <f:selectItems  value="#{taskScheduleBean.daysWeek}" 
+						                var="day" itemLabel="#{day.label}" itemValue="#{day.value}" />					            
+				         		</p:selectOneMenu>						       
+					       		<p:spinner id="regDaySpinner" value="#{taskScheduleBean.task.regDay}" min="1" max="31" 
+					       		rendered="#{taskScheduleBean.task.regPeriod ne null and (taskScheduleBean.task.regPeriod ==OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_MONTH or taskScheduleBean.task.regPeriod ==OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_YEAR)}"/>
+					        </h:panelGroup>
+						</div> 
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+							<h:panelGroup id="monthGroup">
+							    <h:outputText  value="#{labels['taskScedule.monthReg']}"  styleClass="form-label req" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod ==OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_YEAR}"/>
+						        <p:selectOneMenu id="regMonthMenu" value="#{taskScheduleBean.task.regMonth}" rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod ==OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_YEAR}">
+						            <f:selectItem value="#{null}" itemValue="#{null}"/>
+						            <f:selectItems  value="#{taskScheduleBean.months}" 
+						                var="day" itemLabel="#{day.label}" itemValue="#{day.value}" />					            
+				         		</p:selectOneMenu>	
+							</h:panelGroup>
+						</div>
+						
+						<div class="p-col-12 p-lg-4">
+							<h:panelGroup id="workDays">
+	                    		<p:selectBooleanCheckbox id="workDaysCheck" value="#{taskScheduleBean.workDays}" styleClass="form-label" itemLabel="#{labels['tackSchedule.workDaysOnly']}"
+	                    		rendered="#{taskScheduleBean.task.regPeriod ne null and taskScheduleBean.task.regPeriod !=OmbConstants.CODE_ZNACHENIE_TASK_PERIOD_WEEK}" /> 
+	                    	</h:panelGroup>
+                    	</div>
+				                  
+                    	<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.dateLastReg']}"  styleClass="form-label"/>
+					        <p:inputText value="#{taskScheduleBean.task.lastRegDate}"  id="dateLastReg" readonly="true"> 
+					        	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskScheduleBean.timeZone}"/>
+					        	<p:ajax event="change" update="taskForm:regPeriod"/>
+					        </p:inputText>
+						</div>
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.dateNextReg']}"  styleClass="form-label"/>
+					        <p:inputText value="#{taskScheduleBean.task.nextRegDate}" id="dateNextReg" readonly="true"> 
+					        	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{taskScheduleBean.timeZone}"/>
+					        </p:inputText>
+						</div>
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.vidZad']}"  styleClass ="form-label req"/>
+				            <p:selectOneMenu id="taskType" value="#{taskScheduleBean.task.taskType}">				            
+					             <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TASK_VID, now, taskScheduleBean.currentLang)}" 
+					               var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />					               
+				         	</p:selectOneMenu>
+						</div>					
+						
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">
+						    <h:outputText  value="#{labels['taskSchedule.term']}"  styleClass="form-label"/>
+					        <p:inputText value="#{taskScheduleBean.task.taskSrok}" id="term" /> 
+						</div>
+						   			                   	
+                    	<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12 ">
+						    <h:outputText  value="#{labels['docu.dopInfo']}"  styleClass="form-label req"/>
+					        <p:inputText value="#{taskScheduleBean.task.taskInfo}" id="dopInfo" /> 
+						</div>       
+						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+							<h:outputText value="#{labels['tasks.assignCode']}" styleClass="form-label req"/>
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" isSelectNode="false"
+								id="assignCode" dateClassif="#{taskScheduleBean.decodeDate}" filtered="false" specifics="#{taskScheduleBean.specificsAdm}"														
+								selectedCode="#{taskScheduleBean.task.codeAssign}" saveStateTree="true"
+								withBtnClear="true" compType="2" styleAutoComp="" />	
+						</div>
+						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+							<h:outputText value="#{labels['tasks.ctrlCode']}" styleClass="form-label"/>
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" isSelectNode="false"
+								id="ctrlCode" dateClassif="#{taskScheduleBean.decodeDate}" filtered="false" specifics="#{taskScheduleBean.specificsAdm}"													
+								selectedCode="#{taskScheduleBean.task.codeControl}" saveStateTree="true"
+								withBtnClear="true" compType="2" styleAutoComp="" />	
+						</div>
+						
+						<div class="p-col-12 p-lg-4">
+                    		<p:selectBooleanCheckbox id="docReq" value="#{taskScheduleBean.docFinish}" styleClass="form-label" itemLabel="#{labels['tasks.delDocReq']}" /> 
+                    	</div>    
+						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4">
+						  	<p:remoteCommand name="cmdChangeExec" update="taskForm:positionGr taskForm:zvenoGr"
+								partialSubmit="true" process="@this taskForm:positionGr taskForm:zvenoGr"
+								actionListener="#{taskScheduleBean.actionChangeCodeExec}" />
+							<h:outputText value="#{labels['taskSchedule.exec']}" styleClass="form-label"/>
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" specifics="#{taskScheduleBean.specificsAdm}"
+								id="execCode" dateClassif="#{taskScheduleBean.decodeDate}" filtered="false" isSelectNode="false"													
+								selectedCode="#{taskScheduleBean.task.codeExec}" saveStateTree="true" 
+								withBtnClear="true" compType="2" styleAutoComp="" onComplete="cmdChangeExec()" onClear="cmdChangeExec()"/>	
+						</div>
+						
+						<!--Звено на изпълнителя на задачата-->						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+							
+							<h:outputText value="#{labels['taskSchedule.zveno']}" styleClass="form-label"/>
+							
+								<p:remoteCommand name="cmdChangeZveno" update="taskForm:positionGr taskForm:zvenoGr"
+								partialSubmit="true" process="@this taskForm:positionGr"
+								actionListener="#{taskScheduleBean.actionChangeZveno}" />
+								<h:panelGroup id="zvenoGr">
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" update="@this taskForm:positionGr" 
+									id="zveno" dateClassif="#{taskScheduleBean.decodeDate}" filtered="false" specifics="#{taskScheduleBean.specificsAdmZveno}" 														
+									selectedCode="#{taskScheduleBean.task.zveno}" saveStateTree="false" readonly="#{taskScheduleBean.task.codeExec ne null}"
+									withBtnClear="true" compType="2" styleAutoComp="" onComplete="cmdChangeZveno()" onClear="cmdChangeZveno()"/>	
+							</h:panelGroup>
+						</div>
+						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+						  	<h:outputText value="#{labels['taskSchedule.position']}" styleClass="form-label"/>														
+							<h:panelGroup id="positionGr">																				
+								<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_POSITION}" 			
+									id="position" dateClassif="#{taskScheduleBean.decodeDate}" filtered="false" 						
+									selectedCode="#{taskScheduleBean.task.emplPosition}" saveStateTree="false" readonly="#{taskScheduleBean.task.zveno==null}"
+									withBtnClear="false" compType="4" styleAutoComp="" />		
+							</h:panelGroup>
+						</div>
+							
+                    </div>
+                    		
+                    
+                </div>
+                <!-- Дати на следващите регистрации -->
+				 
+				<p:dialog header="#{labels['taskSchedule.nextDatesReg']}" appendTo="@form"  responsive="true" resizable="true" closeOnEscape="true" widgetVar="nextDatesReg" modal="true" width="700" height="450">
+				   
+				    <p:messages id="messagesDates" >
+				    	<p:autoUpdate />
+				    </p:messages>
+				    
+				
+					    <h:panelGroup id="panelDates">
+																
+							<h:panelGroup id="panelTableDates" layout="block" styleClass="margin-top">
+																	
+								<div id="datesList" class="card">
+					
+               
+                    				<div class="p-grid p-align-end">
+                    				
+                    				<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4" align="right">
+                    					<h:outputText  value="#{labels['taskSchedule.nextRegistrations']}" styleClass="form-label"/>
+                    				</div>
+                    				<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-1">
+										<p:inputText value="#{taskScheduleBean.n}" style="width:50px" label="#{labels['taskSchedule.nextDatesReg']}"/>
+									</div>	
+									<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2">	
+										<h:outputText value=" #{labels['taskSchedule.registrations']}" styleClass="form-label"/>
+									</div>
+									<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2">
+										<p:commandButton  value="#{labels['dvijenie.potvarjdenie']}"							    
+											id="btnSearch" update="panelTableDates" partialSubmit="true"
+											process="@this panelTableDates" actionListener="#{taskScheduleBean.actionNextDatesReg}" /> 
+									</div>
+									<div  class="p-col-12">
+									<p:dataView id="tblDates" var="row" value="#{taskScheduleBean.datesRegList}" rowIndexVar="idx"	gridIcon="pi pi-th-large" listIcon="pi pi-bars"					
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}" 
+										rows="10" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="false" paginator="true" emptyMessage="#{ui_labels['general.norows']}">
+		
+										  	<p:dataViewGridItem>
+									        	<h:outputText value="#{row}" >
+													<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{taskScheduleBean.timeZone}" />									
+												</h:outputText>
+									        </p:dataViewGridItem> 
+										  	<p:dataViewListItem >
+										  		<h:outputText value="#{row}" >
+													<f:convertDateTime pattern="dd.MM.yyyy"  timeZone="#{taskScheduleBean.timeZone}" />									
+												</h:outputText>
+											</p:dataViewListItem>
+																																					
+									</p:dataView>	
+									</div>
+									</div>				
+								</div>					
+							</h:panelGroup>															
+						</h:panelGroup> 
+					
+				</p:dialog> 
+        
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

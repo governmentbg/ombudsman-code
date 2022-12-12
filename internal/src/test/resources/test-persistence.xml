@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+	xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
+	<persistence-unit name="hibernate"
+		transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+		<mapping-file>META-INF/orm.xml</mapping-file>
+
+		<class>com.ib.system.db.dto.SystemJournal</class>
+		<class>com.ib.system.db.dto.SystemOption</class>
+		<class>com.ib.system.db.dto.SystemClassifOpis</class>
+		<class>com.ib.system.db.dto.SystemClassif</class>
+		<class>com.ib.system.db.dto.SyslogicListOpisEntity</class>
+		<class>com.ib.system.db.dto.SyslogicListEntity</class>
+		<class>com.ib.system.db.dto.Files</class>
+		<class>com.ib.system.db.dto.FileObject</class>
+
+		<class>com.ib.indexui.db.dto.AdmGroupRole</class>
+		<class>com.ib.indexui.db.dto.AdmGroup</class>
+		<class>com.ib.indexui.db.dto.AdmUserRole</class>
+		<class>com.ib.indexui.db.dto.AdmUser</class>
+
+		<class>com.ib.indexui.db.dto.ModelAis</class>
+		<class>com.ib.indexui.db.dto.ModelAttribute</class>
+		<class>com.ib.indexui.db.dto.ModelMultilang</class>
+		<class>com.ib.indexui.db.dto.ModelObject</class>
+		<class>com.ib.indexui.db.dto.ModelTable</class>
+		<class>com.ib.indexui.db.dto.ModelTableJoin</class>
+		<class>com.ib.indexui.db.dto.MultilangKey</class>
+		<class>com.ib.indexui.db.dto.ModelPersistence</class>
+
+		<class>com.ib.indexui.db.dto.StatElement</class>
+		<class>com.ib.indexui.db.dto.StatTable</class>
+		<class>com.ib.indexui.db.dto.ResultRequest</class>
+
+		<class>com.ib.indexui.db.dto.UniversalReport</class>
+
+		<class>com.ib.system.db.dto.JobHistory</class>
+
+		<class>com.ib.omb.db.dto.Delo</class>
+		<class>com.ib.omb.db.dto.DeloDelo</class>
+		<class>com.ib.omb.db.dto.DeloDoc</class>
+		<class>com.ib.omb.db.dto.DeloDvij</class>
+		<class>com.ib.omb.db.dto.DeloAccess</class>
+		<class>com.ib.omb.db.dto.DeloArchive</class>
+		<class>com.ib.omb.db.dto.DeloStorage</class>
+		<class>com.ib.omb.db.dto.Doc</class>
+		<class>com.ib.omb.db.dto.DocDoc</class>
+		<class>com.ib.omb.db.dto.DocDvij</class>
+		<class>com.ib.omb.db.dto.DocPril</class>
+		<class>com.ib.omb.db.dto.DocReferent</class>
+		<class>com.ib.omb.db.dto.DocShema</class>
+		<class>com.ib.omb.db.dto.DocAccess</class>
+		<class>com.ib.omb.db.dto.DocVidSetting</class>
+		<class>com.ib.omb.db.dto.DocDestruct</class>
+		<class>com.ib.omb.db.dto.Referent</class>
+		<class>com.ib.omb.db.dto.ReferentAddress</class>
+		<class>com.ib.omb.db.dto.ReferentDelegation</class>
+		<class>com.ib.omb.db.dto.Register</class>
+		<class>com.ib.omb.db.dto.Registratura</class>
+		<class>com.ib.omb.db.dto.RegistraturaGroup</class>
+		<class>com.ib.omb.db.dto.RegistraturaReferent</class>
+		<class>com.ib.omb.db.dto.RegistraturaSetting</class>
+		<class>com.ib.omb.db.dto.Task</class>
+		<class>com.ib.omb.db.dto.TaskReferent</class>
+		<class>com.ib.omb.db.dto.TaskSchedule</class>
+
+		<class>com.ib.omb.db.dto.UserNotifications</class>
+
+		<properties>
+			<property name="db.vendor.name" value="ORACLE" />
+			<property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver" />
+			<property name="hibernate.connection.url" value="jdbc:oracle:thin:@10.29.0.202:1521:orcl" />
+			<property name="hibernate.connection.username" value="ndeloweb" />
+			<property name="hibernate.connection.password" value="ndeloweb" />
+			<property name="hibernate.connection.isolation" value="2" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />
+			<property name="hibernate.current_session_context_class" value="thread" />
+			<property name="hibernate.show_sql" value="false" />
+
+			<!-- експериментално -->
+			<property name="hibernate.jdbc.batch_size" value="10" />
+			<property name="hibernate.order_inserts" value="true" />
+			<property name="hibernate.order_updates" value="true" />
+			<property name="hibernate.jdbc.fetch_size" value="40" />
+
+		</properties>
+	</persistence-unit>
+</persistence>

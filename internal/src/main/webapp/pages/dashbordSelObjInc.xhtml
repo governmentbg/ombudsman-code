@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:pe="http://primefaces.org/ui/extensions"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+	
+	
+					<div class="card timeline"  style="min-height: 200px" jsf:id="panelselObjCard" jsf:rendered="#{dashboard.selectedObject!=null}">
+		       			
+		       			 <div   jsf:rendered="#{dashboard.idDoc!=null}">
+			       			 <p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#dashboard:viewDoc'); return false;" >
+								<h:outputText value="#{dashboard.titleDoc}" />
+								<i class="fas fa-caret-right"></i>
+							 </p:commandLink>
+		       			 	 <p:link ajax="false" href="#{dashboard.actionGotoViewDoc()}" target="_blank">(#{labels['general.view']} <i class="fas fa-eye"> </i>) </p:link>
+		       			 </div>
+		       			 <div jsf:id="viewDoc"  jsf:rendered="#{dashboard.idDoc!=null}" class="timeline-row">
+			       			 
+			       			 <div  class="p-grid  " jsf:id="docInfoPanel" >	
+							  
+							   <div class="p-col-12 ">	
+							   <ibg:compFileUpload listObj="#{dashboard.filesListDoc}" codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}"
+									idObj="#{dashboard.idDoc}" view="true" showTitle="false"  id="filesTaskDoc" display="list"  showFileUpload="#{dashboard.showFileUpload}" autoSave ="true" saveFirst="false"
+									showSignWord="#{dashboard.showSignFileOptions}"
+									stylelabelSignWord ="font-weight: bold !important;" 
+									prefixSignWord="OmbuWrk"
+									showSign="#{dashboard.showSignFileOptions}"
+									typeSign="0"
+									viewOfficial="true"
+									downloadPDFiles="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}"/> 
+							   </div>
+							   
+							   <div class="p-col-12  #{dashboard.showDocTaskModuleOption?'p-md-6':''} ui-fluid" jsf:id="docInfo"  >	
+							   		<h:outputText value="#{labels['general.otnosno']}" styleClass="form-label" />
+							   
+							   		<p:scrollPanel mode="native" style="width:100%;height:60px; padding: 5px; background-color:transparent"> 
+							   			<h:outputText value="#{dashboard.docInfo}" />
+							   		</p:scrollPanel>
+							   </div>
+							   <div class="p-col-12  p-md-6 ui-fluid" jsf:id="taskInfo" jsf:rendered="#{dashboard.showDocTaskModuleOption}">	
+							   		<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label" />
+							   		<i jsf:id="procIcon" class="fas fa-info-circle"  style="font-size: 18px;" jsf:rendered="#{dashboard.tmpTask.procInfo ne null}" ></i>
+									<p:tooltip id="procIconT"  for="procIcon"  escape="false" value="#{dashboard.tmpTask.procInfo}"	/>
+							   		<p:scrollPanel mode="native" style="width:100%;height:60px; padding: 5px; background-color:transparent"> 
+							   			<h:outputText value="#{dashboard.tmpTask.taskInfo}" />
+							   		</p:scrollPanel>
+							   </div>
+							   <div class="p-col-12 ui-fluid"  >
+								   <h:outputText value="#{labels['dashboard.corestAuthor']}"  styleClass="form-label" />
+								   
+								   <p:scrollPanel mode="native" style="width:100%; padding: 5px; background-color:transparent">
+							   			<h:outputText value="#{dashboard.docCorespAvtor}" escape="false"/>
+							   		</p:scrollPanel>
+							   </div>
+							   <div class="p-col-12 ui-fluid" jsf:rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE}">
+							       <h:outputText value="#{labels['dashboard.istruct']}"  styleClass="form-label" />
+							       <p:scrollPanel mode="native" style="width:100%; padding: 5px; background-color:transparent">
+							   			<h:outputText value="#{dashboard.selectedObject[8]}" escape="false"/>
+							   		</p:scrollPanel>
+							   </div>
+							   
+							   
+							   <div class="p-col-12 ui-fluid"  jsf:rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL  or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL}">
+						 			<h:outputText value="#{labels['dashboard.taskDokNas']}: #{dashboard.taskSendInfo} " styleClass="form-label" rendered="#{dashboard.taskSendInfo!=null and !dashboard.taskSendInfo.isEmpty()}"/><br/>
+						 			<h:outputText value="#{labels['tasks.comment']}: #{dashboard.taskCommentInfo}" styleClass="form-label"  rendered="#{dashboard.taskCommentInfo!=null and !dashboard.taskCommentInfo.isEmpty()}"/>
+						 			<h:outputText value="&lt;br/&gt; #{labels['docu.modalRefMnenie']}: #{dashboard.taskMnenie}" styleClass="form-label"  rendered="#{dashboard.taskMnenie!=null and !dashboard.taskMnenie.isEmpty()}" escape="false"/>
+						 			
+						 		</div>
+							 </div>
+						</div>
+						 
+						 <p:toolbar styleClass="margin-bottom" rendered="#{dashboard.showDocTaskModuleOption}">
+							<f:facet name="left">									
+								
+								<p:commandButton icon="fas fa-save" value="#{labels['dashboard.rezolu']}" actionListener="#{dashboard.actionSaveRezol}" update="panelsRight docsSection" rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"
+									disabled="#{dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP or dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP_SROK}">
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['dashboard.confirmRez']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+								
+								<p:commandButton icon="fas fa-file-signature" value="#{labels['dashboard.saglasuvan']}" actionListener="#{dashboard.actionSaveSgl}" update="panelsRight docsSection"  rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"
+								 	 disabled="#{dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP or dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP_SROK}">
+									
+								</p:commandButton>
+										
+								<p:commandButton icon="fas fa-signature" value="#{labels['dashbord.podpisan']}" actionListener="#{dashboard.actionSavePodps}" update="panelsRight docsSection"  rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"
+									 disabled="#{dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP or dashboard.tmpTask.status eq OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP_SROK}">
+									
+								</p:commandButton>
+								
+								<p:commandButton icon="fas fa-check" value="#{labels['dashbord.zapoznahSe']}" actionListener="#{dashboard.actionZapoznavane}" update="panelsRight docsSection"  rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE}" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" onsuccess="downNumber()">
+									
+								</p:commandButton>
+								
+								<span class="p-mx-2" jsf:rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS}" >
+	                                  <span class="fas fa-ellipsis-v SoftGray" />
+	                            </span>
+								
+								<p:commandButton icon="fas fa-history" value="#{labels['task.history']}" actionListener="#{dashboard.actionHistoryTask}" update="tableHistoryTaskDash"   partialSubmit="true"
+									oncomplete="PF('historyTaskModalDash').show()"
+									rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS}" >
+								</p:commandButton>
+								
+								<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	                            
+		                              
+		                        <p:commandButton icon="fas fa-plus" value="#{labels['task.new']}" rendered="#{dashboard.showNewTask}" partialSubmit="true" 
+										actionListener="#{dashboard.actionNewTaskDoc}" styleClass="ui-button-success"  oncomplete="PF('taskMP').show('#{component.clientId}')" update="taskModalPanel">
+								</p:commandButton>
+								
+								<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	                            
+	                            
+	                            <p:commandButton icon="fas fa-th-list" value="#{labels['dashboard.taskspr']}" rendered="#{dashboard.showTaskSpr}" partialSubmit="true"
+										actionListener="#{dashboard.actionLoadTaskDocSpr}" styleClass="ui-button-info  p-mr-2"  oncomplete="PF('taskDokSprMP').show()" update="taskModalPanelSpr">
+								</p:commandButton>
+								
+								<p:commandButton icon="fas fa-th-list" value="#{labels['dashboard.linkdocspr']}" rendered="#{dashboard.showTaskSpr}" partialSubmit="true"
+										actionListener="#{dashboard.actionLoadLinkDocSpr}" styleClass="ui-button-info"  oncomplete="PF('linkDocSprMP').show()" update="linkDocModalPanelSpr">
+								</p:commandButton>
+					
+							</f:facet>
+							
+						</p:toolbar> 
+						 
+						 <div  class="p-grid  ui-fluid" jsf:id="rezolPanel" jsf:rendered="#{dashboard.showDocTaskModuleOption and dashboard.selectedCodeMenuObject != OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE and dashboard.tmpTask.status != OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP and dashboard.tmpTask.status != OmbConstants.CODE_ZNACHENIE_TASK_STATUS_IZP_SROK }">
+						 		
+						 		<div class="p-col-12 p-md-6 p-lg-4 p-xl-2"  jsf:rendered="#{dashboard.selectedCodeMenuObject != OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL}">
+						 			<h:outputText value="#{labels['docu.dateDoc']}" styleClass="form-label req" />
+						 			<p:datePicker id="exeDat"  value="#{dashboard.tmpTask.realEnd}" pattern="dd.MM.yyyy" mask="true" showIcon="true"/>
+						 		</div>
+						 		<div class="p-col-12 p-md-6 p-lg-8 p-xl-10"  jsf:rendered="#{dashboard.selectedCodeMenuObject != OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL}">
+						 			<h:outputText value="#{labels['docu.modalRefMnenie']}" styleClass="form-label req" />
+						 			<p:selectOneMenu id="opinion" value="#{dashboard.tmpTask.endOpinion}"  >
+										<f:selectItem value="#{null}" itemValue="#{null}"/>
+										<f:selectItems value="#{dashboard.opinionLst}"   var="item" itemLabel="#{item.tekst}" itemValue="#{item.code}" />
+									</p:selectOneMenu>		
+						 		</div>
+						 		
+						 		<div class="p-col-12 " jsf:rendered="#{dashboard.showForCompetence}">
+						 			<!-- за изпращане по компетентност  -->
+						 			<p:selectBooleanCheckbox value="#{dashboard.forCompetence}" itemLabel=" #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_COMPETENCE, OmbConstants.CODE_ZNACHENIE_COMPETENCE_FOR_SEND, dashboard.currentLang, now)}">
+							            <p:ajax update="labelComment" />
+							        </p:selectBooleanCheckbox>
+						 		</div>
+						 		<div class="p-col-12 ">
+							 	    <h:outputText value="#{labels['tasks.comment']}" styleClass="form-label #{dashboard.forCompetence?' req':''}" id="labelComment"/>
+							   		<p:inputTextarea value="#{dashboard.tmpTask.statusComments}" rows="3" id="comentar"/>
+						   		</div>
+						 </div>
+						 
+						 <ibg:taskData  idTask="#{dashboard.idTask}" idDoc="#{dashboard.idDoc}" dateDoc="#{dashboard.dateDoc}"  taskProcess="2" rendered="#{dashboard.showTaskModuleOption}" showSprTasDash="#{dashboard.showTaskSpr}" showModalNewTasDash="true"/>
+		            </div>
+		        
+		            <div class="card timeline"  style="min-height: 200px;" jsf:id="panelselMailCard" jsf:rendered="#{dashboard.selectedMail!=null}">
+		            	<p:toolbar styleClass="margin-bottom">
+							<f:facet name="left">									
+								
+								<p:commandButton icon="fas fa-edit" value="#{labels['dashboard.reg']}" action="#{dashboard.actionGotoRegMali(false)}" ajax="false" styleClass="ui-button-success p-mr-2">
+									
+								</p:commandButton>
+								
+								<p:commandButton icon="fas fa-edit" value="#{labels['dashboard.regJalba']}" action="#{dashboard.actionGotoRegMali(true)}" ajax="false" styleClass="ui-button-success p-mr-2">
+									
+								</p:commandButton>
+								
+								<p:commandButton icon="fas fa-edit" value="#{labels['dashboard.addFilesJalba']}"
+												 rendered="#{dashboard.selectedMail.attachements ne null and dashboard.selectedMail.attachements.size()>0}" 
+												 actionListener="#{dashboard.actionClearJalba()}"
+												 partialSubmit="true" process="@this" update="dashboard:modalJalbiSprId"
+											  	 oncomplete= "PF('modalJalbiSpr').show();"
+								                 styleClass="ui-button-success p-mr-2">
+									
+								</p:commandButton>
+								
+								<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	                            								
+								<p:commandButton icon="fas fa-remove" value="#{labels['general.otkaz']}" type="button" onclick="PF('modalMailReject').show();"   styleClass="ui-button-secondary">
+									
+								</p:commandButton>
+							</f:facet>
+							<f:facet name="right">
+							
+								<p:commandButton icon="fas fa-trash" value="#{ui_labels['general.delete']}" styleClass="ui-button-danger"
+									update="mailList ,panelselObj" process="@this" partialSubmit="true"  action="#{dashboard.actionRemoveMail}" >
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['mail.mailDelete']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>
+							</f:facet>
+						</p:toolbar> 			
+		            	
+		            	<div class="p-grid p-nogutter">
+		            		<div class="p-col-fixed" style="width:60px">
+		            			<span class="profile-image-wrapper">
+		                            <i class="fas fa-user-circle" style="font-size:46px"></i>
+		                        </span>
+		            		</div>
+		            		
+		            		<div class="p-col">
+		            			<h5> #{dashboard.selectedMail.from} <br/> #{dashboard.selectedMail.subject}</h5>
+		            		</div>
+		            	</div>
+		            	
+		            	<div class="list-container ">
+							<p:repeat varStatus="rkv" value="#{dashboard.selectedMail.attachements}" var="file1" >
+								<h:panelGroup styleClass="file-list" layout="block" >
+									<p:commandLink ajax="false" action="#{dashboard.actionStreamFile(file1.key)}">
+										<div class="file-details">
+											<i class="fas fa-file file-icon"></i>
+											<span class="filename">#{file1.key}</span>
+										</div>
+									</p:commandLink>
+									
+								</h:panelGroup>
+								
+								
+							</p:repeat>
+						</div>
+						
+				    	<p:textEditor value="#{dashboard.selectedMail.body}" readonly="true" secure="true" toolbarVisible="false" ></p:textEditor>
+          				
+		            </div>
+	
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<f:view locale="bg" />
+<h:head>
+</h:head>
+<h:body>
+	<style>
+		
+		.foo td {
+		    vertical-align: top;
+		}
+	</style>
+	<p:importConstants type="com.ib.system.SysConstants" />
+	<h:form>
+		<h:inputText value="#{testAudit.docID}" id="docID" />
+		<p:commandButton value="Show doc history"
+			action="#{testAudit.actionSearch()}" update="result" />
+		<h:selectOneMenu  value="#{testAudit.selectedObjectCode}">
+			<f:selectItem itemLabel="Документ" itemValue="51" />
+			<f:selectItem itemLabel="Преписка" itemValue="53" />
+		</h:selectOneMenu>
+	</h:form>
+
+
+
+	<p:outputPanel id="result">
+		
+
+		<h:outputText value="#{testAudit.docHostory.size()}" />
+
+		<h:panelGrid columns="2"  styleClass="foo"
+			>
+			<p:dataTable value="#{testAudit.docHostory}" var="event" selectionMode="single" rowKey="#{event.id}"
+				style="width:800px" >
+				<f:facet name="header">
+		            Event Viewer
+		        </f:facet>
+		        <p:ajax event="rowSelect" listener="#{testAudit.onRowSelect}"  update="eventDetails"/>
+				<p:column headerText="Data">
+					<h:outputText value="#{event.dateAction}" />
+				</p:column>
+				<p:column headerText="User">
+					<h:outputText
+						value="#{systemData.decodeItem(SysConstants.CODE_CLASSIF_USERS, event.idUser, 1, null)}" />
+				</p:column>
+				<p:column headerText="Action">
+					<h:outputText
+						value="#{systemData.decodeItem(SysConstants.CODE_CLASIF_DEINOSTI, event.codeAction, 1, null)}" />
+				</p:column>
+				<p:column headerText="Object">
+					<h:outputText
+						value="#{systemData.decodeItem(SysConstants.CODE_CLASIF_OBJECTS, event.codeObject, 1, null)}" />
+				</p:column>
+
+			</p:dataTable>
+			<p:panel header="SelectedEvent" id="selectedEvent">
+			<p:treeTable value="#{testAudit.rootEvent}" var="event" id="eventDetails" emptyMessage="Няма променени данни">
+				
+				<p:column headerText="Attribute">
+					<h:outputText value="#{event.fieldName}" />
+				</p:column>
+				<p:column headerText="Old Value">
+					<h:outputText value="#{event.oldVal}" />
+				</p:column>
+				<p:column headerText="New Value">
+					<h:outputText value="#{event.newVal}" />
+				</p:column>
+			</p:treeTable>
+			
+			</p:panel>
+		</h:panelGrid>
+		
+	</p:outputPanel>
+</h:body>
+</html>

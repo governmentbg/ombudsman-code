@@ -1,0 +1,983 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+	<style>
+		.ui-sticky#docForm\:tabsDoc\:tbtnPanel1t {
+			z-index: 9comand8 !important;
+		}
+	
+		.UrgentOneButtonG.ui-selectonebutton .ui-state-active {
+		    background-color:#99ce6b !important;
+		}
+		.UrgentOneButtonY.ui-selectonebutton .ui-state-active {
+		    background-color:#fdbe02 !important;
+		}
+		.UrgentOneButtonR.ui-selectonebutton .ui-state-active {
+		    background-color:#f28686 !important;
+		}
+		textarea { resize: none; }
+	</style>
+
+
+	<script>
+		function copyAdrJbp() {
+		  var jbpName = document.getElementById("docForm:tabsDoc:nameA");
+		  var jbpemail = document.getElementById("docForm:tabsDoc:jpMail");
+		  var pk = document.getElementById("docForm:tabsDoc:adrPC");
+		  var ns = document.getElementById("docForm:tabsDoc:mestoC:аutoCompl_input");
+		  var oo = document.getElementById("docForm:tabsDoc:cOblObsh2");
+		  var oblobsh = oo.innerText || oo.textContent;
+		  var adr = document.getElementById("docForm:tabsDoc:adrTxt");
+		  var copytxt = jbpName.value +" "+jbpemail.value+ " ПК:" + pk.value +" "+ns.value + ", "+ oblobsh+" "+adr.value;
+		 
+		  navigator.clipboard.writeText(copytxt);
+		  
+		 // alert(copytxt);
+		}
+	</script>
+
+
+
+	<ui:remove>
+		} <!--Документ - основни регистрационни данни    color:#99ce6b  --></ui:remove>
+	<h:panelGroup id="tdPanel0" layout="block">
+<p:sticky target="tbtnPanel1t" margin="#{isView eq 1 ? '75' : '125'}" >
+		
+		<p:focus  id="pFocus" context="#{isView eq null ? (docDataComplaint.document.id eq null ? 'docForm:tabsDoc:nameA' :  'docForm:tabsDoc:tbtnPanel1t') : 'docForm:tabsDoc:tbtnPanel1t'}" />
+
+		<p:toolbar id="tbtnPanel1t" styleClass="margin-bottom">
+			<f:facet name="left">
+				 <p:commandButton icon="fas fa-save"				
+					value="#{ui_labels['general.save']}" rendered="#{isView eq null}"
+					id="btnSave" tabindex="-1"
+					update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					actionListener="#{docDataComplaint.actionSave}"
+					title="#{labels['doc.saveTitle']}"
+					oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" styleClass="p-mr-2">
+				 </p:commandButton>
+     
+				 <span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+				 
+		         <p:commandButton icon="fas fa-file" id="btnSprPrevios" tabindex="-1"
+			         	styleClass="ui-button-info p-mr-2" value="#{labels['jp.sprPreviosB']}" title="#{labels['jp.sprPreviosBTitle']}"
+						partialSubmit="true"
+						update="pPreviosSpr"
+						process="pPreviosSpr p1RegD @this" 	
+						actionListener="#{docDataComplaint.actionSprPrevios()}">
+				 </p:commandButton>
+						
+		         <p:commandButton icon="fas fa-file" id="btnSpravka" tabindex="-1"
+			            rendered="#{docDataComplaint.document.id ne null}"
+					 	styleClass="ui-button-info p-mr-2" value="#{labels['jp.spravkaBtn']}" title="#{labels['jp.spravkaBtnTitle']}"
+						partialSubmit="true"
+						update="pSpravka"
+						process="pSpravka @this" 	
+						actionListener="#{docDataComplaint.actionSpravka()}">
+				 </p:commandButton>
+				
+				 <span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+					
+				 <p:commandButton icon="fas fa-file" id="btnNewWRKDoc" tabindex="-1" styleClass="ui-button-success p-mr-2"
+				       rendered="#{isView ne 1 and docDataComplaint.document.id ne null and docDataComplaint.flagFW eq docDataComplaint.updateDoc}"  
+				 	   value="#{labels['jp.newWrkDocB']}" 
+		               title="#{labels['jp.newJalbaBtn3']}" 
+		               action="#{docDataComplaint.actionGotoWrkDoc}"
+		               ajax="false">
+				  </p:commandButton>	
+						      
+	          <p:commandButton icon="fas fa-file" id="btnNewDocN" tabindex="-1"
+			 	styleClass="ui-button-success p-mr-2" value="#{labels['docu.newDocJalba']}" 
+				rendered="#{isView ne 1 and docDataComplaint.document.id eq null and docDataComplaint.flagFW eq docDataComplaint.updateDoc}" partialSubmit="true"
+				update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+				process="tdPanel0  @this" 
+				actionListener="#{docDataComplaint.actionNewDocument(0)}">
+			  </p:commandButton>		
+			
+			  <p:splitButton id="btnNewDoc" value="#{labels['docu.newDocJalba']}" tabindex="-1"
+		         action="#{docDataComplaint.actionNewDocument(0)}"
+                 icon="fas fa-file" rendered="#{isView ne 1 and docDataComplaint.document.id ne null and docDataComplaint.flagFW eq docDataComplaint.updateDoc}"  
+               	 partialSubmit="true" 
+				 update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+				 process="tdPanel0  @this" styleClass="ui-button-success p-mr-2">
+	            <p:menuitem id="btnNewDocCopy" 
+	                value="#{labels['jp.newPJalba1']}" 
+	                title="#{labels['jp.newJalbaBtn21']}" 
+	                action="#{docDataComplaint.actionNewDocument(1)}"  
+	                icon="far fa-copy"  
+               	 	partialSubmit="true"
+				 	update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					process="tdPanel0  @this"/>	
+				<p:menuitem id="btnNewDocCopy2" 
+	                value="#{labels['jp.newPJalba2']}" 
+	                title="#{labels['jp.newJalbaBtn22']}" 
+	                action="#{docDataComplaint.actionNewDocument(2)}"  
+	                icon="far fa-copy"  
+               	 	partialSubmit="true"
+				 	update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					process="tdPanel0  @this"/>
+		        </p:splitButton>
+			</f:facet>
+
+			<f:facet name="right">				
+
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2 p-mb-2" />
+				
+				<p:commandButton icon="fas fa-times" tabindex="-1"
+					value="#{ui_labels['general.delete']}" 
+					title="#{labels['docu.titleDeleteDoc']}"
+					update="breadcrumbForm:pTitle tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					rendered="#{isView ne 1 and docDataComplaint.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}"
+					actionListener="#{docDataComplaint.actionDelete}"
+					styleClass="ui-button-danger p-mr-2 p-mb-2" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;">
+					<p:confirm header="#{ui_labels['general.comfirmation']}"
+						message="#{beanMessages['jp.docDelete']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>
+				<p:commandButton icon="fas fa-times" tabindex="-1" id="btnCancelReg"
+					value="#{ui_labels['general.cancel']}"
+					title="#{labels['docu.titleRejectDoc']}"
+					partialSubmit="true" process="@this" update="docForm:modalRejectIdp"
+					rendered="#{isView ne 1 and docData.flagFW eq docData.regFromMailJalba}"
+					oncomplete = "PF('modalReject').show();"
+					styleClass="ui-button-secondary">	
+						<p:confirm header="#{ui_labels['general.comfirmation']}"
+						message="#{beanMessages['docu.rejectDoc']}" icon="fas fa-exclamation-triangle" />				
+				</p:commandButton>
+			</f:facet>
+		</p:toolbar>
+</p:sticky>
+		<h:panelGroup id="mainPanel" 	>
+			<ui:remove><!-- Рег. номер, вид док. --></ui:remove>
+			<div jsf:id="p0" class="p-grid  p-align-center"
+				style="background-color:rgba(216,222,233,0.35);border-radius: 4px;" >
+				 <div class="p-col-fixed" style="width:350px">					
+					<h:outputText
+						value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, docDataComplaint.document.docVid, docDataComplaint.currentLang, now)} #{docDataComplaint.rnFullDocEdit}"
+						styleClass="form-label" />
+				</div>
+				 <div class="p-col-fixed" style="width:350px">	
+					<p:selectOneRadio id="shInPbl" value="#{docDataComplaint.document.jalba.publicVisible}" layout="responsive" immediate="true" columns="2" 
+					     disabled="#{isView eq 1 or !docDataComplaint.editSpecFields}">
+					 	 <f:selectItem itemLabel="#{labels['jl.publ']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_DA}" />
+		           		 <f:selectItem itemLabel="#{labels['jl.nepubl']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_NE}" />
+		         		 <p:ajax event="change" listener="#{docDataComplaint.checkPublicVisible}" partialSubmit="true" process="@this" update="@this mainPanel" />
+					</p:selectOneRadio>
+			
+				</div>
+				<div class="ui-inputgroup" jsf:id="idcomp"  >
+					<h:panelGroup  >
+						<p:selectBooleanCheckbox value="#{docDataComplaint.competence}"  
+						    disabled="#{isView eq 1 or (docDataComplaint.document.competence eq OmbConstants.CODE_ZNACHENIE_COMPETENCE_SENT  and  !userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC) )}"
+							itemLabel="#{labels['docu.compForSend']}"  title="#{docDataComplaint.document.competenceText}"
+							rendered="#{docDataComplaint.rnFullProtocol eq null}" />
+														
+						<i class="fas fa-paper-plane"  style="font-size: 20px;"
+							jsf:rendered="#{docDataComplaint.document.competence eq OmbConstants.CODE_ZNACHENIE_COMPETENCE_SENT}"
+							title="#{labels['docu.compSent']}"></i> 
+					</h:panelGroup>
+				</div>	
+			</div>
+			
+			<div class="p-grid" >
+			
+			     <div class=" p-col-12 p-md-12 p-lg-12 p-xl-6 p-align-end">
+						<div class="title-group"> <ui:remove><!-- Жалбоподател --></ui:remove>
+							<p:commandLink styleClass="extended-search-toggle expanded "
+								onclick="toggleSection(this, '#docForm:tabsDoc:p1RegD')">
+								<h:outputText value="#{labels['jl.jalbopodatel']}" />					
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>
+						
+					<div jsf:id="p1RegD" class="p-grid ui-fluid"  onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">		
+				    	 
+			    	    <div class="p-col-fixed" style="width:500px" jsf:rendered="#{docDataComplaint.document.id eq null}" jsf:id="rtLice" >
+					    	<p:selectOneRadio id="tLice" value="#{docDataComplaint.document.jalba.jbpType}" layout="responsive" immediate="true" columns="2" class="form-label" disabled="#{isView eq 1}"> 
+							 	 <f:selectItem itemLabel="#{labels['coresp.fizLice']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" />
+				           		 <f:selectItem itemLabel="#{labels['coresp.uLice2']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" />
+							     <p:ajax event="change"  update="@this pgDataA fl1 fl2 fl3"  process="@this" listener="#{docDataComplaint.actionChTypeApplicant}" />
+							</p:selectOneRadio>
+						</div>						
+							
+						<div class="p-grid  p-col-12 p-md-12 p-lg-12 p-xl-12 ui-fluid" jsf:id="pgDataA">	
+							<div class="p-col-12 p-md-5 p-lg-5 p-xl-5" jsf:id="pgNameA">
+								<div class="form-label ui-inputgroup">
+									<h:outputText value="#{labels['refCorr.nameUL']}" styleClass="form-label req" id="lablUL" rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+									<h:outputText value="#{labels['refCorr.nameFL']}" styleClass="form-label req" id="lablFL" rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+							
+									<p:commandLink  partialSubmit="true" id="btnAnonym"
+			 								rendered="#{isView ne 1 and docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and docDataComplaint.document.id eq null}" 
+			 								update="nameA"  process="@this nameA" ajax="true" 
+			 								onclick="document.getElementById('docForm:tabsDoc:nameA').value = '#{labels['jp.anonymous']}';"
+								          	title="#{labels['jp.anonymousTitle']}">
+									  		<i class="fa fa-question-circle"></i>
+									</p:commandLink>
+									
+								</div>
+								<p:inputText id="nameA"	value="#{docDataComplaint.document.jalba.jbpName}" />
+							</div>		
+																			
+							<div class="p-col-6 p-md-3 p-lg-3 p-xl-4" jsf:rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" >
+								<div class="form-label"  style="margin-top:-0.6rem;">
+									<p:selectOneRadio id="egn_lnch" value="#{docDataComplaint.identJbp}" immediate="true" columns="2" unselectable="false" disabled="#{isView eq 1}">
+									 	 <f:selectItem itemLabel="#{ui_labels['general.egn']}"  itemValue="ID_EGN"  />
+						           		 <f:selectItem itemLabel="#{ui_labels['general.lnch']}" itemValue="ID_LNCH" />				
+						           		 <p:ajax event="change" update="pgDataA" partialSubmit="true" process="@this  pgDataA" 	/>			    
+									</p:selectOneRadio>	
+								</div>
+								<div class="ui-inputgroup">
+									<p:inputText id="egn" value="#{docDataComplaint.document.jalba.jbpEgn}" rendered="#{docDataComplaint.identJbp eq 'ID_EGN'}" 
+									    onkeyup="onlyNumbersNoRestr('docForm:tabsDoc:egn')" maxlength="10">
+									    <p:ajax event="change" update="@this pPol" partialSubmit="true" process="@this pPol" listener="#{docDataComplaint.actionValidateEGN}"	/>
+									</p:inputText>
+									<p:commandButton id="btnEgnRegix"
+										rendered="#{isView ne 1 and  docDataComplaint.identJbp eq 'ID_EGN'}"
+										icon="fas fa-user-check" partialSubmit="true"
+										process="docForm:tabsDoc:pgNameA @this"
+										update="docForm:tabsDoc:pgNameA"
+										oncomplete=""
+										actionListener="#{docDataComplaint.actionCheckEGN()}"
+										title="Проверка по ЕГН в Regix"/>
+								</div>
+								<ui:remove><!-- <p:ajax event="change" update="pgDataA" partialSubmit="true" process="@this  pgDataA" listener="#{docDataComplaint.actionLoadByEGN}"	/> --></ui:remove>
+																						
+								<p:inputText id="lnch" value="#{docDataComplaint.document.jalba.jbpLnc}" maxlength="10"  rendered="#{docDataComplaint.identJbp eq 'ID_LNCH'}" >
+								</p:inputText>
+								<ui:remove><!-- <p:ajax event="change" update="pgDataA" partialSubmit="true" process="@this pgDataA" listener="#{docDataComplaint.actionLoadByLNCH}"	/> --></ui:remove>
+							</div>
+											
+							<h:panelGroup  rendered="#{docDataComplaint.document.jalba.jbpType  eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}">
+								<div class="p-col-6 p-md-3 p-lg-3 p-xl-3" >
+									<div style="height: 1.75em;" ></div>	 
+									<p:selectBooleanCheckbox value="#{docDataComplaint.jbpHiddenB}" class="form-label" title="Право да се запази самоличността на жалбоподателя по чл.19 от Правилника за организацията и дейността на администрацията на омбудсмана"
+										itemLabel="#{labels['jl.jbpHidden']}" disabled="#{isView eq 1}"/>
+								</div>	
+							</h:panelGroup>
+							
+							<div class="p-col-6 p-md-3 p-lg-3 p-xl-4" jsf:rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" >
+								<div class="form-label">
+									<h:outputText value="#{ui_labels['general.eik']}" />
+								</div>
+								<p:inputText id="eik" value="#{docDataComplaint.document.jalba.jbpEik}" onkeyup="onlyNumbersNoRestr('docForm:tabsDoc:eik')" size="13" maxlength="13">
+								</p:inputText>
+								<ui:remove><!-- <p:ajax event="change" update="pgDataA" partialSubmit="true" process="@this pgDataA" listener="#{docDataComplaint.actionLoadByEIK}"	/>  --></ui:remove>
+							</div>
+						</div>
+						
+						<ui:remove><!-- Жалбоподател - контакти и др. --></ui:remove>
+						<div class="p-col-12">
+				
+							<div class="title-group">
+								<p:commandLink styleClass="extended-search-toggle expanded" update="fSize pFiles"
+									onclick="toggleSection(this, '#docForm:tabsDoc:p1RegD2'); if(document.getElementById('docForm:tabsDoc:fSize').value == '180'){ document.getElementById('docForm:tabsDoc:fSize').value = '350';} else { document.getElementById('docForm:tabsDoc:fSize').value = '180';}">
+									<h:outputText value="#{labels['jl.jbpContacts']}" />					
+									<i class="fas fa-caret-right"></i>
+								</p:commandLink>
+						 
+								<p:commandButton ajax="true" partialSubmit="true"  immediate="true"
+								styleClass="ui-button-text-only ui-button-info ui-button-flat" onclick="copyAdrJbp()" icon="fas fa-copy" title="Копира в clipboard имена и адрес на жалбоподател"/>
+							
+							</div>					
+							<h:inputHidden id="fSize" value="#{docDataComplaint.fSize}" type="text"  />
+							
+							<div jsf:id="p1RegD2" class="p-grid  p-jc-start ui-fluid" >
+								<div class="p-col-2 p-md-2 p-lg-2 p-xl-2" jsf:id="pgAddrPcA">
+									<h:outputText value="#{ui_labels['general.adrPostCode']}"   styleClass="form-label" />
+									<p:inputText  value="#{docDataComplaint.document.jalba.jbpPost}" id="adrPC" readonly="false"/>
+								</div>	
+								<div class="p-col-4 p-md-4 p-lg-3 p-xl-3" jsf:id="pmestoC" >						
+									<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label" />
+									<ibg:selectOneModalA  id="mestoC" 
+									    readonly="false" 
+										update="docForm:tabsDoc:cOblObsh"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"			
+										specifics="#{docDataComplaint.specificsEKATTE}"					
+										selectedCode="#{docDataComplaint.document.jalba.jbpEkatte}"
+										emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+										saveStateTree="false" withBtnClear="false" compType="3" minQueryLength="3"	styleAutoComp=""
+										dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>
+								</div>												
+						        <div class="p-col-6 p-md-6 p-lg-7 p-xl-7" jsf:id="cOblObsh" >   
+						        	<div style="height: 1.75em;" ></div>	        							
+									<div jsf:id="cOblObsh2">#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, docDataComplaint.document.jalba.jbpEkatte, docDataComplaint.currentLang, now)}</div>
+								</div>
+								
+							   	<div class="p-col-12 p-md-12 p-lg-5 p-xl-5" jsf:id="pgAddrA">				
+									<h:outputText value="#{ui_labels['general.adres']}"   styleClass="form-label" />
+									<p:inputText  value="#{docDataComplaint.document.jalba.jbpAddr}" id="adrTxt"  />
+								</div>
+							
+				    			<div class="p-col-12 p-md-6 p-lg-4 p-xl-4" jsf:id="mailA" >						
+									<h:outputText value="#{ui_labels['general.email']}" styleClass="form-label" />
+									<div class="ui-inputgroup">
+										<p:inputText   value="#{docDataComplaint.document.jalba.jbpEmail}" id="jpMail" >
+											<p:ajax event="change" update="mailA" process="@this" partialSubmit="true" listener="#{docDataComplaint.copyMailJp}"/>
+										</p:inputText>
+										<p:commandButton id="btnSentMail"
+											rendered="#{isView ne 1 and docDataComplaint.document.id ne null and docDataComplaint.document.jalba.jbpEmail ne null and docDataComplaint.document.jalba.jbpEmail.trim() ne ''}"
+											icon="fas fa-envelope" partialSubmit="true" process="@this"
+											actionListener="#{docDataComplaint.createReturnMailJ()}"
+											title="#{labels['jp.btnSentMailTitle']}"/>
+									</div>			
+								</div>	
+								<div class="p-col-12 p-md-6 p-lg-3 p-xl-3" jsf:id="phoneA" >
+									<h:outputText value="#{ui_labels['general.phone']}" styleClass="form-label" />
+									<p:inputText   value="#{docDataComplaint.document.jalba.jbpPhone}"  />
+								</div>	
+						
+								<div class="p-col-6 p-md-6 p-lg-5 p-xl-5" jsf:id="fl1" >
+			    					<h:panelGroup  rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}">	
+				    					<h:outputText value="#{labels['jbp.nation']}"  styleClass="form-label"/>
+										<ibg:selectOneModalA  id="cntryC" readonly="#{isView eq 1}"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+											selectedCode="#{docDataComplaint.document.jalba.jbpGrj}" 
+											emptyMessage="#{labels['docu.countryEmptyMsg']}"
+											saveStateTree="false" withBtnClear="false" compType="3" minQueryLength="2"
+											styleAutoComp="" /> 
+									</h:panelGroup>    
+								</div>	
+								<div class="p-col-3 p-md-3 p-lg-2 p-xl-2" jsf:id="fl2" >
+									<h:panelGroup  rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" id="pPol">	
+										<h:outputText value="#{labels['jp.pol']}" styleClass="form-label" />
+										<p:selectOneMenu id="pol" value="#{docDataComplaint.document.jalba.jbpPol}" disabled="#{isView eq 1}">
+											   <f:selectItem value="#{null}" itemValue="#{null}" />
+											   <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_POL, now, docDataComplaint.currentLang)}" 
+					         					var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+										</p:selectOneMenu>
+									</h:panelGroup>					
+								</div>	
+								<div class="p-col-3 p-md-3 p-lg-2 p-xl-2" jsf:id="fl3" >
+									<h:panelGroup  rendered="#{docDataComplaint.document.jalba.jbpType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}">	
+										<h:outputText value="#{labels['jl.age']}" styleClass="form-label"/>
+									 	<p:inputNumber id="age" value="#{docDataComplaint.document.jalba.jbpAge}" minValue="1" maxValue="120" decimalPlaces="0"  />
+								 	</h:panelGroup>
+								</div>
+								
+							</div>
+						</div>
+					</div>
+			
+				 </div>
+			 
+				 <div class="p-col-12 p-md-12 p-lg-12 p-xl-6 ui-inputgroup"  jsf:id="pFiles" style="max-height:#{docDataComplaint.fSize}px;overflow: auto;">
+						<ui:remove><!-- Файлове  "--></ui:remove>
+						<p:remoteCommand name="cmdChangeFiles" 
+							partialSubmit="true" ignoreAutoUpdate="true" process="@this" 
+							actionListener="#{docDataComplaint.actionChangeFilesJ}" /> 
+						<p:remoteCommand name="cmdNotifFiles" 
+							partialSubmit="true" ignoreAutoUpdate="false" process="@this" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"  
+							actionListener="#{docDataComplaint.actionNotifFilesJ}" />
+							 
+						<div jsf:id="panelFl" >				
+							<ibg:compFileUpload listObj="#{docDataComplaint.filesList}"  id="filesDoc"
+								codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+								idObj="#{docDataComplaint.document.id}" hideDel="#{isView eq 1}" 
+								view="#{isView eq 1}"
+								autoSave="#{(docDataComplaint.document.id eq null) ? 'false' : 'true'}"
+								saveFirst="false" display="list" 
+								onComplete="cmdChangeFiles()" 
+								additionalAction="cmdNotifFiles()"
+								additionalBtnValue="#{labels['jp.notifFiles']}"
+								additionalBtnTitle="#{labels['jp.notifFilesTitle']}"
+								additionalBtnIcon = "fa fa-bell" 
+								viewOfficial="true" showUserUpload="true"
+								showInfo="false" 
+								showSign="#{docData.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}" 
+								showCompareBtn = "false"
+								typeSign="0"
+								showPersonalData="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+								downloadPDFiles="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+								showScanner="#{docDataComplaint.scanModuleExist and isView ne 1}"
+								rnDocDateForSign="#{docDataComplaint.rnFullDocSign}"
+								dragDropSupport="true"
+								rename="true"/>
+								
+						</div>
+						<h:panelGroup rendered="#{docDataComplaint.scanModuleExist}">
+							<ibg:scannerDs codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docDataComplaint.document.id}" id="scanDS" update="docForm:tabsDoc:panelFl" value="#{docDataComplaint.reloadFile}"></ibg:scannerDs>
+							<ibg:scannerIB codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docDataComplaint.document.id}" id="scanIB" update="docForm:tabsDoc:panelFl" value="#{docDataComplaint.reloadFile}" 
+								showSign="#{docDataComplaint.document.id ne null and docDataComplaint.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}"
+								fileName="#{docDataComplaint.document.rnDoc}"></ibg:scannerIB>
+						</h:panelGroup>
+				</div>
+		
+			</div>
+			
+			<ui:remove><!-- Описание на жалбата --></ui:remove>
+			<div class="title-group">
+				<p:commandLink styleClass="extended-search-toggle expanded "
+					onclick="toggleSection(this, '#docForm:tabsDoc:p1AnotApplicant')">
+					<h:outputText value="#{labels['jp.opisJlpT']}" />					
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			<div jsf:id="p1AnotApplicant" class="p-grid ui-fluid  p-jc-start" >
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="otnA">
+					<h:outputText value="#{labels['jp.opisJlp']}" styleClass="form-label p-mr-4 req" />
+					<p:inputTextarea id="otnosnoA" value="#{docDataComplaint.document.jalba.jalbaText}"   
+						autoResize="true" 
+						rows="10"/>
+	
+				</div>	
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="iskane">					
+					<h:outputText value="#{labels['jp.iskane']}" styleClass="form-label  p-mr-4" />
+					<p:inputTextarea id="iskaneA" value="#{docDataComplaint.document.jalba.requestText}"  
+						autoResize="true" 
+						rows="10"/>	
+				</div>	
+			</div>
+		
+			
+				<ui:remove><!-- Резюме и коментар от деловдоител/експерт --></ui:remove>
+			<div class="title-group">
+				<p:commandLink styleClass="extended-search-toggle expanded "
+					onclick="toggleSection(this, '#docForm:tabsDoc:p1RezumeE')">
+					<h:outputText value="#{labels['jp.opisAndComment']}" />					
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			<div jsf:id="p1RezumeE" class="p-grid ui-fluid  p-jc-start">		
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="commentD">	
+					<h:outputText value="#{labels['jp.commentExp']}" styleClass="form-label" />				
+					<p:inputTextarea id="comment" value="#{docDataComplaint.document.jalba.registComment}"  title="#{labels['jp.commentExpTitle']}"
+						autoResize="false"
+						rows="3"/>	
+				</div>			 
+				<ui:remove><!-- Описание от експерт - относно --></ui:remove>
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="otnosnoD">	
+					<h:outputText value="#{labels['jp.opisExp']}" styleClass="form-label  p-mr-4" />				
+					<a href="#dopInfL" id="aInfo"  style="#{(docDataComplaint.document.docInfo eq null or docDataComplaint.document.docInfo.trim() eq '') ? 'display:none' : ''}"> <i class="fas fa-hand-point-right" >   #{labels['docu.gotoDopInfo']} </i></a>
+					<p:inputTextarea id="otnosno" value="#{docDataComplaint.document.otnosno}"  title="#{labels['jp.opisExpTitle']}"
+						autoResize="false" readonly="#{!docDataComplaint.editSpecFields}"
+						rows="3"/>
+				</div>	
+								 
+			</div>
+			
+						
+			<ui:remove><!-- Нарушение --></ui:remove>
+			<div class="title-group">
+				<p:commandLink styleClass="extended-search-toggle expanded "
+					onclick="toggleSection(this, '#docForm:tabsDoc:p1N')">
+					<h:outputText value="#{labels['jbp.narushenie']}" />					
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			<div jsf:id="p1N" class="p-grid ui-fluid " onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+		    	<div class="p-col-4 p-md-3 p-lg-2 p-xl-2" jsf:id="nDat1"> 
+			    	<h:outputText value="#{labels['jbp.narushenieDate']}" styleClass="form-label"  />		
+					<i jsf:id="dnIcon1" class="fas fa-exclamation-triangle"  style="font-size: 18px; color:orange;" jsf:rendered="#{docDataComplaint.warnDateNar}"></i> 
+					<p:tooltip id="dnIcon1T"  for="dnIcon1"  escape="false" value="#{labels['jp.dateNarWarn']}"	/>	
+					<p:datePicker  id="nDat"  title="#{labels['jbp.narushenieDateT']}"   
+					    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+					    rendered="#{isView ne 1}" 
+					    value="#{docDataComplaint.document.jalba.dateNar}"  >
+					    <p:ajax event="change" update="nDat1" listener="#{docDataComplaint.checkDateNar(false)}"/>
+		         		<p:ajax event="dateSelect" update="nDat1" listener="#{docDataComplaint.checkDateNar(false)}"/>    
+					</p:datePicker>
+				 	<p:inputText id="nDatV" rendered="#{isView eq 1}"
+					 	value="#{docDataComplaint.document.jalba.dateNar}"
+					    readonly="true">
+					   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+					</p:inputText>	 					
+				</div>
+				<div class="p-col-12 p-md-9 p-lg-5 p-xl-4" jsf:id="txtNar">
+					<h:outputText value="#{labels['jbp.narOganT']}" styleClass="form-label" />
+			    		<i jsf:id="dnIcon2" class="fas fa-exclamation-triangle"  style="font-size: 18px; color:orange;" jsf:rendered="#{docDataComplaint.nedopNarMsgWarn ne null}"></i> 
+						<p:tooltip id="dnIcon2T"  for="dnIcon2"  escape="false" value="#{docDataComplaint.nedopNarMsgWarn}"	/>
+					<p:inputText  value="#{docDataComplaint.document.jalba.subjectNar}"  title="#{labels['jbp.narOganTitle']}" id="sNar">
+						<p:ajax event="change" update="txtNar @this"
+								process="txtNar @this" partialSubmit="true"
+								listener="#{docDataComplaint.checkNar(фалсе)}"/>
+					</p:inputText>
+				</div>
+				<div class="p-col-12 p-md-12 p-lg-5 p-xl-6">
+			    	<h:outputText value="#{labels['jbp.narOgan']}"  styleClass="form-label " />
+					<div class="selectModalA-with-buttons">
+						<h:panelGroup id="refCorrInp" layout="block" styleClass="koresp-input">
+							<ibg:selectOneModalA id="refCorrInp1" readonly="#{isView eq 1}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+								onComplete="#{docDataComplaint.clearInfoNar()}"
+								onClear="#{docDataComplaint.clearInfoNar()}"
+								selectedCode="#{docDataComplaint.document.jalba.codeNar}"
+								selectedText="#{docDataComplaint.txtNar}" hiddenTxt="true"
+								saveStateTree="false" withBtnClear="true" minQueryLength="2"
+								compType="3" filtered="false"
+								styleAutoComp=""
+								dopInfoAutoComp="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}"
+								itemtipAtPosition="center bottom"
+								update="docForm:tabsDoc:refCorrDopInf docForm:tabsDoc:refCorr" />
+						</h:panelGroup>
+						<div jsf:id="refCorr">
+							<ui:remove>	<!--  Корекция на данни на нарушител	--></ui:remove>
+							<p:commandButton id="btnCorrD"
+								rendered="#{docDataComplaint.document.jalba.codeNar ne null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) }"
+								icon="#{(isView ne 1) ? 'fas fa-edit' : 'fas fa-eye'}" partialSubmit="true"
+								process="docForm:tabsDoc:dpCorrData @this"
+								update="docForm:tabsDoc:dpCorrData"
+								oncomplete="PF('mCorrD').show(); "
+								actionListener="#{docDataComplaint.clearInfoNar()}"
+								title="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)? labels['jp.titleEditNar']: labels['jp.narView']) : labels['jp.titleEditNar']}"/>
+							
+
+							<ui:remove><!--  Разширено търсене на нарушител --></ui:remove>
+							<p:commandButton id="btnCorrS"
+								onmousemove="document.getElementById('docForm:tabsDoc:btnCorrS').focus();"
+								rendered="#{isView ne 1 and docDataComplaint.document.jalba.codeNar eq null}"
+								icon="fas fa-list-ul" partialSubmit="true"
+								process="docForm:tabsDoc:dpCorrSearch @this"
+								update="docForm:tabsDoc:dpCorrSearch"
+								oncomplete="PF('mCorrS').show(); "
+								actionListener="#{docDataComplaint.clearInfoNar()}"
+								title="#{labels['search.extendNar']}" />
+
+							<ui:remove>	<!--  Нов нарушител		--></ui:remove>
+							<p:commandButton id="btnCorrN"
+								onmousemove="document.getElementById('docForm:tabsDoc:btnCorrN').focus();"
+								rendered="#{isView ne 1 and docDataComplaint.document.jalba.codeNar eq null and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)}"
+								icon="fas fa-plus" partialSubmit="true" 
+								process="docForm:tabsDoc:dpCorrData @this"
+								update="docForm:tabsDoc:dpCorrData"
+								oncomplete="PF('mCorrD').show();"
+								actionListener="#{docDataComplaint.clearInfoNar()}"
+								title="#{labels['jl.narNew']}" />
+						</div>
+					</div>
+			    </div> 
+				
+				<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" jsf:id="refCorrDopInf">
+					<h:outputText value="#{labels['jp.categVidNar']}" styleClass="form-label" rendered="#{docDataComplaint.txtNarCategVid ne null}" />
+					<div>
+			    		<h:outputText value="#{docDataComplaint.txtNarCategVid}"  />
+			    	</div>
+				</div>
+				
+			    <div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="prava1">
+			    	<h:outputText value="#{labels['jp.prava']}" styleClass="form-label " />			  
+			    	
+			    	<p:remoteCommand name="cmdZasPrava" ignoreAutoUpdate="true" 
+	 					process="@this"	oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" 
+	 					update="prava1"/>
+				    <ibg:selectOneModalA id="prava" 
+				    					readonly="#{isView eq 1 or docDataComplaint.pravaCh}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_ZAS_PRAVA}"
+										onComplete="#{docDataComplaint.actionChangePrava()}"
+										onClear="#{docDataComplaint.actionChangePrava()}"
+										selectedCode="#{docDataComplaint.document.jalba.zasPrava}"
+										saveStateTree="false" withBtnClear="true" 
+										compType="4" filtered="false"
+										styleAutoComp=""
+										itemtipAtPosition="center bottom"
+										update="@this docForm:tabsDoc:dVidOpl  docForm:tabsDoc:zveno1 docForm:tabsDoc:zvExpert1  docForm:tabsDoc:status1 docForm:tabsDoc:dopust1"/>	
+				  
+		    	</div>
+			    <div class="p-col-12 p-md-12 p-lg-6 p-xl-6" jsf:id="dVidOpl">
+			    	<h:outputText value="#{labels['jp.vidOpl']}" styleClass="form-label " />			    		
+					<ibg:autoCompleteListVod id="sVidOpl" readonly="#{isView eq 1}" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_VID_OPL}"
+									minQueryLength="2"
+									listVod="#{docDataComplaint.vidOplList}"
+									selectedCode="#{docDataComplaint.document.jalba.vidOpl}"
+									styleAutoComp="" 
+									withBtnClear="true" compType="2" title="#{labels['jp.vidOplTitle']}"/>				   
+				</div>
+	    		
+			</div>
+			
+			<ui:remove><!-- 	Звено и екип --></ui:remove>
+			<div jsf:id="doc-zveno" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-zveno1')">
+					<h:outputText value="#{labels['jp.zvenoEkip']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+						
+		  	<div jsf:id="doc-zveno1" class="p-grid ui-fluid  p-jc-start" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+		  		
+				<div class="p-col-12 p-md-12 p-lg-6  p-xl-6" jsf:id="zveno1">
+					<h:outputText value="#{labels['jp.zvenoRazp']}" styleClass="form-label "/>		
+						<p:inputText id="zv11" value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_ZVENA, docDataComplaint.document.jalba.codeZveno, docDataComplaint.currentLang, now)}"  readonly="true"/>
+						<ui:remove><!-- 	
+						<ibg:selectOneModalA id="zveno" 
+						    readonly="#{isView eq 1 or !docDataComplaint.fullAccessJ}" 
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_ZVENA}"
+							dateClassif="#{docDataComplaint.decodeDate}" filtered="false" minQueryLength="2"
+							selectedCode="#{docDataComplaint.document.jalba.codeZveno}"
+							styleAutoComp="width:99%;" saveStateTree="false"
+							header="#{labels['dvijenie.admStruktura']}"
+							isSelectNode="true"
+							withBtnClear="true" compType="2" 
+							onComplete="#{docDataComplaint.actionLoadSlZveno(null)}"
+							onClear = "#{docDataComplaint.actionLoadSlZveno(null)}"
+							update="@this docForm:tabsDoc:zvExpert1"/>  	--></ui:remove>
+				</div>
+				<div class="p-col-12 p-md-12 p-lg-6  p-xl-6" jsf:id="zvExpert1">
+					<h:outputText value="#{labels['jp.vodeshExp']}" styleClass="form-label "/>		
+					<ibg:autoCompleteListVod id="expert1" 
+					 			readonly="#{isView eq 1 or !(docDataComplaint.fullAccessJ or docDataComplaint.zvenoLiderJ)}" 
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+								minQueryLength="2"
+								listVod="#{docDataComplaint.zvenoSlList}"
+								selectedCode="#{docDataComplaint.document.jalba.codeExpert}"
+								styleAutoComp="" 
+								withBtnClear="true" compType="2" title="#{labels['jp.vodeshExp']}"/>				
+						
+					<ui:remove><!-- 
+					<ibg:selectOneModalA id="expert11" 
+					        readonly="#{isView eq 1 or !(docDataComplaint.fullAccessJ or docDataComplaint.zvenoLiderJ)}" 
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+							dateClassif="#{docDataComplaint.decodeDate}" filtered="false" minQueryLength="2"
+							selectedCode="#{docDataComplaint.document.jalba.codeExpert}"
+							styleAutoComp="width:99%;" saveStateTree="true"
+							header="#{labels['jp.vodeshExp']}" specifics="#{docDataComplaint.specificsAdm}"
+							isSelectNode="false"
+							withBtnClear="true" compType="2" />  --></ui:remove>
+				</div>
+				<div class="p-col-12 p-md-12 p-lg-12  p-xl-12">
+					<h:outputText value="#{labels['jp.dopExp']}" styleClass="form-label "/>					
+					<ibg:selectManyModalA id="experts2"  
+					    readonly="#{isView eq 1 or !(docDataComplaint.fullAccessJ or docDataComplaint.zvenoLiderJ)}" 
+					 	codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+						selectedCodes="#{docDataComplaint.document.jalba.dopExpertCodes}" 	
+						selectedClassifs="#{docDataComplaint.scDopExpertsList}"
+						showRadioBtn="true"  styleAutoComp="" header="#{labels['jp.dopExp']}"
+						minQueryLength="2"  specifics="#{docDataComplaint.specificsAdm}"
+						isSelectNode = "false"
+						compType="2" withBtnClear="true" saveStateTree="true"/>
+				</div>
+		    </div>
+		  	
+			
+			<ui:remove><!-- 	Информация за обработка на жалбата --></ui:remove>
+			<div jsf:id="doc-status" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-status1')">
+					<h:outputText value="#{labels['jp.infoObr']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			
+				<p:selectBooleanCheckbox value="#{docDataComplaint.document.jalba.completePorodeni}"   
+				 	itemLabel="#{labels['jp.completePorodeni']}  (бр: #{docDataComplaint.countPorodeni})"  title="#{labels['jp.completePorodeniTitle']}"
+					rendered="#{isView ne 1 and docDataComplaint.countPorodeni ge 1}" />									
+					
+			</div>			
+			<div jsf:id="doc-status1" class="p-grid ui-fluid" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">	
+					
+				<div class="p-col-12 p-md-4 p-lg-4 p-xl-2" jsf:id="status1">
+					<h:outputText value="#{labels['jp.sast']}" styleClass="form-label req" />					
+					<p:selectOneMenu id="status" value="#{docDataComplaint.document.jalba.sast}"  disabled="#{isView eq 1 }">
+					     <f:selectItems  value="#{docDataComplaint.sastList}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					       <p:ajax event="change" partialSubmit="true" process="@this " update="@this zveno1 zvExpert1 doc-status" listener="#{docDataComplaint.actionChangeSast}"/>
+					</p:selectOneMenu>
+				</div>
+				
+				<div class="p-col-6 p-md-4 p-lg-3 p-xl-2">						
+					<h:outputText value="#{labels['jp.sastDate']}" styleClass="form-label" />
+					<div class="ui-inputgroup">
+					 	<p:inputText id="statusDateV" 
+							value="#{docDataComplaint.document.jalba.sastDate}"
+						    readonly="true">
+						   <f:convertDateTime  pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docDataComplaint.timeZone}"/>
+						</p:inputText>
+						<p:commandButton id="btnSastH"
+								rendered="#{docDataComplaint.document.id ne null}"
+								icon="fas fa-history" partialSubmit="true"
+								process="docForm:tabsDoc:pSastHistory @this"
+								update="docForm:tabsDoc:pSastHistory"
+								oncomplete="PF('modalSast').show(); "
+								actionListener="#{docDataComplaint.actionSprSast()}"
+								title="#{labels['docspec.sastHistory']}"/>
+					</div>						
+				</div>
+				
+				<div class="p-col-6 p-md-4 p-lg-3 p-xl-2" jsf:id="srokDate1">						
+					<h:outputText value="#{labels['jp.srok']}" styleClass="form-label req" />
+					<p:datePicker  id="srokDate" 
+					    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+					    rendered="#{isView ne 1}"
+					    value="#{docDataComplaint.document.jalba.srok}"  />
+				 	<p:inputText id="srokDateV" rendered="#{isView eq 1}"
+						value="#{docDataComplaint.document.jalba.srok}" 
+					    readonly="true">
+					   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+					</p:inputText>	 		
+				</div>
+				
+				<div class="p-col-12 p-md-5 p-lg-6 p-xl-3" jsf:id="dopust1">
+					<h:outputText value="#{labels['jp.dopust']}" styleClass="form-label req"/>					
+					<p:selectOneMenu id="dopust" value="#{docDataComplaint.document.jalba.dopust}"  disabled="#{isView eq 1}">
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOPUST, now, docDataComplaint.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					      <p:ajax event="change" partialSubmit="true" process="@this" update="@this  zveno1 zvExpert1 dOsnNeDop dFinal rezultFinal status1 srokDate1" 
+		      		 		listener="#{docDataComplaint.actionChangeDopust}"/> 
+				    </p:selectOneMenu>
+				</div>
+				
+				<div class="p-col-12 p-md-7 p-lg-6 p-xl-3" jsf:id="dOsnNeDop" > 
+					<h:outputText value="#{labels['jp.osnNedopust']}" styleClass="form-label "  rendered="#{docDataComplaint.document.jalba.dopust ne null and docDataComplaint.document.jalba.dopust ne OmbConstants.CODE_ZNACHENIE_DOPUST_DOPUST}"/>				
+			    	<ibg:autoCompleteListVod id="osnNeDop" readonly="#{isView eq 1}" 
+			    	            rendered="#{docDataComplaint.document.jalba.dopust ne null and docDataComplaint.document.jalba.dopust ne OmbConstants.CODE_ZNACHENIE_DOPUST_DOPUST}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_OSN_NEDOPUST}"
+								minQueryLength="2"
+								listVod="#{docDataComplaint.osnNeDopustList}"
+								selectedCode="#{docDataComplaint.document.jalba.osnNedopust}"
+								styleAutoComp="" 
+							    title="#{labels['jp.osnNedopustTitle']}"
+								withBtnClear="true" compType="2" />	
+						
+				</div>
+				
+			</div>	
+	
+			
+			<ui:remove><!--Начин на финализиране и  Резултат от приключването на жалбата  class="title-group"--></ui:remove>
+			<div jsf:id="rezultF">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:rezultFinal')">
+					<h:outputText value="#{labels['jp.finalAndResult']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>			
+	
+			<div jsf:id="rezultFinal" class="p-grid ui-fluid">
+			
+				<div class="p-col-6 p-md-4 p-lg-4 p-xl-3" jsf:id="dFinal">
+					<h:outputText value="#{labels['jp.final']}" 
+					styleClass="#{docDataComplaint.document.jalba.jalbaResultList ne null and docDataComplaint.document.jalba.jalbaResultList.size()>0 ? 'form-label req' : 'form-label'}"/>									 
+						<p:selectOneMenu id="final" value="#{docDataComplaint.document.jalba.finMethod}"   disabled="#{isView eq 1  or !docDataComplaint.editSpecFields}">
+						      <f:selectItem value="#{null}" itemValue="#{null}" />
+						      <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_JALBA_FIN, now, docDataComplaint.currentLang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						        <p:ajax event="change" partialSubmit="true" process="@this" update="@this rezultFinal" 
+			      		 		listener="#{docDataComplaint.actionChangeFinal}"/>     
+					    </p:selectOneMenu> 
+				 </div>
+				 <div class="p-col-fixed" style="width:170px">	
+				  		<div style="height: 1.40em;" ></div>	 			 
+					    <p:commandButton icon="fas fa-plus"    rendered="#{isView ne 1  and docDataComplaint.editSpecFields}"
+							value="#{labels['jp.newResult']}" disabled="false"
+							id="btnNewResult"
+							partialSubmit="true"
+							process="@this rezultFinal"
+							update="rezultFinal" 
+							title="#{labels['jp.newResultTitle']}" 
+							action="#{docDataComplaint.actionNewResult}"/>	
+				 </div>
+				
+				 <div class="p-col-12" jsf:id="rezultFinalLst" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+				
+					 <p:repeat value="#{docDataComplaint.document.jalba.jalbaResultList}" var="rezultLst"  varStatus="key"  >	 
+					 
+						<div class="p-grid" >
+							<div class="p-col-8 p-md-8 p-lg-4 p-xl-3">
+								<h:outputText value="#{key.index+1}. #{labels['jp.resultVid']}" styleClass="form-label req"/>	
+							
+								<p:commandLink  partialSubmit="true" process="@this" ajax="true" 
+			 								rendered="#{isView ne 1  and docDataComplaint.editSpecFields}" 
+			 								update="docForm:tabsDoc:rezultFinal" 
+			 								actionListener="#{docDataComplaint.actionRemoveResult(key.index)}"
+								          	title="#{labels['jp.resultRemove']}">
+									  		<i class="fa fa-trash"></i>
+								  			<p:confirm header="#{ui_labels['general.comfirmation']}"
+											message="#{labels['jp.resultRemoveCmfr']}" icon="fas fa-exclamation-triangle" />
+								</p:commandLink>
+						
+					    		<ibg:autoCompleteListVod id="vidRezult" readonly="#{isView eq 1  or !docDataComplaint.editSpecFields}" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_JALBA_RES}"
+									minQueryLength="2"
+									listVod="#{docDataComplaint.vidResultList}"
+									selectedCode="#{rezultLst.vidResult}"
+									styleAutoComp="width:99%;" 
+									title="#{labels['jp.resultVidTitle']}"
+									withBtnClear="true" compType="2" />					
+							</div>
+							 
+							<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" >
+								<h:outputText value="#{labels['jp.resultDate']}" styleClass="form-label " />
+								<p:datePicker  id="rezultDate" 
+								    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+								    rendered="#{isView ne 1 and docDataComplaint.editSpecFields}"
+									value="#{rezultLst.dateResult}"  />
+							 	<p:inputText id="rezultDateV" rendered="#{isView eq 1 or !docDataComplaint.editSpecFields}"
+									value="#{rezultLst.dateResult}"
+								    readonly="true">
+								   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+								</p:inputText>	 			
+							</div>  
+							
+							<div class="p-col-12 p-md-6 p-lg-4 p-xl-4">
+								<h:outputText value="#{labels['jp.resultOrgan']}" styleClass="form-label " />
+								<p:commandLink  partialSubmit="true" process="@this docForm:tabsDoc:rezultFinalLst" ajax="true" 
+			 								rendered="#{isView ne 1 and docDataComplaint.editSpecFields and rezultLst.codeSubject eq null }" 
+			 								update="docForm:tabsDoc:rezultFinalLst" 
+			 								actionListener="#{docDataComplaint.actionSetJbpR(key.index)}"
+								          	title="#{labels['jp.resultToJlp']}">
+									  		<i class="fa fa-user-plus" aria-hidden="true"></i>
+								</p:commandLink>
+								<div class="selectModalA-with-buttons" >		
+									<h:panelGroup id="refOrganInp" layout="block" styleClass="koresp-input">	
+										<ibg:selectOneModalA id="rezCodeSub" readonly="#{isView eq 1 or !docDataComplaint.editSpecFields}"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}" 
+											selectedCode="#{rezultLst.codeSubject}"
+											selectedText="#{rezultLst.textSubject}"
+											hiddenTxt="true"
+											saveStateTree="false" withBtnClear="true" minQueryLength="2"
+											compType="4" filtered="false" 
+											styleAutoComp=""
+											itemtipAtPosition="center bottom"
+											forceSelection = "false"
+											update="docForm:tabsDoc:rezultFinalLst" 
+											onClear="#{docDataComplaint.clearRSubject(key.index)}"/>
+									</h:panelGroup>
+									<p:commandButton id="btnCorrOrganD"
+										rendered="#{rezultLst.codeSubject ne null and rezultLst.codeSubject ne docDataComplaint.defaultCode and docDataComplaint.editSpecFields}"
+										icon="#{(isView ne 1) ? 'fas fa-edit' : 'fas fa-eye'}" partialSubmit="true"
+										process="docForm:tabsDoc:dpCorrOrgan @this"
+										update="docForm:tabsDoc:dpCorrOrgan"
+										oncomplete="PF('mCorrOrganD').show(); "
+										actionListener="#{docDataComplaint.setRowOrgan(rezultLst.codeSubject)}"
+										title="#{isView ne 1 ? labels['docu.titleEditCoresp'] : labels['docu.titleViewCoresp']}"/>
+								</div>
+							</div>
+							<div class="p-col-12 p-md-6 p-lg-2 p-xl-3">
+								<h:outputText value="#{labels['docu.note']}" styleClass="form-label " />
+								<p:inputText  value="#{rezultLst.note}"  title="#{labels['jp.noteTitle']}" readonly="#{!docDataComplaint.editSpecFields}"/>
+							</div>
+							
+					 </div>
+					  
+				<ui:remove><!-- 	 <p:divider />  --></ui:remove>
+					 
+					</p:repeat>
+				
+				</div>
+			
+			</div>
+						
+								
+			
+			<ui:remove><!-- Получаване и др. Допълнителна информация --></ui:remove>
+			<div jsf:id="doc-dopInfo11" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-dopInfo12')">
+					<h:outputText value="#{labels['docu.dopInfo']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>			
+		
+			<div jsf:id="doc-dopInfo12" class="p-grid ui-fluid">
+				<div class="p-col-8 p-md-5 p-lg-4 p-xl-3">
+			
+					<h:outputText value="#{labels['jp.podavane']}"
+						styleClass="form-label" />
+					<p:selectOneMenu id="podavaneType" value="#{docDataComplaint.document.jalba.submitMethod}"
+						 disabled="#{isView eq 1 or  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_EMAIL or
+						  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_INTERNET or
+						  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_MOBILE or
+						  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_SSEV}">
+					  	 
+					     <f:selectItem value="#{null}" itemValue="#{null}"/>
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_SUBMIT_METHOD, now, docDataComplaint.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+				    </p:selectOneMenu>	
+				</div>
+				<div class="p-col-4 p-md-3 p-lg-3 p-xl-2">					
+							<h:outputText value="#{labels['jp.podavaneDate']}"
+								styleClass="form-label" />
+							<p:datePicker id="podavaneDat"
+								rendered="#{!(isView eq 1 or docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_EMAIL or 
+											docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_INTERNET or 
+								  			docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_MOBILE or
+						  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_SSEV)}"
+								showIcon="true" mask="true"  pattern="dd.MM.yyyy" locale="bg"
+								value="#{docDataComplaint.document.jalba.submitDate}"	/>	
+								
+							<p:inputText id="receiveDatV" 
+							     rendered="#{isView eq 1 or  docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_EMAIL or
+							      			 docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_INTERNET or
+							     			 docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_MOBILE or
+						 				     docDataComplaint.document.jalba.submitMethod eq OmbConstants.CODE_ZNACHENIE_SUBMIT_METHOD_SSEV}"
+						 		 value="#{docDataComplaint.document.jalba.submitDate}"	
+						  	 	 readonly="true">
+						  	 	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+							</p:inputText>					
+				</div>
+				<div class="p-col-12 p-md-4 p-lg-4  p-xl-2">						
+					<h:outputText value="#{labels['jp.otgovor']}"
+						styleClass="form-label" />
+					<p:selectOneMenu id="replayType" value="#{docDataComplaint.document.deliveryMethod}" disabled="#{isView eq 1}">
+					     <f:selectItem value="#{null}" itemValue="#{null}"/>
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_ANSWER_METHOD, now, docDataComplaint.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+				    </p:selectOneMenu>	
+				</div>
+				<div class="p-col-6 p-md-4 p-lg-4 p-xl-2">
+					<h:outputText value="#{labels['docu.valid']}" styleClass="form-label req" />
+			
+					<p:selectOneMenu id="validType" value="#{docDataComplaint.document.valid}" 
+							 disabled="#{isView eq 1 or docDataComplaint.rnFullProtocol ne null}">
+					    
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, now, docDataComplaint.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+				    </p:selectOneMenu>	
+				</div>
+				<div class="p-col-6 p-md-3 p-lg-3 p-xl-2">
+					<h:outputText value="#{labels['docu.validDate']}"
+						styleClass="form-label req" />
+					<p:datePicker id="validDat"  
+					    showIcon="true" mask="true"	    pattern="dd.MM.yyyy" locale="bg"  							    
+					    rendered="#{!(isView eq 1  or docDataComplaint.rnFullProtocol ne null)}"
+						value="#{docDataComplaint.document.validDate}" />
+					<p:inputText id="validDatV" 
+						rendered="#{isView eq 1  or docDataComplaint.rnFullProtocol ne null}"
+					 	value="#{docDataComplaint.document.validDate}"
+					    readonly="true">
+					   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+					</p:inputText>	
+				</div>
+				
+				<div  class="p-col-12 p-md-12 p-lg-12 p-xl-12">
+					<p:selectBooleanCheckbox value="#{docDataComplaint.corruptionB}" styleClass="form-label" 
+						itemLabel="#{labels['jp.corruption']}" disabled="#{isView eq 1}"
+						rendered="true" />
+				
+					<p:selectBooleanCheckbox value="#{docDataComplaint.instCheckB}" styleClass="form-label " 
+						itemLabel="#{labels['jp.drInst']}" disabled="#{isView eq 1}" >
+							 <p:ajax event="change" update="drInstD" partialSubmit="true" process="@this  drInstD"  	/>
+					</p:selectBooleanCheckbox>
+				</div>
+				<div class="p-col-12 p-md-12 p-lg-12  p-xl-12" jsf:id="drInstD">
+					<h:outputText value="#{labels['jp.drInst2']}" styleClass="form-label "  rendered="#{docDataComplaint.instCheckB}"/>
+					<p:inputTextarea id="drInst" value="#{docDataComplaint.document.jalba.instNames}"  rendered="#{docDataComplaint.instCheckB}"
+						autoResize="false"
+						rows="2"/>	
+				</div>
+				
+				<div class="p-col-12 p-md-12 p-lg-12  p-xl-12"> <!-- docInfo !! -->
+					<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label "/>	
+					<a id="dopInfL"/> 				
+					<p:inputTextarea id="dopInf" value="#{docDataComplaint.document.docInfo}" 
+						readonly="#{isView eq 1  or !docDataComplaint.editSpecFields}" rows="4" />
+				</div>		
+				
+			</div>
+			
+		</h:panelGroup>
+
+	</h:panelGroup>
+
+	<ui:include src="docDataRegModalComplaint.xhtml" /> 
+
+</ui:composition>

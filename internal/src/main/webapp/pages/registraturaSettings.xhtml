@@ -1,0 +1,162 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<!--Основни данни за регистратурата-->
+<h:panelGroup id="panelTab3" layout="block">
+
+	<h:panelGroup id="panelRegSettings">
+
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#settingsList')">
+				<h:outputText value="#{labels['regSettings.settingsTitle']}" /> 
+				
+				<ui:remove>
+					<h:outputText value="#{labels['regSettings.settingsTitle']} #{labels['registraturaData.to']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, registraturaSettings.idReg, registraturaSettings.currentLang, now)}" /> 
+				</ui:remove>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="settingsList" class="card">
+				
+			<p:toolbar styleClass="margin-bottom" id="tbTab3Set">
+				<f:facet name="left">
+					<p:commandButton icon="fas fa-save" action="#{registraturaSettings.actionSave}" update="formRegistratura:tabsRegistraturi:panelRegSettings" value="#{ui_labels['general.save']}" />
+					
+					<ui:remove> <span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	                
+					<p:commandButton icon="fas fa-copy" action="#{registraturaSettings.actionFindAllRegistraturi}" update="formRegistratura:tabsRegistraturi:panelDlgCopySet" value="#{labels['regSettings.copy']}" onclick="PF('dlgCopySet').show();" /> </ui:remove>								
+				</f:facet>							
+			</p:toolbar>
+			
+			 <div class="p-grid ui-fluid">
+
+			<p:dataTable id="tblSettingsList" var="row" value="#{registraturaSettings.settingsList}" rowIndexVar="idx"
+				emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+				<f:facet name="{Exporters}">
+					
+					<div style="float: left">
+						
+						<h:commandLink id="excel">
+							<h:graphicImage library="images" name="excel2.png" />
+							<p:dataExporter type="xls" target="tblSettingsList" fileName="settingsXls" postProcessor="#{registraturaSettings.postProcessXLS}"/>
+						</h:commandLink>
+<ui:remove><!-- 
+						<h:commandLink id="pdf">
+							<h:graphicImage library="images" name="pdf.png" />
+							<p:dataExporter type="pdf"  target="tblSettingsList" fileName="settingsPdf" 	 encoding="windows-1251"
+					        			preProcessor="#{registraturaSettings.preProcessPDF}" options="#{registraturaSettings.pdfOptions()}"/>
+						</h:commandLink>
+
+						<h:commandLink id="csv">
+							<h:graphicImage library="images" name="csv.png" />
+							<p:dataExporter type="csv" target="tblSettingsList" fileName="settingsCsv" encoding="CP1251" />
+						</h:commandLink>
+					 --></ui:remove>
+					</div>
+				
+				</f:facet>
+				
+				<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>
+
+				<p:column width="250" sortBy="#{row.settingCode}" headerText="#{labels['regSettings.setting']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REISTRATURA_SETTINGS, row.settingCode, registraturaSettings.currentLang, now)}" />
+				</p:column>
+
+				<p:column width="100" sortBy="#{row.settingValue}" headerText="#{labels['regSettings.value']}" id="value">
+					<h:outputText value="#{systemData.decodeItem(row.codeClassif, row.settingValue, registraturaSettings.currentLang, now)}" rendered="#{row.settingValue ne 0}"/>
+				</p:column>
+
+				<p:column width="20" exportable="false" headerText="#{labels['regSettings.incl']}" style="text-align: center;">
+					<p:triStateCheckbox rendered="#{row.codeClassif eq OmbConstants.CODE_CLASSIF_DANE}" value="#{row.valueTri}">								
+						<p:ajax event="change" update="formRegistratura:tabsRegistraturi:tblSettingsList" />
+					</p:triStateCheckbox>
+					<p:selectBooleanCheckbox rendered="#{row.codeClassif ne OmbConstants.CODE_CLASSIF_DANE}" value="#{row.value}">								
+						<p:ajax event="change" update="formRegistratura:tabsRegistraturi:tblSettingsList" />
+					</p:selectBooleanCheckbox>
+				</p:column>
+
+				<p:column width="20" exportable="false" headerText="#{labels['regSettings.choice']}" id="choice">
+					<div jsf:rendered="#{(row.settingValue != null or row.settingValue eq 0) and row.codeClassif ne OmbConstants.CODE_CLASSIF_DANE}">								
+						<ibg:selectOneModalA codeClassif="#{row.codeClassif}" selectedCode="#{row.settingValue}" saveStateTree="false" compType="1" modal="true" update="formRegistratura:tabsRegistraturi:tblSettingsList" />
+					</div>
+				</p:column>
+
+			</p:dataTable>
+			
+			</div>
+
+		</div>
+		
+	</h:panelGroup>	
+	
+	<p:dialog header="#{labels['regSettings.copy']}" widgetVar="dlgCopySet" modal="true" width="700" height="100" resizable="true" appendTo="@form">
+	
+		<p:messages id="messages2">
+	        <p:autoUpdate />
+	    </p:messages>	
+				
+		<p:outputPanel id="panelDlgCopySet">
+		
+			<div class="p-grid">
+			
+				<!-- Избор на друга регистратура, от която да се копират настройките -->
+				<div  class=" p-col-12 p-md-12">								
+					<h:outputText value="#{labels['regSettings.fromRegistratura']}" styleClass="form-label req"/>
+					<p:selectOneMenu value="#{registraturaSettings.fromRegistratura}" id="fromRegSet" styleClass="#{registraturaSettings.hasMessages('fromRegSet') ? 'invalid': ''}" style="width: 90%">
+		 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                           <f:selectItems value="#{registraturaSettings.classifRegsList}" 
+                      			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                      	<p:ajax event="change" update="formRegistratura:tabsRegistraturi:p3CopyPanel"/>
+					</p:selectOneMenu>					
+					 <p:message for="fromRegSet" display="text" style="color:#ffffff; background:none; border:0px">
+						<p:autoUpdate/>
+					</p:message>							
+				</div>
+
+				<h:panelGroup id="p3CopyPanel" styleClass="p-grid p-col-12 p-nogutter" layout="block">
+
+					<h:panelGroup
+						rendered="#{registraturaSettings.fromRegistratura != null}">
+
+						<div class=" p-col-12 p-md-12">
+							<p:commandButton icon="fas fa-save" action="#{registraturaSettings.actionCopySettings}" update="formRegistratura:tabsRegistraturi:tblSettingsList"
+								value="#{labels['register.btnCopy']}" />
+						</div>
+
+					</h:panelGroup>
+
+				</h:panelGroup>
+
+			</div>
+			
+		</p:outputPanel>
+				
+		<f:facet name="footer">
+		          	
+          	<div class="p-grid p-nogutter">
+	       		
+	       		<div class="p-col-12" align="right">
+		       	 	<p:commandButton id="bntCloseCopySet" update="panelDlgCopySet" process="@this panelDlgCopySet"
+		       	 	    icon="fas fa-times" styleClass="ui-button-secondary" value="#{labels['register.cancel']}" oncomplete="PF('dlgCopySet').hide();" />	
+		 		</div>
+	 		
+	 		</div>
+		
+		</f:facet>	
+		
+	</p:dialog>
+	
+</h:panelGroup>
+
+</ui:composition>

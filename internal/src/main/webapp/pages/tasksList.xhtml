@@ -1,0 +1,703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"> 
+	  
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(null}" onPostback="false" />
+		</f:metadata>
+	
+	
+	<h:form id="tasksListForm">
+	<h:panelGroup id="panelFilter" layout="block" class="container #{guestPreferences.containerPosition}">	
+	<p:outputPanel id="panelFilterPanel"  styleClass="card">	
+		<p:focus context="panelFilterPanel"/>
+		<div class="p-grid">
+			<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-2 ui-fluid">
+		        <h:outputText   value="#{labels['tasks.nomer1']}"  styleClass="form-label"/>
+		    	<div class="ui-inputgroup">
+			        <p:inputText value="#{tasksList.taskSearch.rnTask}" id="rn"/> 
+			    		<p:selectBooleanButton id="rnTaskEq" value="#{tasksList.taskSearch.rnTaskEQ}" 
+								      	    onLabel="#{ui_labels['general.da']}"
+								    	    offLabel="#{ui_labels['general.ne']}"
+											title="#{labels['docu.docSrchRegNom']}" 
+										    onIcon="fas fa-toggle-on"  
+											offIcon="fas fa-toggle-off"  >
+												<p:ajax update="@this rn" partialSubmit="true" process="@this rn"/>			
+									</p:selectBooleanButton>
+				</div>
+			</div>
+		    <div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText   value="#{labels['docu.vid']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+		        	<p:selectCheckboxMenu id="vidMultiple" value="#{tasksList.selectedVidTask}"   multiple="true" >
+			            <f:selectItems value="#{tasksList.vidTask}" />
+			        </p:selectCheckboxMenu>
+			    </div>
+		    </div>
+		    <div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText   value="#{labels['task.statusData']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+		        	<p:selectCheckboxMenu id="statusMultiple" value="#{tasksList.selectedStatusTask}"  multiple="true" >
+			            <f:selectItems value="#{tasksList.statusTaskList}" />
+			        </p:selectCheckboxMenu>
+			    </div>
+		    </div>
+		    
+		    <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value=" #{labels['taskList.emplStatus']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+	            	<ibg:selectManyModalA id="empl" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+							dateClassif="#{now}" filtered="false" sortByName="false"
+							saveStateTree="false" showRadioBtn="false" 
+							selectedCodes="#{tasksList.taskSearch.userStatusList}"
+							selectedClassifs="#{tasksList.selectedEmplStatus}"
+							styleAutoComp="width:350px" isSelectNode="false"
+							withBtnClear="true"	header="#{labels['taskList.emplStatus']}" /> 
+					
+	      		</div>
+			</div>
+			
+		     
+		    <div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-12 ui-fluid"  jsf:rendered="#{isView == 0 and tasksList.hasAccessTaskRegis}" jsf:id="allTasksRegis">
+            		<p:selectOneRadio value="#{tasksList.registraturaRadioBtn}" >
+            			<f:selectItem itemLabel="#{labels['tasksList.tasksRef']}" itemValue="1" />
+            			<f:selectItem itemLabel="#{labels['tasksList.allTasksRegis']}" itemValue="2" />
+            		</p:selectOneRadio>
+			</div>
+		</div>
+		
+		<div class="p-grid">
+			<div class="p-col-12">
+				<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#event-extended')">
+					<h:outputText value="#{ui_labels['search.extend']}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>		
+		</div>
+		
+	<div class="p-grid extended-search" id="event-extended" style=" display: none;">
+		    <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText    value="#{labels['docu.regNom']} #{labels['docu.document']}"  styleClass="form-label"/>
+	        	<div class="ui-inputgroup"> 
+	        	<p:inputText value="#{tasksList.taskSearch.rnDoc}" id="rnDoc"/> 
+	    		<p:selectBooleanButton id="rndEq" value="#{tasksList.taskSearch.rnDocEQ}" 
+						      	    onLabel="#{ui_labels['general.da']}"
+								    offLabel="#{ui_labels['general.ne']}"
+									title="#{labels['docu.docSrchRegNom']}" 
+								    onIcon="fas fa-toggle-on"  
+									offIcon="fas fa-toggle-off"  >
+										<p:ajax update="@this rnDoc" partialSubmit="true" process="@this rnDoc"/>			
+				</p:selectBooleanButton>
+				</div>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">
+		        <h:outputText  value=" #{labels['tasks.exec']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+	            	<ibg:selectManyModalA id="lstIzps" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+							dateClassif="#{now}" filtered="false" sortByName="false"
+							saveStateTree="false" showRadioBtn="false" 
+							selectedCodes="#{tasksList.taskSearch.codeExecList}"
+							selectedClassifs="#{tasksList.scList}"
+							styleAutoComp="width:350px"
+							withBtnClear="true"	header="#{labels['tasks.exec']}"
+							/> 
+					<p:message for="lstIzps" showDetail="true" showSummary="true" display="tooltip" escape="false">
+		      			<p:autoUpdate/>
+		      		</p:message>
+	      		</div>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+				<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+		        <div class="ui-inputgroup">
+            		<p:selectBooleanCheckbox value="#{tasksList.taskSearch.execOtgovoren}" itemLabel="#{labels['tasksList.otgovorenIzp']}"/>
+            	</div>
+			</div>
+			
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value=" #{labels['tasks.assignCode']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+	            	<ibg:selectManyModalA id="lstVuzlozitel" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+							header="#{labels['tasks.assignCode']}" sortByName="false"
+							dateClassif="#{now}" filtered="false"
+							saveStateTree="false" showRadioBtn="false" 
+							selectedCodes="#{tasksList.taskSearch.codeAssignList}"
+							selectedClassifs="#{tasksList.scList2}"
+							styleAutoComp="width:250px"
+							withBtnClear="true"	
+							/> 
+						 	
+					<p:message for="lstVuzlozitel" showDetail="true" showSummary="true" display="tooltip" escape="false">
+		      			<p:autoUpdate/>
+		      		</p:message>
+	      		</div>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">
+		        <h:outputText  value=" #{labels['tasks.ctrlCode']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+	            	<ibg:selectManyModalA id="lstKontrolirashti" compType="2" maxResults="50"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+							dateClassif="#{now}" filtered="false" sortByName="false"
+							saveStateTree="false" showRadioBtn="false" 
+							selectedCodes="#{tasksList.taskSearch.codeControlList}"
+							selectedClassifs="#{tasksList.scList3}"
+							styleAutoComp="width:350px"
+							withBtnClear="true"	header="#{labels['tasks.ctrlCode']}"
+							/> 
+					<p:message for="lstKontrolirashti" showDetail="true" showSummary="true" display="tooltip" escape="false">
+		      			<p:autoUpdate/>
+		      		</p:message>
+	      		</div>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid" >
+				<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+		        <div class="ui-inputgroup">
+            		<p:selectBooleanCheckbox value="#{tasksList.taskSearch.subordinates}" itemLabel="#{labels['tasksList.tasksMySubordinates']}" 
+            		rendered="#{isView == 1 and tasksList.showTasksMySubordinates}"/>
+            	</div>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value="#{labels['doc.lstPeriod']} #{labels['docu.document']}"  styleClass ="form-label"/>
+            	<p:selectOneMenu id="idPerDoc" value="#{tasksList.periodDoc}" height="250">
+	                <f:selectItem value="#{null}" itemValue="#{null}"/>
+	                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, tasksList.currentLang)}" 
+	                   var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+	                <p:ajax event="change" update="tasksListForm:idPerDoc tasksListForm:dateOtRegDoc tasksListForm:dateDoRegDoc" listener="#{tasksList.changePeriodDoc}"/>   
+         		 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				<p:datePicker id="dateOtRegDoc" mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.docDateFrom}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPerDoc" listener="#{tasksList.changeDateDoc}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPerDoc" listener="#{tasksList.changeDateDoc}"/>      
+		        </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				 <p:datePicker id="dateDoRegDoc"  mask="true" showIcon="true"   locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.docDateTo}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPerDoc" listener="#{tasksList.changeDateDoc}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPerDoc" listener="#{tasksList.changeDateDoc}"/>      
+		         </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid" >
+				<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+		        <div class="ui-inputgroup">
+            		<p:selectBooleanCheckbox value="#{tasksList.taskSearch.withDoc}" itemLabel="#{labels['tasksList.onlyTasksWithDoc']}"/>
+				</div>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+			</div>
+		
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value="#{labels['tasksList.periodTask']} "  styleClass ="form-label"/>
+            	<p:selectOneMenu id="idPer1" value="#{tasksList.periodR}" height="250">
+	                <f:selectItem value="#{null}" itemValue="#{null}"/>
+	                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, tasksList.currentLang)}" 
+	                   var="rP" itemLabel="#{rP.tekst}" itemValue="#{rP.code}" />
+	                <p:ajax event="change" update="tasksListForm:idPer1 tasksListForm:dateOtReg tasksListForm:dateDoReg" listener="#{tasksList.changePeriodR}"/>   
+         		 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	            <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				<p:datePicker id="dateOtReg" mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.regDateFrom}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPer1" listener="#{tasksList.changeDate}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPer1" listener="#{tasksList.changeDate}"/>      
+		        </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				 <p:datePicker id="dateDoReg"  mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.regDateTo}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPer1" listener="#{tasksList.changeDate}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPer1" listener="#{tasksList.changeDate}"/>      
+		         </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-5 ui-fluid" >
+				<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+		        <div class="ui-inputgroup">
+            		<p:selectBooleanCheckbox value="#{tasksList.taskSearch.withoutDoc}" itemLabel="#{labels['tasksList.onlyTasksWithoutDoc']}" />
+				</div>
+			</div>
+			
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value="#{labels['tasksList.periodVazlagane']}"  styleClass ="form-label"/>
+            	<p:selectOneMenu id="idV" value="#{tasksList.periodV}" height="250">
+	                <f:selectItem value="#{null}" itemValue="#{null}"/>
+	                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, tasksList.currentLang)}" 
+	                   var="pv" itemLabel="#{pv.tekst}" itemValue="#{pv.code}" />
+	                <p:ajax event="change" update="tasksListForm:idV tasksListForm:dateOtV tasksListForm:dateDoV" listener="#{tasksList.changePeriodV}"/>   
+         		 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				 <p:datePicker id="dateOtV"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.assignDateFrom}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idV" listener="#{tasksList.changeDateV}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idV" listener="#{tasksList.changeDateV}"/>      
+		         </p:datePicker>	
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				 <p:datePicker id="dateDoV"  mask="true" showIcon="true"  locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.assignDateTo}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idV" listener="#{tasksList.changeDateV}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idV" listener="#{tasksList.changeDateV}"/>      
+		         </p:datePicker>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-5  ui-fluid">
+		        <h:outputText  value="#{labels['docu.dopInfo']} за задача"  styleClass="form-label p-mr-2"/>
+		        
+		        <i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{tasksList.isOkToRender}"></i>
+	        	<p:inputText value="#{tasksList.taskSearch.taskInfo}" id="opisanie" /> 
+		    </div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ui-fluid">
+		        <h:outputText  value="#{labels['tasksList.periodFinishTask']}"  styleClass ="form-label"/>
+            	<p:selectOneMenu id="idPerZ" value="#{tasksList.periodZ}" height="250">
+	                <f:selectItem value="#{null}" itemValue="#{null}"/>
+	                <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, tasksList.currentLang)}" 
+	                   var="pz" itemLabel="#{pz.tekst}" itemValue="#{pz.code}" />
+	                <p:ajax event="change" update="tasksListForm:idPerZ tasksListForm:dateOtZ tasksListForm:dateDoZ" listener="#{tasksList.changePeriodZ}"/>   
+         		 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				 <p:datePicker id="dateOtZ"   mask="true" showIcon="true"  locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.srokDateFrom}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPerZ" listener="#{tasksList.changeDateZ}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPerZ" listener="#{tasksList.changeDateZ}"/>      
+		         </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid">
+	             <h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				 <p:datePicker id="dateDoZ"  mask="true" showIcon="true"  locale="bg"   pattern="dd.MM.yyyy" 
+		         	value="#{tasksList.taskSearch.srokDateTo}" styleClass="form-control" >
+		         	<p:ajax event="change" update="tasksListForm:idPerZ" listener="#{tasksList.changeDateZ}"/>
+		         	<p:ajax event="dateSelect" update="tasksListForm:idPerZ" listener="#{tasksList.changeDateZ}"/>      
+		         </p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-5 ui-fluid">
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-5 ui-fluid">
+		        <h:outputText   value="#{labels['users.registratura']}"  styleClass="form-label" rendered="#{isView == 1 and tasksList.registraturaList.size() > 1}"/>
+	        	<p:selectOneMenu id="registratura" value="#{tasksList.taskSearch.registraturaId}" label="#{labels['users.registratura']}"
+		                               panelStyle="width:250px" rendered="#{isView == 1 and tasksList.registraturaList.size() > 1}" disabled="#{!tasksList.showRegistaturiList}">
+		             <f:selectItem itemValue="" />      
+		            <f:selectItems value="#{tasksList.registraturaList}" />
+		        </p:selectOneMenu>
+		    </div>	
+		    <div class="p-col-12 p-sm-12 p-md-6 p-lg-9 p-xl-7 ui-fluid">
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-3 ui-fluid">
+		        <h:outputText   value="#{labels['tasks.opinion']}"  styleClass="form-label"/>
+		        <div class="ui-inputgroup">
+		        	<p:selectCheckboxMenu id="endOpinionMultiple" value="#{tasksList.selectedEndOpinionTask}"  multiple="true" >
+			            <f:selectItems value="#{tasksList.endOpinionTaskList}" />
+			        </p:selectCheckboxMenu>
+			    </div>
+		    </div>
+		    <div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-4 ui-fluid">
+		        <h:outputText   value="#{labels['tasks.statusComments']}"  styleClass="form-label p-mr-2"/>
+		        	
+		        <i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{tasksList.isOkToRender}"></i>
+		        <div class="ui-inputgroup">
+		        	<p:inputText value="#{tasksList.taskSearch.statusComments}" id="statusComments"/> 
+			    </div>
+		    </div>
+		    
+		    <!--Текст на документа-->
+		    <div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-5 ui-fluid" jsf:rendered="#{tasksList.isOkToRender}" >
+		        <h:outputText value="#{labels['tasksList.file']}" styleClass="form-label"   />
+		        <i class="fas fa-book-open" title="#{labels['global.fullTextField']}" ></i>
+	        	<p:inputText value="#{tasksList.taskSearch.fileText}" id="tasksFileText" title="#{labels['tasksList.searchInFile']}"  />
+		    </div>	
+		</div>
+			<div class="filter-buttons">
+				
+				<div style=" display:inline; " jsf:rendered="#{tasksList.isOkToRender}">
+					<p:selectBooleanCheckbox id="chkSearchFullTextDoc" value="#{tasksList.fillTextSearch}" style="vertical-align: middle;" styleClass="p-mr-3"/>
+						
+					<p:outputLabel value="#{ui_labels['general.searchFullText']}" for="chkSearchFullTextDoc" style="vertical-align: middle;"/>
+					<p:link href="../resources/docs/fullTextSearchHelp.docx" target="_blank"  style="vertical-align: middle;" title="#{labels['general.instructions']}" styleClass="p-mr-3">
+						<i class="fas fa-book-open" style="vertical-align: middle; font-size: 16px"></i>
+					</p:link>
+					
+				</div>
+				
+				<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"							    
+					id="btnSearch" update="pResult" partialSubmit="true"
+					process="@this panelFilter" actionListener="#{tasksList.actionSearchNew}"
+				    styleClass="p-mr-3"/> 
+				<p:defaultCommand target="btnSearch" scope="panelFilterPanel"/>
+	
+	
+<ui:remove>			
+				
+				
+				<p:commandButton icon="fas fa-search"
+					value="#{ui_labels['general.searchFullText']}"
+					id="btnSearchFullTextTask" update="pResult" partialSubmit="true"
+					process="@this panelFilter"
+					actionListener="#{tasksList.actionSearchFullText}"
+					rendered="#{tasksList.isOkToRender}"
+					 />
+	</ui:remove>				
+								
+				<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"							    
+					id="btnClear" update="pResult panelFilter" partialSubmit="true"
+					process="@this panelFilter" actionListener="#{tasksList.actionClear}"
+			    	 styleClass="ui-button-warning" /> 
+			</div>
+	</p:outputPanel>
+	</h:panelGroup>
+	
+	<div class=" margin-top">
+	
+		<div class="p-grid">
+			<div class="p-col-12">
+				<h:panelGroup id="pResult" layout="block">		
+				<h:panelGroup id="pResult1" rendered="#{tasksList.tasksListResult != null}" layout="block">		
+					 
+				<p:outputPanel id="panelData"  styleClass="card">
+					  <div class="table-toolbar" >
+						<h:panelGroup id="panelTblToolbar">
+							<p:splitButton id="grupovo" value="#{labels['delo.group']}" title="#{labels['tasksList.grupoviDeinosti']}" rendered="#{tasksList.taskSelectedAllM.size() ne 0 and isView == 0 and tasksList.hasAccessTaskRegis and tasksList.showGrupoviDeinosti}">
+					            <p:menuitem value="#{labels['tasksList.snemane']}" id="btnSnemane" partialSubmit="true" update="tasksListForm:snemp" process="@this" 
+									 	actionListener="#{tasksList.showModalSnemane}" title="Снемане" oncomplete="PF('snemaneModal').show()"/>
+									 	
+								<p:menuitem value="#{labels['tasksList.izpulnenie']}" id="btnGrIzpulnenie" partialSubmit="true" update="tasksListForm:izpTasksModalIDp" process="@this" 
+									 	actionListener="#{tasksList.showModalIzpTasksModal()}" title="#{labels['tasksList.izpulnenie']}" oncomplete="PF('izpTasksModal').show()"/>
+									 	
+								<p:menuitem value="#{labels['tasksList.changeIzps']}" id="btnIzpGrSmqna" partialSubmit="true" update="tasksListForm:izpulniteliSmqnap" process="@this" 
+									 	actionListener="#{tasksList.showModalIzpSmqna()}" title="#{labels['tasksList.changeIzps']}" oncomplete="PF('izpsModal').show()"/>
+									 	
+								<p:menuitem value="#{labels['general.delete']}" id="btnGrDel" partialSubmit="true" update="tasksListForm:tblEvnP tasksListForm:panelTblToolbar" process="@this" 
+									 	actionListener="#{tasksList.grupovoIztrivaneTasks()}" title="#{labels['general.delete']}" rendered="#{tasksList.showGrupoviDeinosti and tasksList.showGroupDeleteBtn}">
+									 	<p:confirm header="#{beanMessages['general.confirm']}" message="#{beanMessages['general.confirmDeleteMsg']}" icon="fas fa-exclamation-triangle" />
+								</p:menuitem>	 	
+					        </p:splitButton>
+									 <span class=" p-mx-2"  jsf:rendered="#{tasksList.taskSelectedAllM.size() ne 0}" jsf:id="midSep">
+										<span class="fas fa-ellipsis-v" />
+									 </span>
+									<h:outputText value="#{ui_labels['general.reportResult']} #{tasksList.tasksListResult.rowCount}" styleClass="form-label"/>
+									<span class=" p-mx-2"  jsf:rendered="#{tasksList.taskSelectedAllM.size() ne 0}" jsf:id="midSep2">
+										<span class="fas fa-ellipsis-v" />
+									 </span>
+									 <h:outputText value="Бр. избрани: #{tasksList.taskSelectedAllM.size()}" rendered="#{tasksList.taskSelectedAllM.size()>0}" styleClass="form-label" id="brSel"/>
+						
+						</h:panelGroup>
+							
+					  </div>
+					
+					<p:dataTable id="tblEvnP" var="row" value="#{tasksList.tasksListResult}" lazy="true" 	 
+						rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}" 
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true"
+						paginator="true" selection="#{tasksList.taskSelectedTmp}" rowSelectMode="checkbox" disabledSelection="#{row[15]!=null}"
+						sortBy="#{row.a5}"
+						scrollable="true" >
+							
+							
+						<p:ajax event="toggleSelect"	 	 	 listener="#{tasksList.onRowSelectAll}" process="@this" update="tasksListForm:panelTblToolbar"/>
+						<p:ajax event="rowSelectCheckbox"	 	 listener="#{tasksList.onRowSelect}" process="@this" update="tasksListForm:panelTblToolbar"/>
+						<p:ajax event="rowUnselectCheckbox"	 	 listener="#{tasksList.onRowUnselect}" process="@this" update="tasksListForm:panelTblToolbar"/>
+						<p:ajax event="page"	 	 			 listener="#{tasksList.onPageUpdateSelected}" process="@this" update="tasksListForm:panelTblToolbar"/>
+						
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{tasksList.tasksListResult.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblEvnP" fileName="tasksXls"	 postProcessor="#{tasksList.postProcessXLS}" />
+					    		</h:commandLink>
+				<ui:remove><!-- 
+					    		<h:commandLink id="pdf"  
+					    		     rendered="#{tasksList.tasksListResult.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        	 	  <h:graphicImage library="images" name="pdf.png" />
+					        	 	  <p:dataExporter type="pdf" target="tblEvnP" fileName="tasksPdf" encoding="windows-1251"   preProcessor="#{tasksList.preProcessPDF}" 
+					        	 	      options="#{tasksList.pdfOptions()}"/>
+					        	</h:commandLink> 
+					  			  			 --></ui:remove>   
+				            </div>
+				       	</f:facet>	
+				       	
+				       	<p:column selectionMode="multiple" style="width:20px;text-align:center;" exportable="false" rendered="#{ isView == 0 and tasksList.hasAccessTaskRegis and tasksList.showGrupoviDeinosti}"/>
+						
+						<p:column width="20" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>	
+						
+						<p:column  width="30" exportable="false" >
+						
+							<p:button  icon="fas fa-eye" href="#{tasksList.actionGoto(1, row[0], row[11],   row[17], row[1])}" target="_blank" 
+							           title="#{ui_labels['general.view']}" 
+					  				   rendered="#{isView eq 1}" >
+					  		</p:button>
+						  				   			
+							<p:commandButton   icon="fas fa-edit"  action="#{tasksList.actionGoto(0, row[0], row[11], row[17], row[1])}" ajax="false" title="#{ui_labels['general.edit']}"  
+					 				   rendered="#{isView==0 and row[15] == null}" styleClass="btn-new" />	
+					 		<p:commandButton   icon="fas fa-lock"  styleClass="ui-button-secondary"
+					 				   title="#{tasksList.titleLock(row[15],row[16])}"  
+					 				   rendered="#{isView==0 and row[15] != null}"  />	
+						</p:column>
+						
+						<p:column width="80" sortBy="#{row.a1}" headerText="#{labels['tasks.nomer']}">
+							<h:outputText value="#{row[1]}"/>					    
+						</p:column>	
+					  	
+						
+						<p:column width="150" sortBy="#{row.a2}" headerText="#{labels['tasks.vid']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[2], tasksList.currentLang, now)}"/>					    
+						</p:column>	
+					  	
+						<p:column width="110" sortBy="#{row.a5}" headerText="#{labels['tasks.assign']}" >									  
+							<h:outputText value="#{row[5]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{tasksList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['tasks.srok']}" >									  
+							<h:outputText value="#{row[4]}">	
+								<f:convertDateTime pattern="#{tasksList.srokPattern}" timeZone="#{tasksList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a3}" headerText="#{labels['task.statusData']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[3], tasksList.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a20}" headerText="#{labels['taskList.dataStatus']}" >									  
+							<h:outputText value="#{row[20]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{tasksList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						
+						
+						<p:column width="160"  sortBy="#{row.a19}" headerText="#{labels['taskList.emplStatus']}">
+								
+							<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[19], tasksList.currentLang, now)} "> </h:outputText>
+						</p:column>
+											
+						<p:column width="160" sortBy="#{row.a6}" headerText="#{labels['dashboard.mnenieKomentar']}">
+							<h:outputText value="#{labels['docu.modalRefMnenie']} : " styleClass="form-label" rendered="#{row[18] != null}"></h:outputText> 
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_OPINION, row[18], tasksList.currentLang, now)} " rendered="#{row[18] != null}" />			
+							<h:outputText value=" #{labels['tasks.comment']} : " styleClass="form-label" rendered="#{row[6] != null}"></h:outputText> 
+							<h:outputText value=" #{row[6]}" rendered="#{row[6] != null}" />								    
+						</p:column>
+						
+						<p:column width="80" sortBy="#{row.a12}" exportHeaderValue="#{labels['docu.document']}" headerText="#{labels['docu.document1']}">
+							<h:outputText value="#{row[12]}"  />								    
+						</p:column>
+						
+						<p:column width="80" sortBy="#{row.a13}" headerText="#{labels['docu.dateDoc']}">
+							<h:outputText value="#{row[13]}"  >
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{tasksList.timeZone}"/>
+							</h:outputText>								    
+						</p:column>
+						
+						<p:column width="160"   headerText="#{labels['admStruct.employees']}">
+								<h:outputText value="#{labels['tasks.assignCode']}:" styleClass="form-label"></h:outputText> 
+									<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[8], tasksList.currentLang, now)} "> </h:outputText>
+								<h:outputText value="#{labels['tasks.exec']}:" styleClass="form-label"></h:outputText>	
+									<h:outputText value=" #{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[9], tasksList.currentLang, now)}"  ></h:outputText>
+						</p:column>
+						
+						<p:column width="160" sortBy="#{row.a6}" headerText="#{labels['task.dopInfo']}">
+							<h:outputText value="#{row[10]}"  />								    
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+				</h:panelGroup>
+				</h:panelGroup>
+			</div>
+		</div>
+	</div>	
+	
+	<h:panelGroup id="snemp">
+		<p:dialog header="#{labels['tasksList.groupSnemane']}" widgetVar="snemaneModal" modal="true" closeOnEscape="true" appendTo="@form"  id="snem"  width="700">
+			<p:outputPanel id="panelGroupSnemane" >
+			<div class="p-grid">
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-3 p-xl-3 ui-fluid">
+			        <h:outputText   value="#{labels['tasks.dateSnemane']}"  styleClass="form-label req"/>
+			    	<div class="ui-inputgroup">
+				        <p:datePicker id="dateGroupSnemane"    mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+				         	value="#{tasksList.dateGrupovoSnemane}" styleClass="form-control" >
+				        </p:datePicker>	
+					</div>
+				</div>
+				<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-7 ui-fluid">
+			        <h:outputText   value="#{labels['tasksList.textSnemane']}"  styleClass="form-label"/>
+			    	<div class="ui-inputgroup">
+				        <p:inputText value="#{tasksList.textGrupovoSnemane}" id="textGruovoSnemane"/> 
+					</div>
+				</div>
+				<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-1" align="right">
+					<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+			        <div class="ui-inputgroup">
+			        	<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"							    
+							id="btnSaveGrupovoSnemane" update="panelGroupSnemane tblEvnP " partialSubmit="true"
+							process="snem @this" actionListener="#{tasksList.grupovoSnemaneTasks()}"
+						    title="#{ui_labels['general.save']}" oncomplete="handleAttributes(xhr, status, args)"/>
+					</div>
+				</div>
+			</div>
+			</p:outputPanel>
+		</p:dialog>
+	</h:panelGroup>
+	
+	<h:panelGroup id="izpulniteliSmqnap">
+		<p:dialog header="#{labels['tasksList.changeIzpsTasks']}" widgetVar="izpsModal" modal="true" closeOnEscape="true" appendTo="@form"  id="izpulniteliSmqna" width="700">
+			
+			<div class="p-grid">
+				<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-10 ui-fluid">
+			        <h:outputText  value=" #{labels['tasks.exec']}"  styleClass="form-label"/>
+			        <div class="ui-inputgroup">
+		            	<ibg:selectManyAdmStr id="lstIzpsGrSmqna" compType="2" maxResults="50"
+								codeClassif="#{Constants.CODE_CLASSIF_ADMIN_STR}" 
+								dateClassif="#{now}" filtered="false"
+								showRadioBtn="true" 
+								selectedCodes="#{tasksList.listExecsGrSmqna}"
+								selectedClassifs="#{tasksList.scListGrSmqna}"
+								styleAutoComp="width:450px"
+								withBtnClear="true"/> 
+						<p:message for="lstIzps" showDetail="true" showSummary="true" display="tooltip" escape="false">
+			      			<p:autoUpdate/>
+			      		</p:message>
+		      		</div>
+				</div>
+				<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid" align="right">
+					<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+			        <div class="ui-inputgroup">
+			        	<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"							    
+							id="btnSaveGrupovoIzpSmqna" update="tasksListForm:tblEvnP " partialSubmit="true"
+							process="izpulniteliSmqna @this" actionListener="#{tasksList.grupovoIzpSmqnaTasks()}"
+						    title="#{ui_labels['general.save']}" oncomplete="handleErrIzpsModal(xhr, status, args)"/>
+					</div>
+				</div>
+				
+			</div>
+		</p:dialog>
+	</h:panelGroup>
+	
+	<h:panelGroup id="izpTasksModalIDp">
+		<p:dialog header="#{labels['tasksList.grupovoIzpsTask']}" widgetVar="izpTasksModal" modal="true" closeOnEscape="true" appendTo="@form"  id="izpTasksModalID"   width="700">
+			<div class="p-grid">
+			<ui:remove><!-- 
+					<h:panelGroup rendered="false">
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+					        <h:outputText value="#{labels['tasks.opinion']}" styleClass="form-label req" />
+					        <div class="ui-inputgroup">
+								<p:selectOneMenu id="opinion" value="#{tasksList.endOpinion}" immediate="true">
+									<f:selectItem value="#{null}" itemValue="#{null}"/>
+									<f:selectItems value="#{tasksList.opinionLst}" var="item1" itemLabel="#{item.tekst}" itemValue="#{item.code}" />
+								</p:selectOneMenu>	
+							</div>
+						</div>
+					</h:panelGroup>
+				--></ui:remove>
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-3 p-xl-3 ui-fluid">
+			        <h:outputText   value="#{labels['tasks.dateExec']}"  styleClass="form-label req"/>
+			    	<div class="ui-inputgroup">
+				        <p:datePicker id="dateGroupIzpulnenie"  mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" 
+				         	value="#{tasksList.dateGrupovoSnemane}" styleClass="form-control" >
+				        </p:datePicker>	
+					</div>
+				</div>
+				<div class="p-col-12 p-sm-12 p-md-12 p-lg-6 p-xl-7 ui-fluid">
+			        <h:outputText value="#{labels['tasks.comment']}" styleClass="form-label"/>
+			        <div class="ui-inputgroup" >
+						<p:inputText value="#{tasksList.textGrupovoSnemane}" id="commentGRIzp" /> 
+					</div>
+				</div>
+				<div class="p-col-12 p-sm-12 p-md-12 p-lg-2 p-xl-1" align="right">
+					<h:outputText  value=" &nbsp;"  styleClass="form-label" />
+			        <div class="ui-inputgroup" >
+			        	<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"							    
+							id="btnSaveGrupovoIzp" update="tasksListForm:tblEvnP " partialSubmit="true"
+							process="izpTasksModalID @this" actionListener="#{tasksList.grupovoIzpTasks()}"
+						    title="#{ui_labels['general.save']}" oncomplete="validDateGroupIzp(xhr, status, args)"/>
+					</div>
+				</div>
+				<ui:remove><!-- 
+				<h:panelGroup>
+					<h:panelGroup rendered="#{!tasksList.showOpinionList}">
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid" jsf:id="emptyDiv" >
+						</div>
+					</h:panelGroup>
+				</h:panelGroup> --></ui:remove>
+			</div>
+	
+		</p:dialog>
+	</h:panelGroup>
+	
+	<script type="text/javascript">
+	    function handleAttributes(xhr, status, args) {
+	        if(args.validationFailed || !args.validAttribs) {
+	            PF('snemaneModal').jq.effect("shake", {times:5}, 100);
+	        } else { 
+	        	PF('snemaneModal').hide();
+	        }
+	    }
+	</script>
+	<script type="text/javascript">
+	    function handleErrIzpsModal(xhr, status, args) {
+	        if(args.validationFailed || !args.validAttribs) {
+	            PF('izpsModal').jq.effect("shake", {times:5}, 100);
+	        } else { 
+	        	PF('izpsModal').hide();
+	        }
+	    }
+	</script>
+	<script type="text/javascript">
+	    function validDateGroupIzp(xhr, status, args) {
+	        if(args.validationFailed || !args.validAttribs) {
+	            PF('izpTasksModal').jq.effect("shake", {times:5}, 100);
+	        } else { 
+	        	PF('izpTasksModal').hide();
+	        }
+	    }
+	</script>
+	<p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+		<div class="ui-g-12">
+               <div class="ui-g-12 ui-md-6">
+       			<p:commandButton value="#{labels['general.ne']}" type="button" styleClass="ui-confirmdialog-no" icon="fas fa-times" />        	
+               </div>
+               <div class="ui-g-12 ui-md-6" align="right">
+       			<p:commandButton value="#{labels['general.da']}" type="button" styleClass="ui-confirmdialog-yes" icon="fas fa-check" />        	
+               </div>			
+		</div>
+    </p:confirmDialog>
+	</h:form>
+	
+	
+	
+</html>

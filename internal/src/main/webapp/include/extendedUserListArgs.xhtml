@@ -1,0 +1,31 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core" xmlns:p="http://primefaces.org/ui" xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+	<div class="p-col-4 p-md-4 ui-fluid">
+		<h:outputText value="#{labels['users.businessRole']}" styleClass="form-label" />
+		<p:selectOneMenu id="businessRole" value="#{userList.params.businessRole}">
+			<f:selectItem value="#{null}" itemValue="#{null}" />
+			<f:selectItems value="#{userList.businessRoleItemList}" />
+		</p:selectOneMenu>
+	</div>	
+	
+	<div class="p-col-12 p-md-12  ui-fluid">
+	<h:outputText value="#{labels['userList.defPrava']}" styleClass="form-label" />
+	<ibg:selectManyModalA id="defPravaList" compType="2" maxResults="50"
+			codeClassif="#{OmbConstants.CODE_CLASSIF_DEF_PRAVA}"
+			selectedClassifs="#{userList.defPravaClassif}"
+			selectedCodes="#{userList.params.defPravaList}"									
+			filtered="false" saveStateTree="false" showRadioBtn="true"
+			styleAutoComp="width:100%;" withBtnClear="false" isSelectNode="false"/>	
+	</div>	
+	
+	<ui:remove> <div class="p-col-4 p-md-4  ui-fluid">
+		<h:outputText value="#{labels['users.registratura']}" styleClass="form-label" />
+		<p:selectOneMenu id="registratura" value="#{userList.params.registratura}">
+			<f:selectItem value="#{null}" itemValue="#{null}" />
+			<f:selectItems value="#{userList.registraturaItemList}" />
+		</p:selectOneMenu>
+	</div>	</ui:remove>
+
+</ui:composition>

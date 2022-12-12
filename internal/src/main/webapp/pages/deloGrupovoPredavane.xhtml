@@ -1,0 +1,321 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/template/template.xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components">
+	
+	<ui:define name="title">#{navTexts['/pages/deloGrupovoPredavane.xhtml']}</ui:define>
+	
+    <ui:define name="viewname">
+    	<li>
+        	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+        <li>#{navTexts['/pages/deloGrupovoPredavane.xhtml']}</li> 
+    </ui:define>
+	
+	<ui:define name="content">
+	
+	  	<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+		
+		<h:form id="predavaneForm" prependId="false">
+		
+			<div class="#{guestPreferences.containerPosition}">
+				<div class="card">
+					
+					<h5>#{labels['grupDeinost.izbraniPrepiskiDela']}</h5>
+					
+					<div style="padding:6px 12px;font-style:italic;background-color:rgba(216,222,233,0.35);border-radius:4px;font-weight:bold;display:inline-block;" 
+						class="margin-bottom" jsf:rendered="#{deloGrupovoPredavane.zabranenoPredavane.size() > 0}">
+						<p:commandLink onclick="PF('predavane-details').show()">
+							<span>#{labels['grupDeinost.imaDelaNevazmojnoPredvane']}</span>
+							<i class="fas fa-exclamation-triangle" style="color:#ebcb8b;font-size:16px;"></i>
+						</p:commandLink>
+					</div>
+					
+					<div class="p-grid p-align-end">
+						<div class="p-col-12">
+							<p:dataTable id="delo-table" value="#{deloGrupovoPredavane.selectedDelo}" var="row"
+								rowIndexVar="index" rows="10" scrollable="true" editable="true" editMode="row"
+								paginator="true" paginatorPosition="bottom" rowsPerPageTemplate="5, 10, 15" sortBy="#{row.deloDate}" paginatorAlwaysVisible="false"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}">
+						
+								<p:ajax event="rowEdit" listener="#{deloGrupovoPredavane.onRowEdit(row)}" update="delo-table"/>
+								
+							  	<p:column width="20" headerText="#{ui_labels['general.No-symbol']}" style="text-align: center;">
+									<h:outputText value="#{index + 1}" />
+								</p:column>
+								
+								<!-- Том -->
+								<p:column headerText="#{labels['deloDvij.tom']}" width="40" rendered="#{deloGrupovoPredavane.useTomove()}" style="text-align: center;">
+									<p:rowEditor cancelTitle="#{ui_labels['general.cancel']}" rendered="#{row.withTom}"
+										saveTitle="#{ui_labels['general.save']}"
+										editTitle="#{ui_labels['general.edit']}" 
+										style="display: inline-block; margin-right: 1em;" />
+										
+									<div style="display: inline-block;">
+										<p:cellEditor>
+							                <f:facet name="output">
+												<h:outputText value="#{row.tomPredavane}" />
+											</f:facet>
+							                <f:facet name="input">
+							                    <p:inputText value="#{row.tomPredavane}" placeholder="1 - #{row.brTom}">
+							                    	<p:keyFilter regEx="/[\d]/"/>  
+							                    </p:inputText>
+							                </f:facet>
+							            </p:cellEditor>
+						            </div>
+								</p:column>
+						
+								<!-- Номер на преписка -->
+								<p:column width="170" sortBy="#{row.rnDelo}" headerText="#{labels['docu.deloRn']}">
+									<h:outputText value="#{row.rnDelo}"/> 
+								</p:column>
+				
+								<!-- Дата -->
+								<p:column width="110" sortBy="#{row.deloDate}" headerText="#{labels['docu.dateDoc']}">
+									<h:outputText value="#{row.deloDate}">	
+										<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloGrupovoPredavane.timeZone}"/>
+									</h:outputText>									    
+								</p:column>
+				
+								<!-- Наименование -->
+								<p:column width="666" sortBy="#{row.deloName}" headerText="#{labels['docu.nameDelo']}">
+									<h:outputText value="#{row.deloName}" />
+								</p:column>
+								
+								<!-- Статус -->
+								<p:column width="150" sortBy="#{row.status}" headerText="#{labels['docu.status']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row.status, deloGrupovoPredavane.currentLang, now)}"/>
+								</p:column>
+									
+								<!-- Тип -->
+								<p:column width="50" sortBy="#{row.deloType}" headerText="#{labels['docu.type']}" style="text-align: center;">					
+									<div jsf:rendered="#{row.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+										<i class="fas fa-book" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row.deloType, deloGrupovoPredavane.currentLang, now)}"></i>
+									</div>
+									<div jsf:rendered="#{row.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+										<i class="fas fa-folder" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row.deloType, deloGrupovoPredavane.currentLang, now)}"></i>
+									</div>
+								</p:column>
+								
+								<p:column width="36" style="text-align: center;">
+									<p:commandButton icon="fas fa-trash" actionListener="#{deloGrupovoPredavane.actionDelete(index)}"
+										ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" 
+										partialSubmit="true" process="@this" update="delo-table fields"/>
+								</p:column>
+							</p:dataTable>
+						</div>
+					</div>
+					
+				</div>
+				
+				<div jsf:id="fields">
+					<div jsf:rendered="#{deloGrupovoPredavane.selectedDelo.size() > 0}" class="card margin-top">
+					
+						<p:toolbar id="toolbar">
+							<f:facet name="left">
+								<p:commandButton icon="fas fa-save"
+									value="#{labels['grupDeinost.predavane']}"
+									id="btnSave"
+									partialSubmit="true" process="fields" update="fields"
+									actionListener="#{deloGrupovoPredavane.actionPredavane()}"
+									title="#{labels['grupDeinost.predavane']}" />
+							</f:facet>
+						</p:toolbar>
+					
+						<h5>#{labels['dvijenie.danniZaPredavane']}</h5>
+					
+						<div class="p-grid ui-fluid">
+							<div class="p-col-12 p-md-7  p-lg-6 p-xl-5">
+								<div class="p-grid">
+									
+									<!-- Дата -->
+									<div class="p-col-4">
+										<div class="form-label">#{labels['dvijenie.data']}</div>
+										<p:datePicker id="data" value="#{deloGrupovoPredavane.dvijDate}" showIcon="true" pattern="dd.MM.yyyy HH:mm:ss" showTime="true" showSeconds="true" mask="true">
+											<p:ajax event="dateSelect" partialSubmit="true" process="@this"/>
+										</p:datePicker>
+									</div>
+									
+									<!-- Дата до -->
+									<div class="p-col-4">
+										<div class="form-label">#{labels['dvijenie.daSeVarneDo']}</div>
+										<p:datePicker id="dataDo" value="#{deloGrupovoPredavane.returnToDate}" showIcon="true" pattern="dd.MM.yyyy HH:mm:ss" showTime="true" showSeconds="true"  mask="true">
+											<p:ajax event="dateSelect" partialSubmit="true" process="@this"/>  
+										</p:datePicker>
+									</div>
+									
+									<!-- Начин на предаване -->
+									<div class="p-col-4">
+										<div class="form-label">#{labels['dvijenie.nachin']}</div>
+										<p:selectOneMenu value="#{deloGrupovoPredavane.dvijMethod}" autoWidth="false" var="s">
+											<f:selectItems value="#{deloGrupovoPredavane.predavaneTypeList}" />
+											<p:column>	
+									    		<i class="#{deloGrupovoPredavane.getMethodIcon(s)}  p-mr-2"></i>
+										    	
+										    	<h:outputText value="#{deloGrupovoPredavane.getMethodText(s)}" />
+							                </p:column>
+							                <p:ajax event="change" partialSubmit="true" process="@this"/>
+										</p:selectOneMenu>
+									</div>
+									
+									<!-- Информация -->
+									<div class="p-col-12" >
+										<div class="form-label">#{labels['dvijenie.informacia']}</div>
+										<p:inputTextarea value="#{deloGrupovoPredavane.dvijInfo}" rows="2">
+											<p:ajax event="blur" partialSubmit="true" process="@this"/>
+										</p:inputTextarea>
+									</div>
+							
+								</div>
+						
+							</div>
+							
+							<div class="p-col-12 p-md-5 p-lg-6 p-xl-5">
+								<div class="p-grid">
+									
+									<!-- Административна структура -->
+									<div jsf:id="select-admStr" class="p-col-12 p-sm-6 p-md-10">
+										<h:outputText value="#{labels['dvijenie.admStruktura']}" styleClass="form-label" />
+										<ibg:selectOneModalA
+											binding="#{deloGrupovoPredavane.admStr}"
+											showRadioBtn="true" saveStateTree="false" filtered="false"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+											dateClassif="#{now}" styleAutoComp="" withBtnClear="true" 
+											onClear="admStrClear()" onComplete="admStrComplete()"
+											selectedCode="#{deloGrupovoPredavane.codeAdmStr}"
+											dopInfoAutoComp="true" itemtipAtPosition="right center" compType="2" maxResults="50" />
+										<p:remoteCommand name="admStrComplete" update="select-koresp input-koresp" partialSubmit="true" process="@this"
+											actionListener="#{deloGrupovoPredavane.actionAdmStrComplete()}" />
+										<p:remoteCommand name="admStrClear" update="select-koresp input-koresp"	partialSubmit="true" process="@this"
+											actionListener="#{deloGrupovoPredavane.actionAdmStrClear()}"/>
+									</div>
+									
+									<!-- ЕИК, наименование/име на лице -->
+									<div jsf:id="select-koresp" class="p-col-12 p-sm-6 p-md-10">
+										<h:outputText value="#{labels['dvijenie.eik']}" styleClass="form-label" />
+										<div class="select-modal-wrapper">
+											<ibg:selectOneModalA
+												binding="#{deloGrupovoPredavane.koresp}"
+												showRadioBtn="true" saveStateTree="false" filtered="false"
+												codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}" 
+												dateClassif="#{now}" styleAutoComp="width: calc(100% - 33px)" withBtnClear="true"
+												selectedCode="#{deloGrupovoPredavane.codeKorresp}" selectedText="#{deloGrupovoPredavane.textKorresp}"
+												onClear="korrespClear()" onComplete="korrespComplete()"
+												dopInfoAutoComp="true" itemtipAtPosition="right center" compType="3" />
+											<p:remoteCommand name="korrespComplete" update="select-admStr input-koresp" partialSubmit="true" process="@this"
+												actionListener="#{deloGrupovoPredavane.actionKorrespComplete()}"/>	
+											<p:remoteCommand name="korrespClear" update="select-admStr input-koresp" partialSubmit="true" process="@this"
+												actionListener="#{deloGrupovoPredavane.actionKorrespClear()}"/>
+												
+											<p:commandButton
+												disabled="#{deloGrupovoPredavane.btnKorrespDisable}"
+											    icon="fas fa-list-ul" 										  
+												partialSubmit="true"
+												process="@this" 
+												update="dialog-koresp"
+												styleClass="select-modal-button"
+												oncomplete="PF('dialog-koresp').show();"	
+												title="#{labels['search.extendRef']}" />
+										</div>
+									</div>
+									
+									<!-- Кореспондент - свободен текст -->
+									<div jsf:id="input-koresp" class="p-col-12 p-sm-6 p-md-10">
+										<h:outputText value="#{labels['dvijenie.korespondentTekst']}" styleClass="form-label" />
+										<p:inputText value="#{deloGrupovoPredavane.freeKoresp}" disabled="#{deloGrupovoPredavane.disabledText()}">
+											<p:ajax event="blur" listener="#{deloGrupovoPredavane.actionKorrespBlur}" partialSubmit="true" process="@this" 
+												update="select-admStr select-koresp" onstart="PrimeFaces.customFocus=true"/>
+										</p:inputText>
+									</div>
+
+								</div>
+							</div>
+						
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- модален прозорец с компонент за въвеждане на кореспондент -->
+			<p:dialog id="dialog-koresp" appendTo="@form" widgetVar="dialog-koresp" closeOnEscape="true" header="#{labels['docu.titleExtSrchCoresp']}" 
+				    fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="top"
+				    modal="true" dynamic="true">
+			    <div class="container #{guestPreferences.containerPosition}">
+		
+				    <!-- при въвеждане на кореспондент при ново предаване -->
+					<ibg:refCorrespSearch id="searchCorespDvij"
+						codeRef="#{deloGrupovoPredavane.codeKorresp}"
+						dateClassif="#{new}" modal="true" 
+						onComplete="PF('dialog-koresp').hide(); korespEnter();"/>
+					<p:remoteCommand name="korespEnter" action="#{deloGrupovoPredavane.actionKorrespComplete()}"
+						partialSubmit="true" process="@this" update="select-admStr select-koresp input-koresp" />
+				</div>
+			</p:dialog>
+			
+			<!-- Прозорец, в който излизат движенията, които няма да бъдат върнати -->
+			<p:dialog id="predavane-details" appendTo="@form" widgetVar="predavane-details" closeOnEscape="true" style="margin: 1em;"
+				fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="top" modal="true" dynamic="true">
+				
+				<p:dataTable value="#{deloGrupovoPredavane.zabranenoPredavane}" var="row" rows="10" rowIndexVar="index" scrollable="true"
+					paginator="true" paginatorPosition="bottom" rowsPerPageTemplate="5, 10, 15" paginatorAlwaysVisible="false"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+								
+								
+				  	<p:column width="20" headerText="#{ui_labels['general.No-symbol']}" style="text-align: center;">
+						<h:outputText value="#{index + 1}" />
+					</p:column>
+								
+					<!-- Том -->
+					<p:column headerText="#{labels['deloDvij.tom']}" width="40" rendered="#{deloGrupovoPredavane.useTomove()}" style="text-align: center;">
+						<h:outputText value="#{row.tomPredavane}" />
+					</p:column>
+						
+					<!-- Номер на преписка -->
+					<p:column width="110" sortBy="#{row.rnDelo}" headerText="#{labels['docu.deloRn']}">
+						<h:outputText value="#{row.rnDelo}"/> 
+					</p:column>
+				
+					<!-- Дата -->
+					<p:column width="110" sortBy="#{row.deloDate}" headerText="#{labels['docu.dateDoc']}">
+						<h:outputText value="#{row.deloDate}">	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloGrupovoPredavane.timeZone}"/>
+						</h:outputText>									    
+					</p:column>
+	
+					<!-- Наименование -->
+					<p:column width="666" sortBy="#{row.deloName}" headerText="#{labels['docu.nameDelo']}">
+						<h:outputText value="#{row.deloName}" />
+					</p:column>
+					
+					<!-- Статус -->
+					<p:column width="150" sortBy="#{row.status}" headerText="#{labels['docu.status']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, row.status, deloGrupovoPredavane.currentLang, now)}"/>
+					</p:column>
+						
+					<!-- Тип -->
+					<p:column width="30" sortBy="#{row.deloType}" headerText="#{labels['docu.type']}" style="text-align: center;">					
+						<div jsf:rendered="#{row.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-book" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row.deloType, deloGrupovoPredavane.currentLang, now)}"></i>
+						</div>
+						<div jsf:rendered="#{row.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+							<i class="fas fa-folder" title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row.deloType, deloGrupovoPredavane.currentLang, now)}"></i>
+						</div>
+					</p:column>
+					
+				</p:dataTable>
+
+			</p:dialog>
+			
+		</h:form>
+		
+	</ui:define>
+	
+</ui:composition>

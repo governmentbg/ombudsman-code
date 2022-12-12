@@ -1,0 +1,234 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/printRegistri2.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>
+			<li>#{navTexts['/pages/printRegistri2.xhtml']}</li> 
+		</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:importConstants type="com.ib.system.SysConstants" />
+		</f:metadata>
+		
+		
+		<p:log rendered="false" />
+		<p:tooltip escape="false" hideEvent="mouseout click" />
+
+		<h:form id="formPrintRegisterDoc">
+			<div class="container #{guestPreferences.containerPosition}">
+			
+			<!-- FILTER -->	
+			<h:panelGroup id="panelFilter" layout="block" styleClass="margin-top">
+				<div class="card">
+					<div class="p-grid ui-fluid p-align-end">															
+						<!--Период на регистрация документи-->	
+						<div  class="p-col-12 p-md-4 ui-fluid" >
+							<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+							<p:selectOneMenu id="idPerR" value="#{printRegistri2.periodR}" autoWidth="false">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, printRegistri2.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+							     <p:ajax event="change" update="idPerR dateOtReg dateDoReg" listener="#{printRegistri2.changePeriodR}"/>   
+						    </p:selectOneMenu>
+					   </div>
+					   
+					   	<div  class="p-col-12 p-md-3 ui-fluid" >																	
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label req"/>
+							<p:datePicker id="dateOtReg" pattern="dd.MM.yyyy" mask="true"  showIcon="true"  locale="bg"  
+								value="#{printRegistri2.searchDoc.docDateFrom}"  >
+								<p:ajax event="change" update="idPerR" listener="#{printRegistri2.changeDate}"/>
+								<p:ajax event="dateSelect" update="idPerR" listener="#{printRegistri2.changeDate}"/>      
+							 </p:datePicker>
+					  	</div>
+												
+					  	<div  class="p-col-12 p-md-3 ui-fluid" >
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label req"/>
+							<p:datePicker id="dateDoReg" pattern="dd.MM.yyyy" mask="true" showIcon="true" locale="bg" 
+								value="#{printRegistri2.searchDoc.docDateTo}"  >
+								<p:ajax event="change" update="idPerR" listener="#{printRegistri2.changeDate}"/>   
+								<p:ajax event="dateSelect" update="idPerR" listener="#{printRegistri2.changeDate}"/>   
+							</p:datePicker>												    
+					 	</div>
+						
+					</div>
+						
+					<div class="p-grid ui-fluid p-align-end">
+						
+						<!--Избор Регистър-->							 
+						<div class="p-col-12 p-md-4 ui-fluid" >	
+							<h:outputText value="#{labels['docu.register']}" styleClass="form-label req" />
+							<p:selectOneMenu value="#{printRegistri2.searchDoc.registerId}" id="register" autoWidth="false" styleClass="#{printRegistri2.hasMessages('register') ? 'invalid': ''}">
+				 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+		                        <f:selectItems value="#{printRegistri2.listRegistri}" 
+		                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+		                     	<p:ajax event="change" update="formPrintRegisterDoc" process="@all" 
+							   			 partialSubmit="true" listener="#{printRegistri2.actionLoadSelected()}"/>		
+							</p:selectOneMenu>						 
+							<p:message for="register" display="text" style="color:#ffffff; background:none; border:0px">
+								<p:autoUpdate/>
+							</p:message>		
+																					   
+						</div>	
+					</div>	
+					
+						
+					
+						
+					<div class="p-grid ui-fluid p-align-end">	
+						<div class="p-col-12 p-md-10 ui-fluid" >
+							<div class="filter-buttons">
+							<div class="ui-inputgroup"> 	
+								<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"						    
+									id="btnSearchReg" update="formPrintRegisterDoc" partialSubmit="true"
+									process="@this formPrintRegisterDoc" actionListener="#{printRegistri2.actionSearch}"
+									title="#{ui_labels['general.titleSearch']}"  styleClass="p-mr-3"/> 
+									<p:defaultCommand target="btnSearchReg"/>
+																	
+								<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+									id="btnClear" update=" formPrintRegisterDoc" partialSubmit="true"
+									process="@this formPrintRegisterDoc" actionListener="#{printRegistri2.clearFilter}"
+									title="#{ui_labels['general.titleClear']}" styleClass="ui-button-warning" /> 
+							</div>
+							</div>
+						</div>	
+					</div>
+						
+					<div class="p-grid ui-fluid p-align-end">	
+						<div class="p-col-12 p-md-8 ui-fluid" >
+						<!--Избор включване съдържание-->
+							<h:outputText value="#{labels['prRegDoc.includOpt']}:" styleClass="form-label" rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}"/>
+							<p:selectManyCheckbox value="#{printRegistri2.inclOpt}" id="inclOp" rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}">
+								<f:selectItem itemLabel="#{labels['docu.otnosno']}" itemValue="1" />
+						        <f:selectItem itemLabel="#{labels['prRegDoc.historyMov']}" itemValue="3" />
+								<f:selectItem itemLabel="#{labels['prRegDoc.dopInfo']}" itemValue="4" />
+								<f:selectItem itemLabel="#{labels['docu.prilojTab']}" itemValue="5" />
+								<f:selectItem itemLabel="#{labels['docu.vraz']}" itemValue="6" />
+							</p:selectManyCheckbox>
+						</div>
+					
+					</div>	
+					
+					
+				</div>
+			
+			</h:panelGroup>	
+		
+			</div>
+			
+			<h:panelGroup id="panelTable"  layout="block" styleClass="margin-top">
+						
+			<h:panelGroup  layout="block"  styleClass="card" >
+				  <h:panelGroup id="panelTblToolbar">
+				  	
+				  	<div class="p-grid ui-fluid" >
+						
+						<div class="p-col-12 p-md-4 ui-fluid">
+							<h:outputText value="#{ui_labels['general.reportResult']} #{printRegistri2.docsList.rowCount}" styleClass="form-label" rendered="#{printRegistri2.docsList != null}"/>
+						</div>
+						
+						<div  class="p-col-12 p-md-8 ui-fluid" style="text-align: right;">
+							
+							<h:outputText value="#{labels['opis.exportv']}: " styleClass="form-label p-mr-3" rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}"/>
+			          		
+			          		<h:commandLink  actionListener="#{printRegistri2.exportOpis}" target="_blank" style="color:blue; font-size:10pt;" styleClass="p-mr-3" rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}">
+					       	   <ui:remove><i class="fab fa-html5" title="HTML"/></ui:remove>
+					       	   <h:graphicImage library="images" name="html.png" title="#{labels['docu.expHTML']}"/>
+						       <f:param name="expT" value="0" />
+							</h:commandLink>
+							
+			          		<h:commandLink  actionListener="#{printRegistri2.exportOpis}" target="_blank" style="color:blue; font-size:10pt;" styleClass="p-mr-3"  rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}">
+					       	   	<ui:remove><i class="fas fa-file-word" title="MS Word"/></ui:remove>
+					       	   	<h:graphicImage library="images" name="word.png" title="#{labels['docu.expWord']}"/>
+						        <f:param name="expT" value="1" />
+							</h:commandLink>	
+							
+							<h:commandLink  actionListener="#{printRegistri2.exportOpis}" target="_blank" style="color:blue; font-size:10pt;"  rendered="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}">
+					       	   <ui:remove><i class="fas fa-file-excel" title="MS Excel"/></ui:remove>
+					       	   <h:graphicImage library="images" name="excel.png" title="#{labels['docu.expExcel']}"/>
+					       	   <f:param name="expT" value="2" />
+							</h:commandLink> 
+ 
+						</div>
+					</div>
+					
+				  </h:panelGroup>
+					  
+				  <p:dataTable id="tblDocsPR2" var="row" value="#{printRegistri2.docsList}" lazy="true"  widgetVar="rowS" rendered="#{printRegistri2.docsList != null}"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="#{printRegistri2.docsList != null and printRegistri2.docsList.rowCount>0}" >
+						
+							<f:facet name="{Exporters}">
+					
+								<div style="float: left">
+									
+									<h:commandLink id="excel">
+										<h:graphicImage library="images" name="excel2.png" />
+										<p:dataExporter type="xls" target="tblDocsPR2" fileName="regDocXls" postProcessor="#{printRegistri2.postProcessXLS}"/>
+									</h:commandLink>
+							<ui:remove><!-- 
+									<h:commandLink id="pdf">
+										<h:graphicImage library="images" name="pdf.png" />
+										<p:dataExporter type="pdf" target="tblDocsPR2" fileName="regDocPdf" preProcessor="#{printRegistri2.preProcessPDF}" 
+										options="#{printRegistri2.pdfOptions()}" encoding="windows-1251"/>
+									</h:commandLink>
+			
+									<h:commandLink id="csv">
+										<h:graphicImage library="images" name="csv.png" />
+										<p:dataExporter type="csv" target="tblDocsPR2" fileName="regDocCsv" encoding="CP1251" />
+									</h:commandLink>
+								 --></ui:remove>
+								</div>
+							
+							</f:facet>
+						
+						
+						
+						<p:column width="20" exportable="false" headerText="#{ui_labels['general.No-symbol']}"  >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+								
+						<p:column width="50" sortBy="#{row.A1}" headerText="#{labels['repDoc.regnom']}">
+							<h:outputText value="#{row[1]}"  />								    
+						</p:column>
+						
+						<p:column width="70" sortBy="#{row.A4}" headerText="#{labels['docu.docDate']}" >									  
+							<h:outputText value="#{row[4]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{printRegistri2.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column width="200" sortBy="#{row.A2}" headerText="#{labels['docu.type']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], printRegistri2.currentLang, now)}"/>					    
+						</p:column>
+						<p:column width="200" sortBy="#{row.A3}" headerText="#{labels['docu.vid']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], printRegistri2.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="300" headerText="#{labels['general.otnosno']}">
+							<h:outputText value="#{row[6]}"/>					    
+						</p:column>
+									
+					</p:dataTable>
+                 
+				</h:panelGroup>	
+				</h:panelGroup>
+			
+	
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

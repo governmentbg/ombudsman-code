@@ -1,0 +1,65 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<f:metadata>
+	<f:viewAction action="#{userData.checkPageAccess(40)}" onPostback="false" />
+</f:metadata>
+
+<p:log rendered="false" />
+<p:tooltip escape="false" hideEvent="mouseout click" />
+
+<h:form id="formRegistratura">
+	<h:panelGroup id="pRegInfo">
+		
+	 		<ibg:compObjAudit id="a2" idObj="#{registraturaData.registratura.id}" 
+				 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_REISTRATURA}"
+				 	identInfo="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, registraturaData.registratura.id, registraturaData.currentLang, now)}" 	/>
+	</h:panelGroup>
+	
+	<p:tabView id="tabsRegistraturi" dynamic="true" cache="true">
+		<p:ajax event="tabChange" listener="#{registraturaData.onTabChange}" update="@this tabsRegistraturi" process="@this"/>
+		
+		<p:tab title="#{labels['regData.registratura']}" id="tab1">
+			<ui:include src="registraturaDataEdit.xhtml" />
+		</p:tab>
+
+		<p:tab title="#{labels['regData.registri']}" id="tab2" disabled="#{registraturaData.registratura.id eq null}">
+			<h:panelGroup rendered="#{registraturaData.activeTab eq 'tab2'}">
+				<ui:include src="registerDataEdit.xhtml" />
+			</h:panelGroup>
+		</p:tab>
+
+		<p:tab title="#{labels['regData.settings']}" id="tab3" disabled="#{registraturaData.registratura.id eq null}">
+			<h:panelGroup rendered="#{registraturaData.activeTab eq 'tab3'}">
+				<ui:include src="registraturaSettings.xhtml" />
+			</h:panelGroup>
+		</p:tab>
+
+		<p:tab title="#{labels['regData.docVidSettings']}" id="tab4" disabled="#{registraturaData.registratura.id eq null}">
+			<h:panelGroup rendered="#{registraturaData.activeTab eq 'tab4'}">
+				<ui:include src="docVidSettings.xhtml" />
+			</h:panelGroup>	
+		</p:tab>
+		
+		<p:tab title="#{labels['regData.mailboxes']}" id="tab5" disabled="#{registraturaData.registratura.id eq null}" >
+			<h:panelGroup rendered="#{registraturaData.activeTab eq 'tab5'}">
+				<ui:include src="registraturaMailboxes.xhtml" />
+			</h:panelGroup>	
+		</p:tab>
+		
+		<ui:remove><!--  <p:tab title="#{labels['docWsOptions.title']}" id="tab6" disabled="#{registraturaData.registratura.id eq null}" rendered="#{registraturaData.useWEBEAY}">
+			<h:panelGroup rendered="#{registraturaData.activeTab eq 'tab6'}">
+				<ui:include src="docWSOptions.xhtml" />
+			</h:panelGroup>	
+		</p:tab> --> </ui:remove>
+
+	</p:tabView>
+
+</h:form>
+
+</ui:composition>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+
+>
+<ui:composition template="/template/template.xhtml">
+    <ui:define name="title">
+        Шаблони за нотификации
+    </ui:define>
+    <ui:define name="viewname">
+        Шаблони за нотификации
+    </ui:define>
+    <ui:define name="content">
+        <f:metadata>
+            <f:importConstants type="com.ib.omb.system.OmbConstants" />
+        </f:metadata>
+        <h:form id="notifPatternsListForm">
+           <p:outputPanel id="panelData"  styleClass="card">
+                <div class="p-grid">
+                    <div class="p-col-12">
+                        <p:commandButton ajax="true" value="Нов" onclick="PF('newNotifPattern').show()" />
+                    </div>
+                    <div class="p-col-12">
+                        <p:dataTable id="notifPatternsTable" value="#{notifPatternsList.notifPatterns}"
+                                     rowIndexVar="idx" var="pattern" emptyMessage="#{labels['doc.listEmptyMsg']}" paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                     rows="10" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+                                     paginator="true" sortMode="single" sortBy="#{pattern.rolia}">
+                            <f:facet name="header">
+                                Списък с шаблони за нотификации
+                            </f:facet>
+
+                            <p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+                                <h:outputText value="#{idx + 1}" />
+                            </p:column>
+                            <p:column width="15" exportable="false" headerText="#">
+                                <p:commandButton icon="fas fa-edit" ajax="false" action="#{notifPatternsList.editNotifPattern(pattern)}" title="Промяна" />
+                            </p:column>
+                            <p:column width="20" sortBy="#{pattern.eventId}" exportable="false" headerText="Събитие ИД">
+                                <h:outputText value="#{pattern.eventId}" />
+                            </p:column>
+                            <p:column width="200" sortBy="#{pattern.eventId}" exportable="false" headerText="Събитие"  sortable="true">
+                                <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOTIFF_EVENTS,pattern.eventId, notifPatternsList.currentLang, now)}" />
+                            </p:column>
+                            <p:column width="200" sortBy="#{pattern.rolia}" exportable="false" headerText="Роля" sortable="true">
+                                <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOTIFF_ROLI, pattern.rolia, notifPatternsList.currentLang, now)}" />
+                            </p:column>
+                            <p:column width="10" exportable="false" headerText="#">
+                                <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" title="Изтриване" action="#{notifPatternsList.deleteNotifPattern(pattern.id)}" ajax="true" update="notifPatternsListForm:notifPatternsTable messagesGl">
+                                    <p:confirm header="Потвърждение на изтриване" message="Сигурни ли сте?" icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+            </p:outputPanel>
+
+            <p:dialog appendTo="notifPatternsListForm" header="Нов/Промяна на шаблон" responsive="true"
+                      widgetVar="newNotifPattern" modal="true" resizable="true" height="150" id="newNotifPattern" closable="true" draggable="true" closeOnEscape="true">
+                <div class="card">
+                    <div class="p-grid ui-fluid">
+                        <div class="p-col-6 p-lg-6">
+                            <h:outputText value="Събитие" styleClass="form-label"/>
+                            <p:selectOneMenu value="#{notifPatternsList.eventId}" id="eventId">
+                                <f:selectItems var="item" itemValue="#{item.code}" itemLabel="#{item.tekst}" value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_NOTIFF_EVENTS, now ,notifPatternsList.currentLang)}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="p-col-6 p-lg-6">
+                            <h:outputText value="Роля" styleClass="form-label"/>
+                            <p:selectOneMenu value="#{notifPatternsList.rolia}" id="rolia" >
+                                <f:selectItems var="item" itemValue="#{item.code}" itemLabel="#{item.tekst}" value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_NOTIFF_ROLI, now ,notifPatternsList.currentLang)}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="p-col-2 p-lg-2">
+                            <p:commandButton ajax="false" process="notifPatternsListForm:eventId notifPatternsListForm:rolia" oncomplete="PF('newNotifPattern').hide();" value="Нов" action="#{notifPatternsList.newNotifPattern}" update="notifPatternsListForm" />
+                        </div>
+                    </div>
+                </div>
+            </p:dialog>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

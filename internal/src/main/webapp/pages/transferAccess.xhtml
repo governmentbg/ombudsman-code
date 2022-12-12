@@ -1,0 +1,111 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/transferAccess.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+        <li>#{navTexts['/pages/transferAccess.xhtml']}</li>        
+    </ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(52)}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="formTransferAccess">
+			
+			<h:panelGroup id="panelTransferAccess" layout="block">
+
+					<div class="container #{guestPreferences.containerPosition}">						
+						
+						<h:panelGroup id="panelInclSluj" layout="block" >
+								
+							<div id="basicData" class="card">
+							
+							<h5> <h:outputText value="#{labels['transferAccess.btnTransfer']}"/> </h5> 
+								 
+								 <div class="p-grid p-col-12 ui-fluid">
+
+								<!-- Вземане на достъп от -->
+								
+									
+									<div class="p-col-4"> 
+										<h:outputText value="#{labels['transferAccess.takeAccessFrom']}" styleClass="form-label req" />
+										<p:remoteCommand name="cmdSelectSlujForTake" update="formTransferAccess:userNameForTake"
+											partialSubmit="true" process="formTransferAccess:userNameForTake @this"
+											actionListener="#{transferAccess.actionSelectSlujForTake}" />
+										<ibg:selectOneModalA id="takeAccess" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+												dateClassif="#{transferAccess.decodeDate}" filtered="false" isSelectNode="false"														
+												selectedCode="#{transferAccess.codeTakeAccess}" saveStateTree="true" 
+												header="#{labels['transferAccess.takeAccessFrom']}"
+												withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+												onComplete="cmdSelectSlujForTake()" onClear="cmdSelectSlujForTake()"/>								
+									
+									</div>
+									
+									<div class="p-grid p-col-4 p-align-end" jsf:id="userNameForTake"> 
+										<span style="padding-left:50px"></span>									
+										<h:outputText value="#{transferAccess.userNameForTake}" />
+									</div>
+									
+									<div class="p-grid p-col-4 p-align-end" > 										
+										<p:selectBooleanCheckbox value="#{transferAccess.saveAccess}" itemLabel="#{labels['transferAccess.saveAccess']}" />
+									</div>				
+								
+								<!-- Даване на достъп на -->
+								
+									
+									<div class="p-col-4"> 
+										<h:outputText value="#{labels['transferAccess.giveAccessTo']}" styleClass="form-label req" />
+										<p:remoteCommand name="cmdSelectSlujForGive" update="formTransferAccess:userNameForGive"
+											partialSubmit="true" process="formTransferAccess:userNameForGive @this"
+											actionListener="#{transferAccess.actionSelectSlujForGive}" />
+										<ibg:selectOneModalA id="giveAccess" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+												dateClassif="#{transferAccess.decodeDate}" filtered="false" isSelectNode="false"														
+												selectedCode="#{transferAccess.codeGiveAccess}" saveStateTree="true" 
+												header="#{labels['transferAccess.giveAccessTo']}"
+												withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+												onComplete="cmdSelectSlujForGive()" onClear="cmdSelectSlujForGive()"/>	
+																			
+									</div>
+									
+									<div class="p-grid p-col-4 p-align-end" jsf:id="userNameForGive"> 
+										<span style="padding-left:50px"></span> 
+										<h:outputText value="#{transferAccess.userNameForGive}" />								
+									</div>
+								
+								
+
+							</div>
+							
+							<div class="p-grid p-align-end" >
+							
+								<div class="p-col-12" align="right">
+										
+								<p:commandButton icon="fas fa-sync-alt" actionListener="#{transferAccess.actionTransferAccess}" 
+									value="#{labels['transferAccess.btnTransfer']}" update="formTransferAccess" partialSubmit="true" />
+									
+								</div>								
+							</div>
+							
+							</div>
+
+						</h:panelGroup>
+						
+					</div>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

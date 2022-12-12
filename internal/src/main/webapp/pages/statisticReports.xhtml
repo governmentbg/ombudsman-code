@@ -1,0 +1,111 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml"
+		xmlns:jsf="http://xmlns.jcp.org/jsf" >
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+						
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/statisticReports.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">        
+	        <li>#{navTexts['/pages/statisticReports.xhtml']}</li>
+	    </ui:define> 
+    
+		<ui:define name="content">	
+			<h:form id="statForm">	
+ 				<div class="container #{guestPreferences.containerPosition}">
+					<!-- FILTER -->	
+					<h:panelGroup id="panelFilterStat" >
+						<div class="card">
+							<div class="p-grid ui-fluid p-align-end">														
+																									
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 ui-fluid">	
+										<p:remoteCommand name="cmdSelectCode" update="statForm:panelFilterStat"
+											partialSubmit="true" process="@this statForm:panelFilterStat"
+											actionListener="#{statisticReports.actionSelectCode}" />
+										<h:outputText value="#{labels['statisticReports.statisticList']}" styleClass="form-label req" />					
+										<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_STAT_REPORTS}" 
+											id="codeRep" dateClassif="#{statisticReports.decodeDate}" filtered="true"  sortByName="false"														
+											selectedCode="#{statisticReports.codeReport}" saveStateTree="false"
+											withBtnClear="false" compType="4" styleAutoComp=""  onComplete="cmdSelectCode()" onClear="cmdSelectCode()"/>
+								</div>
+								
+								
+								
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid" jsf:rendered="#{statisticReports.codeDopInfo=='1' or statisticReports.codeDopInfo=='3'}">	
+										
+									<h:outputText value="#{statisticReports.labelDate} - #{labels['statisticReports.ot']}"  styleClass="form-label req"/>
+										
+									<p:datePicker id="dateOt"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy"
+										value="#{statisticReports.dateFrom}" >
+									</p:datePicker>
+																			
+											
+								</div>
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 ui-fluid" jsf:rendered="#{statisticReports.codeDopInfo=='1' or statisticReports.codeDopInfo=='3'}" >	
+									<h:outputText value="#{labels['statisticReports.do']}"  styleClass="form-label req"/>
+									<p:datePicker id="dateTo"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" value="#{statisticReports.dateTo}" >
+													      
+									</p:datePicker>
+								</div>
+															
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-3 "  jsf:rendered="#{statisticReports.codeDopInfo=='2'}">	
+										
+									<h:outputText value="#{statisticReports.labelDate}"  styleClass="form-label req"/>
+									<p:datePicker id="date"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy" value="#{statisticReports.dateTo}" >
+												      
+									</p:datePicker>
+											
+							
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-4 p-lg-3 p-xl-3" jsf:rendered="#{statisticReports.codeReport ne null}">	
+									
+										<p:selectBooleanButton value="#{statisticReports.rateRoundBool}"
+											styleClass="btn-new p-mr-3" onLabel="#{ui_labels['uReport.rateRound']}"
+											offLabel="#{ui_labels['uReport.rateRound']}"
+											onIcon="fas fa-check" offIcon="fas fa-times">
+											<p:ajax update="statForm:rateRoundId" />
+										</p:selectBooleanButton>
+								</div>
+								<div class="p-col-12 p-sm-12 p-md-4 p-lg-1 p-xl-1" jsf:rendered="#{statisticReports.codeReport ne null}">		
+										<p:spinner id="rateRoundId" value="#{statisticReports.rateRound}"
+											min="0" disabled="#{!statisticReports.rateRoundBool}" size="3" styleClass="p-mr-3"
+											title="Закръгляване до посочения десетичния знак"/>
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-4 p-lg-2 p-xl-2" jsf:rendered="#{statisticReports.codeReport ne null}">			
+										<p:commandButton action="#{statisticReports.actionSearch}"
+											styleClass="btn-save margin-left"
+											value="#{ui_labels['uReport.izpalni']}"
+											 process="@this"
+											ajax="false" icon="fas fa-cog" />
+									
+								</div>
+							</div>
+	
+						</div>	
+					</h:panelGroup>		
+					
+				
+				
+				</div>
+				
+							
+				
+																						
+		</h:form>
+	</ui:define>
+</ui:composition>

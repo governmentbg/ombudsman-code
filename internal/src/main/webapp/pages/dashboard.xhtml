@@ -1,0 +1,1358 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:h="http://java.sun.com/jsf/html"
+ 	xmlns:f="http://java.sun.com/jsf/core" 
+  	xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:ibg="http://java.sun.com/jsf/composite/components"
+    template="/template/template.xhtml">
+
+    <ui:define name="title">#{labels['dashbord.dashbord']}</ui:define>
+    
+    
+    <ui:define name="viewname">
+        <li>#{labels['dashbord.dashbord']}</li>
+    </ui:define>
+	
+	<ui:define name="head"> 
+		<style>
+			.ql-editor {padding:10px 0px;}
+			.ql-container.ql-snow {border: 0px;}
+			body .ui-texteditor .ql-snow {border: 0px}
+			
+			@media (max-width: 1600px) {
+			   .dbCol200 {width:200px !important}
+			} 
+			
+			
+			.layout-dashboard .store-items .store-cards-container .store-cards .store-card .store-card-content span{
+				font-size: 14px;
+				color:inherit;
+			}
+			.layout-dashboard .store-items .store-cards-container .store-cards .store-card .store-card-content {
+			    text-align: left;
+			    padding-left: 10px;
+			}
+			.layout-dashboard .store-items .store-cards-container .store-cards .store-card .store-card-content span { color: inherit ;}
+			
+			body a  {
+			    
+			    text-decoration: none;
+			}
+			body .checkboxes a:hover  {
+			    color: inherit;
+			    text-decoration: underline;
+			 
+			}
+			.chcolorlink a{color: inherit !important;}
+			
+			.timeline-icon {
+			    width: 36px;
+			    height: 36px;
+			    -moz-border-radius: 4px;
+			    -webkit-border-radius: 4px;
+			    border-radius: 4px;
+			    display: -webkit-box;
+			    display: -ms-flexbox;
+			    display: flex;
+			    justify-content: center;
+			    align-items: center;
+			    color: #ffffff;
+			    font-size: 16px;
+			    margin-bottom: 10px;
+			    margin-top: 10px;
+			}
+			
+			.comment-icon {
+			    background: -moz-linear-gradient(225deg, #f2c260 0%, #ebcb8b 100%);
+			    background: -webkit-gradient(linear, left bottom, right top, color-stop(0%, #f2c260), color-stop(100%, #ebcb8b));
+			    background: -webkit-linear-gradient(225deg, #f2c260 0%, #ebcb8b 100%);
+			    background: -o-linear-gradient(225deg, #f2c260 0%, #ebcb8b 100%);
+			    background: -ms-linear-gradient(225deg, #f2c260 0%, #ebcb8b 100%);
+			    background: linear-gradient(225deg, #f2c260 0%, #ebcb8b 100%);
+			    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#f2c260", endColorstr="#ebcb8b",GradientType=1 );
+			}
+			
+			.zamestvane{cursor:pointer; display: flex; padding-bottom: 0;}
+			.zamestvane:hover{text-decoration: underline;}
+			
+		</style>
+		
+		
+		<script>
+			// samo kogato e kazano awtomati`no togawa da se izpylnqwa
+			var displayMod = false;
+			var resizeId;
+			var izb =  $.cookie('dashboard_auto');
+	//		alert(izb);
+			izb = (izb === undefined) ? 1 : izb;
+	//		alert(izb);
+				
+			if (izb == 1){
+				$(document).ready(changeResolution);
+				$(window).on('resize', function() {//alert(window.innerWidth);
+				    clearTimeout(resizeId);
+				    resizeId = setTimeout(changeResolution, 100);
+					
+				});
+
+			}
+
+	
+			function highlightElementDashboard(el ,elType){
+				
+				$('.ui-state-highlight').removeClass('ui-state-highlight chcolorlink'); $(el).closest(elType).toggleClass('ui-state-highlight chcolorlink',true);
+				
+			}
+		</script>
+		
+		
+	</ui:define>
+	
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			
+		</f:metadata>
+	</ui:define>
+
+    <ui:define name="content"> 
+     <h:form id="dashboard">
+     
+     <p:remoteCommand name="loadCountDeloDocSec" update="deloDocsSection" action="#{dashboard.loadingCountDeloDocSec}" autoRun="true" ignoreAutoUpdate="true"/>
+     <p:remoteCommand name="loadCountDocSec"     update="docsSection"         action="#{dashboard.loadingCountDocSec}"     autoRun="true" ignoreAutoUpdate="true"/>
+	 <p:remoteCommand name="loadCountTaskSec"    update="tasksSection"       action="#{dashboard.loadingCountTaskSec}"    autoRun="true" ignoreAutoUpdate="true"/>
+	 
+	 <p:remoteCommand name="loadCountJalbi"    update="jalbiSection"       action="#{dashboard.loadingCountJalbi}"    autoRun="true" ignoreAutoUpdate="true"/>
+	 <p:remoteCommand name="loadCountProverki"    update="proverkiSection"       action="#{dashboard.loadingCountProverki}"    autoRun="true" ignoreAutoUpdate="true"/>
+	 
+	 <p:remoteCommand name="dsplayModalSelObjJS"    update="dashboard:panelselObj dashboard:tablesListPanel"   action="#{dashboard.actionDsplayModalSelObj}"   autoRun="false" />
+	 
+	 <p:remoteCommand name="reloadDocDataFile"    update=":dashboard:panelselObj"   action="#{dashboard.reloadDocDataFile}"   autoRun="false" />
+	 
+	 <p:remoteCommand name="showTaskSprDoc"    update="taskModalPanelSpr"   action="#{dashboard.actionLoadTaskDocSpr}"  oncomplete="PF('taskDokSprMP').show()" autoRun="false" />
+     <p:remoteCommand name="showTaskSprLinkDoc"    update="linkDocModalPanelSpr"   action="#{dashboard.actionLoadLinkDocSpr}"  oncomplete="PF('linkDocSprMP').show()" autoRun="false" />
+     
+	 <p:remoteCommand name="hideGroupTaskMP"    update="groupTaskModalPanel dashboard:tablesListPanel"   action="#{dashboard.actionHideGroupTaskMP}"  oncomplete="PF('groupTaskMP').hide()" autoRun="false" />
+	     
+     <div class="p-grid layout-dashboard">
+    
+        <div class="dashboard-left-column">
+            <div class="p-grid p-dir-col p-nogutter p-justify-between menuDash">
+           
+            <div class="card tasks" jsf:id="deloDocsSection" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DELO_DOC) and userData.delovoditel}">
+            	<div class="p-grid p-nogutter ">
+	            	<div class="p-col title ">
+	            		<h5> <!-- Документи за деловодство -->
+	            			#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DELO_DOC, dashboard.currentLang, now)}
+	            			
+	            			 <span style="float:right; padding-right: 10px; cursor:pointer" onclick="$('#checkboxes1').slideToggle(); $('i', this).toggleClass('fa-minus-circle fa-plus-circle');"><i class="fas fa-minus-circle"></i></span> 
+	            		</h5>
+	            	</div>
+            	</div>
+            	<ul class="checkboxes" id="checkboxes1">
+                    <li class="checkbox-row layout-submenu-item" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_EMAIL)}">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за получаване по e-mail --> 
+	                            	<div class="p-grid  p-nogutter">
+	                             		<div class="p-col-12">
+	                             			 #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_EMAIL, dashboard.currentLang, now)}
+	                             		</div>
+		                             	<ui:repeat var="rowMails" value="#{dashboard.mailBoxLst}">
+		                             		<div  class="p-col-12">
+		                             			<p:commandLink action="#{dashboard.actionLoadDocsEmail(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_EMAIL ,rowMails)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'a');"  style="padding-left: 10px">
+			                             		
+		                             				<i class="fas fa-envelope" style="padding-right: 10px"></i>
+		                             		
+		                             		 
+			                             			<h:outputText value="#{rowMails}" />
+			                             			<h:outputText value=" (#{globalDocHolder.getRegInfo(userData.registratura).getCouterEmails(rowMails)})" escape="false"/>
+			                             			
+			                             		</p:commandLink>
+		                             		</div>
+		                             	</ui:repeat>
+	                             	</div>
+	                             
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info" style="align-items: self-start;">
+	                         	<p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[68]}" escape="false"/>
+	                            </p:outputPanel>
+	                         </div>
+	                    </div>
+                    </li>
+                
+                	
+                    <li class="checkbox-row layout-submenu-item" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_CEOC)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsDeloCEOC(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_CEOC)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за получаване през СЕОС  -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_CEOC, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+										<h:outputText value="#{dashboard.mapCountsOptions1[69]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    <ui:remove> <!-- skrivame gi za versiq 2  -->
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_EL_VR)}">
+                    	<div class="p-grid ">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за получаване през е-връчване --> 
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_EL_VR, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									<h:outputText value="#{dashboard.mapCountsOptions1[70]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+                    </li>
+                     
+                    </ui:remove>
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_NAS)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsDelo(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_NAS)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid">
+		                         <div class="p-col-10 checkbox">
+		                             <!-- входящи за насочване -->
+		                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_NAS, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                             <p:outputPanel styleClass="time" layout="inline">
+										<h:outputText value="#{dashboard.mapCountsOptions1[71]}" escape="false"/>
+									 </p:outputPanel>
+		                         </div>
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_REG_OF)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsDelo(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_REG_OF)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid ">
+		                         <div class="p-col-10 checkbox">
+		                             <!-- за регистриране като офицялни -->
+		                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_REG_OF, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                             <p:outputPanel styleClass="time" layout="inline">
+										<h:outputText value="#{dashboard.mapCountsOptions1[72]}" escape="false"/>
+									 </p:outputPanel>
+		                         </div>
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_DIF_REG)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsDelo(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_DIF_REG)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid ">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за приемане от друга регистратура -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_DIF_REG, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+										<h:outputText value="#{dashboard.mapCountsOptions1[73]}" escape="false"/>
+									 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_COMPETENCE)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsDelo(OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_COMPETENCE)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid ">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за изпращане по компетентност -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_DOC_COMPETENCE, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+										<h:outputText value="#{dashboard.mapCountsOptions1[100]}" escape="false"/>
+									 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                </ul>
+           </div> 	
+            	
+           <div class="card tasks "  jsf:id="docsSection" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_TASK_DOC)}">
+           		<div class="p-grid p-nogutter ">
+	           		<div class="p-col title ">	
+	            		<h5> <!-- Документи --> 
+	            			#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_TASK_DOC, dashboard.currentLang, now)} 
+	            			<span style="float:right; padding-right: 10px; cursor:pointer" onclick="$('#checkboxes3').slideToggle(); $('i', this).toggleClass('fa-minus-circle fa-plus-circle');"><i class="fas fa-minus-circle"></i></span> 
+	            		</h5>
+	            	</div> 
+            	</div>
+            	
+            	<ul class="checkboxes" id="checkboxes3">
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsTask(OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid ">
+		                         <div class="p-col-10 checkbox">
+		                         	<!-- за резолюция -->
+		                         	#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                            <p:outputPanel styleClass="time" layout="inline">
+		                            	<h:outputText value="#{dashboard.mapCountsOptions1[75]}" escape="false"/>
+		                            </p:outputPanel>
+								</div>
+								
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                	
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsTask(OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid ">
+		                         <div class="p-col-10 checkbox">
+		                             <!-- за съгласуване -->
+		                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                             <p:outputPanel styleClass="time" layout="inline">
+										  <h:outputText value="#{dashboard.mapCountsOptions1[76]}" escape="false"/>
+									 </p:outputPanel>
+		                         </div>
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsTask(OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid">
+		                         <div class="p-col-10 checkbox">
+		                             <!-- за подпис -->
+		                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                             <p:outputPanel styleClass="time" layout="inline">
+										  <h:outputText value="#{dashboard.mapCountsOptions1[77]}" escape="false"/>
+									 </p:outputPanel>
+		                         </div>
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsTask(OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+	                    	<div class="p-grid">
+		                         <div class="p-col-10 checkbox">
+		                             <!-- за запознаване -->
+		                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_ZA_ZAPOZNAVANE, dashboard.currentLang, now)}
+		                         </div>
+		                         <div class="p-col-2 checkbox-row-info">
+		                             <p:outputPanel styleClass="time" layout="inline">
+										  <h:outputText value="#{dashboard.mapCountsOptions1[102]}" escape="false"/>
+									 </p:outputPanel>
+		                         </div>
+		                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_NONREG)}">
+                    	<p:commandLink action="#{dashboard.actionLoadDocsTask(OmbConstants.CODE_ZNACHENIE_DASHBOARD_NONREG)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                              <!-- нерегистрирани работни -->
+	                              #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_NONREG, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									  <h:outputText value="#{dashboard.mapCountsOptions1[78]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                </ul>
+               
+           </div>
+           
+           
+            <div class="card tasks "  jsf:id="jalbiSection" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_JALBI)}">   	
+            	<div class="p-grid p-nogutter ">
+	            	<div class="p-col title">
+	            		<h5>
+	            			<!-- Жалби -->
+	            			#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_JALBI, dashboard.currentLang, now)} 
+	            			<span style="float:right; padding-right: 10px; cursor:pointer" onclick="$('#checkboxes5').slideToggle();  $('i', this).toggleClass('fa-minus-circle fa-plus-circle');"><i class="fas fa-minus-circle"></i></span> 
+	            		</h5>
+	            	</div>
+            	</div>
+            	
+            	<ul class="checkboxes" id="checkboxes5">
+            		<li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_OBRABOTKA)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_OBRABOTKA)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за обработка -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_OBRABOTKA, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[202]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_OTGOVOR)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_OTGOVOR)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за отговор за недопустимост -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_OTGOVOR, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[203]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_PRECENKA)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_PRECENKA)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!--  за преценка -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_PRECENKA, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[204]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_RAZPR)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_RAZPR)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за разпределяне -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_RAZPR, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[205]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_OPR_EXP)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_OPR_EXP)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- за определяне на експерт -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_OPR_EXP, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[206]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKA)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadJalbi(OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKA)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- в процес на проверка -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKA, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[207]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+            	</ul>
+            </div>
+            
+            <div class="card tasks "  jsf:id="proverkiSection" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKI)}">   	
+            	<div class="p-grid p-nogutter ">
+	            	<div class="p-col title">
+	            		<h5>
+	            			<!-- Проверки -->
+	            			#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKI, dashboard.currentLang, now)} 
+	            			<span style="float:right; padding-right: 10px; cursor:pointer" onclick="$('#checkboxes6').slideToggle();  $('i', this).toggleClass('fa-minus-circle fa-plus-circle');"><i class="fas fa-minus-circle"></i></span> 
+	            		</h5>
+	            	</div>
+            	</div>
+            	
+            	<ul class="checkboxes" id="checkboxes6">
+            		<li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_NPM)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadProverki(OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_NPM)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- активни по НПМ -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_NPM, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline" >
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[209]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_SAMOS)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadProverki(OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_SAMOS)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!--  активни по самосезиране -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_AKT_SAMOS, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline" >
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[210]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+            	</ul>
+            </div>
+           
+           <div class="card tasks "  jsf:id="tasksSection" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_TASK)}">   	
+            	<div class="p-grid p-nogutter ">
+	            	<div class="p-col title">
+	            		<h5>
+	            			<!-- Неизпълнени задачи -->
+	            			#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, 79, dashboard.currentLang, now)} 
+	            			<span style="float:right; padding-right: 10px; cursor:pointer" onclick="$('#checkboxes4').slideToggle();  $('i', this).toggleClass('fa-minus-circle fa-plus-circle');"><i class="fas fa-minus-circle"></i></span> 
+	            		</h5>
+	            	</div>
+            	</div>
+            	
+            	<ul class="checkboxes" id="checkboxes4">
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_EXEC)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadTaskUser(OmbConstants.CODE_ZNACHENIE_DASHBOARD_EXEC)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- на които съм изпълнител -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_EXEC, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                            <p:outputPanel styleClass="time" layout="inline">
+	                            	<h:outputText value="#{dashboard.mapCountsOptions1[80]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_ASSIGN)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadTaskUser(OmbConstants.CODE_ZNACHENIE_DASHBOARD_ASSIGN)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- на които съм възложител -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_ASSIGN, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									  <h:outputText value="#{dashboard.mapCountsOptions1[81]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_CONTROL)}"> 
+                    	<p:commandLink action="#{dashboard.actionLoadTaskUser(OmbConstants.CODE_ZNACHENIE_DASHBOARD_CONTROL)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- на които съм контролиращ -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_CONTROL, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									 <h:outputText value="#{dashboard.mapCountsOptions1[82]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row" jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_GOING_LATE)}"> 
+                        <p:commandLink action="#{dashboard.actionLoadTaskUser(OmbConstants.CODE_ZNACHENIE_DASHBOARD_GOING_LATE)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- с изтичащ срок -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_GOING_LATE, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									  <h:outputText value="#{dashboard.mapCountsOptions1[83]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                    
+                    <li class="checkbox-row"  jsf:rendered="#{request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_MENU,OmbConstants.CODE_ZNACHENIE_DASHBOARD_LATE)}">
+                    	<p:commandLink action="#{dashboard.actionLoadTaskUser(OmbConstants.CODE_ZNACHENIE_DASHBOARD_LATE)}" partialSubmit="true" process="@this" update="dashboard:panelsRight" onclick="highlightElementDashboard(this ,'li');">
+                    	<div class="p-grid">
+	                         <div class="p-col-10 checkbox">
+	                             <!-- с изтекъл срок -->
+	                             #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_DASHBOARD_LATE, dashboard.currentLang, now)}
+	                         </div>
+	                         <div class="p-col-2 checkbox-row-info">
+	                             <p:outputPanel styleClass="time" layout="inline">
+									  <h:outputText value="#{dashboard.mapCountsOptions1[84]}" escape="false"/>
+								 </p:outputPanel>
+	                         </div>
+	                    </div>
+	                    </p:commandLink>
+                    </li>
+                </ul>
+           </div>
+        
+        
+        	</div>
+        </div>
+        
+        <div class="dashboard-right-column"  jsf:id="panelsRight">
+        
+        	
+          <div class="p-grid "  jsf:rendered ="#{!dashboard.showTaskModuleOption and !dashboard.showDocTaskModuleOption and !dashboard.showDeloDocModuleOption and !dashboard.showProverkiOption and !dashboard.showJalbiOption}">	
+            	
+           <div class="p-col-12"  jsf:rendered="#{userData.delegatedEmployees.size() > 1}" >
+                <div  onclick="showModalNastrJs()" class="zamestvane card">
+                    <div class=" overview-box-icon" style="width:30px">
+                          <i class="fas fa-cog" style="font-size:20px"></i>
+                    </div>
+                    <div class="overview-box-text"  >
+                        <h5>#{labels['dashboad.zamestvane']} / #{labels['dashboard.upylnomoshtavane']}</h5>
+                       
+                    </div>
+                    
+                </div>
+           </div> 
+        
+         <div class="p-col-12">
+                <div class="card store-items">
+                    <div class="p-grid p-nogutter">
+                        <div class="p-col-4 title">
+                            <h5>#{labels['dashboard.notifikacii']}</h5>
+                        </div>
+                        <div class="p-col-8 store-info">
+                            <div class="info-item add">
+                            	<p:commandLink action="#{pMessages.actionLoadMessages}" partialSubmit="true" process="@this" update="dashboard:panelNotifDash">
+                            	<i class="fas fa-refresh"></i> #{labels['dashboard.refresh']}
+                            	</p:commandLink>
+                            	
+                            	<span class="fas fa-ellipsis-v SoftGray  p-mx-2" />
+	                            
+	                           <p:selectBooleanCheckbox value="#{pMessages.selectAllPM}"  id="selectAllId" >
+	                           		<p:ajax update="dashboard:panelNotifDash" partialSubmit="true"	process="@this"  event="change" listener="#{pMessages.actionSelectAll}"/>	
+	                           </p:selectBooleanCheckbox>
+	                           <p:outputLabel value=" маркирай всички" for ="selectAllId"/>
+	                           
+                            	<span class="fas fa-ellipsis-v SoftGray  p-mx-2" />
+	                            
+	                            <p:commandLink action="#{pMessages.actionMarkAsRedSelectedDashboard}" partialSubmit="true" process="@this dashboard:panelNotifDash" update="dashboard:panelNotifDash" >
+                            		<i class="fas fa-trash"></i> #{labels['dashboard.markSelectedAsRed']}
+                            		<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['dashboard.askSelectedNotif']}" icon="fas fa-exclamation-triangle" />
+                            	</p:commandLink>
+	                            <ui:remove>
+		                            <!-- 
+	                            	<p:commandLink action="#{pMessages.actionMarkAsRedAllDashboard}" partialSubmit="true" process="@this" update="dashboard:panelNotifDash"  onsuccess="clearNumber()">
+	                            		<i class="fas fa-trash"></i> #{labels['dashboard.markAllAsRed']}
+	                            		<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['dashboard.askAllNotif']}" icon="fas fa-exclamation-triangle" />
+	                            	</p:commandLink>
+	                            	 -->
+                            	</ui:remove>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <div class="store-cards-container">
+                        <div class="p-grid store-cards" jsf:id="panelNotifDash">
+                       
+                        	<p:repeat value="#{pMessages.listNotif}" var="notif1" >
+							
+								 <div class="p-col-6 p-md-6 p-lg-6 p-xl-4">
+	                                <div class="store-card">
+	                                    <div class="store-card-icons">
+	                                        <div class="p-grid p-nogutter">
+	                                        	<div class="p-col-9" style="text-align:left">
+	                                                <h:outputText  value="#{notif1.dateMessage}" >
+														<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dashboard.timeZone}"/>
+													</h:outputText>
+	                                            </div>
+	                                            <div class="p-col-1">
+	                                            	<p:commandLink action="#{pMessages.actionGoto(notif1)}"  ajax="false" rendered="#{notif1.codeObject == OmbConstants.CODE_ZNACHENIE_JOURNAL_PROC_EXE or (notif1.taskStatus !=null and  (userContext.activeTaskStatus.contains(notif1.taskStatus)?(notif1.taskStatus==OmbConstants.CODE_ZNACHENIE_WAITING_INSTR?true:false):true) )}">
+                                                	 	<i class="fas fa-edit"></i>
+                                                	</p:commandLink>
+	                                            </div>
+	                                            <div class="p-col-1"> 
+	                                             	<p:selectBooleanCheckbox value="#{pMessages.selectedNotif[pMessages.castLong(notif1.id)]}" rendered = "#{notif1.messageType!= OmbConstants.CODE_ZNACHENIE_NOTIFF_EVENTS_DOC_ACCESS}"/>
+	                                             	
+	                                            </div>
+	                                            <div class="p-col-1">
+	                                            	<p:commandLink action="#{pMessages.actionMarkAsRedDashboard(notif1.id)}" partialSubmit="true" process="@this" update="dashboard:panelNotifDash" onsuccess="downNumber()" rendered = "#{notif1.messageType!=OmbConstants.CODE_ZNACHENIE_NOTIFF_EVENTS_DOC_ACCESS}">
+	                                                	<i class="fas fa-times"></i>
+	                                                </p:commandLink>
+	                                            </div>
+	                                        </div>
+	                                    </div>
+	                                    
+	                                    <div class="store-card-content">
+	                                    
+	                                        <div class="p-grid p-nogutter">
+	                                        
+	                                        
+		                                        <div class="p-col-fixed" style="width:45px">
+					                                <div class="timeline-icon comment-icon">
+					                                    <i class="fas fa-comment"></i>
+					                                </div>
+					                            </div>
+					                            <div class="p-col p-mt-3">
+					                                 <h6>  
+					                                 	<h:outputText value=" #{notif1.title}" styleClass=""/>
+					                                 </h6>
+			                                        <span>
+			                                        	<h:outputText  value="#{notif1.details}" />
+			                                        </span>
+			                                    </div>
+	                                        
+	                                        </div>
+	                                    </div>
+	                                </div>
+	                            </div>
+							   	 
+							</p:repeat> 
+                        
+                         </div>
+
+                    </div>
+
+                    <div class="list-effect"></div>
+
+                </div>
+
+            </div>
+            
+         </div>
+         	
+        <div class="p-grid " jsf:rendered ="#{dashboard.showTaskModuleOption or dashboard.showDocTaskModuleOption or dashboard.showDeloDocModuleOption or dashboard.showProverkiOption or dashboard.showJalbiOption}">   	
+               <div class="p-col-12 " >
+		            <div class="card "  style="min-height: 200px">
+		            	
+		            	<div class="p-d-flex p-align-center">
+		            		<h5 style="flex-grow: 1;">
+		            			<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_MENU, dashboard.selectedCodeMenuObject, userData.getCurrentLang(), now)}" rendered="#{dashboard.selectedCodeMenuObject!=null}"/>
+							</h5>
+                        
+                            <div jsf:rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_SAGL or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_PODPIS or dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_FOR_REZOL  }">
+		            			<p:selectOneRadio value="#{dashboard.statusTask}" style="font-size:14px" id="statusTaskId">
+		            				<f:selectItem itemValue="1" itemLabel="Активни"/>
+		            				<f:selectItem itemValue="2" itemLabel="Обработени"/>
+		            				<p:ajax event="change" listener="#{dashboard.actionChangeStatusesTaskDoc}"  partialSubmit="true" process="@this statusTaskId " update="tableList panelselObj"/>
+		            			</p:selectOneRadio>
+		            		</div>
+		            		<div jsf:rendered="#{dashboard.showTaskModuleOption}">
+		            			<p:selectOneRadio value="#{dashboard.statusTask}" style="font-size:14px" id="statusTaskTask">
+		            				<f:selectItem itemValue="1" itemLabel="Нови"/>
+		            				<f:selectItem itemValue="2" itemLabel="В изпълнение"/>
+		            				<p:ajax event="change" listener="#{dashboard.actionChangeStatusesTaskTask}"  partialSubmit="true" process="@this statusTaskTask " update="tableList panelselObj"/>
+		            			</p:selectOneRadio>
+		            		</div>
+		            				            		
+		            		
+  	            		    <div jsf:rendered="#{dashboard.selectedCodeMenuObject == OmbConstants.CODE_ZNACHENIE_DASHBOARD_PROVERKA and (request.userPrincipal.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA,OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_JALBA_FULL_EDIT) or userData.accessZvenoList ne null)}">
+		            			<p:selectOneRadio value="#{dashboard.allJlb}" style="font-size:14px" id="allJlbId">
+		            				<f:selectItem itemValue="1" itemLabel="Всички"/>
+		            				<f:selectItem itemValue="2" itemLabel="В които съм водещ"/>
+		            				<p:ajax event="change" listener="#{dashboard.actionChangeJalbiList}"  partialSubmit="true" process="@this allJlbId " update="tableList panelselObj"/>
+		            			</p:selectOneRadio>
+		            		</div>
+		            		<div jsf:rendered="#{dashboard.objectList !=null}">
+		            			<div class="ui-inputgroup">
+			            			<p:inputText placeholder="#{dashboard.textSearchFull?'Търсене по номер':'Търсене по част от номер'}..."  value="#{dashboard.textSearch}" style="width:200px" id="inputSearch"/>
+			            			<p:selectBooleanButton  value="#{dashboard.textSearchFull}" 
+										onLabel="#{ui_labels['general.yes']}" offLabel="#{ui_labels['general.no']}"
+										title="#{labels['docu.docSrchRegNom']}" 
+										onIcon="fas fa-toggle-on" offIcon="fas fa-toggle-off"  styleClass="inputgroup-button" >
+										<p:ajax update="@this inputSearch" partialSubmit="true"	process="@this inputSearch"/>			
+									</p:selectBooleanButton>
+			            			<p:commandButton icon="fas fa-search"  actionListener="#{dashboard.actionSearch}" partialSubmit="true" process="@this inputSearch" update="tableList panelselObj" styleClass="inputgroup-button"/> 
+		            			</div>
+                            </div>
+                            
+						</div>
+		            	
+		            	<div jsf:id="tablesListPanel">
+		            	
+		            	<div jsf:id ="pnelbntgt">
+		            	<ui:remove><!-- 	<p:commandButton action="#{dashboard.actionShowGropuMpTask}" update="groupTaskModalPanel" 
+		            		 	rendered="#{dashboard.showGroupDocTaskNew and dashboard.selectedCodeMenuObject ne OmbConstants.CODE_ZNACHENIE_DASHBOARD_OPR_EXP}" 
+		            		 	value="#{labels['dashboart.groupTask']}" icon="fas fa-tasks" styleClass="ui-button-success"/>
+		            		  --></ui:remove>
+		            		  
+		            		 <p:commandButton action="#{dashboard.actionShowGropJalbiExp}" update="groupJalbiExpModalPanel" 
+		            		 	rendered="#{dashboard.showGroupDocTaskNew and dashboard.selectedCodeMenuObject eq OmbConstants.CODE_ZNACHENIE_DASHBOARD_OPR_EXP}" 
+		            		 	value="#{labels['dashboard.groupJalbiExp']}" icon="fas fa-tasks" styleClass="ui-button-success"/>
+		            		 
+		            		<p:commandButton action="#{dashboard.actionGotoGroupDocSign}" ajax="false" rendered="#{dashboard.showGroupDocSign}" value="#{labels['dashboard.groupDocSign']}" icon="fas fa-file-signature" styleClass="ui-button-success p-ml-2" />	
+		            	</div>	
+		           		<p:dataTable id="tableList" var="row" value="#{dashboard.objectList}" lazy="true" 	 rendered="#{dashboard.objectList !=null}"  rowKey="#{row[0]}"  
+								rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}"  
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+								rows="#{dashboard.rows}" rowsPerPageTemplate="5,15,20,25,30" paginatorPosition="bottom"
+								paginatorAlwaysVisible="false" paginator="true">
+														
+								<p:column width="20" exportable="false" headerText="N:" >
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+								
+								<p:column width="#{dashboard.gotoJalbaPage ? 74 : 35}" exportable="false" >
+									<p:commandButton  icon="fas fa-edit"  action="#{dashboard.actionGoto(row, false)}" ajax="false" rendered="#{dashboard.gotoDocPage}" 
+									title="#{dashboard.titleRegDoc}" styleClass="p-mr-2"/>
+									
+									<p:commandButton   action="#{dashboard.actionSelectObject}" icon="fas fa-edit" update=":dashboard:panelselObj"  partialSubmit="true" process="@this" rendered="#{!dashboard.gotoDocPage}" 
+						 				onclick="highlightElement(this ,'tr');" oncomplete="#{dashboard.displayModalSelObj?'PF(\'dialogPanelSelObj\').show()':''}">
+						 				<f:setPropertyActionListener value="#{row}" target="#{dashboard.selectedObject}"   />
+						 			</p:commandButton>	
+						
+									<p:commandButton  icon="fas fa-edit"  rendered="#{dashboard.gotoJalbaPage and row[7] eq 'eВръчване'}"
+										action="#{dashboard.actionGoto(row, true)}" ajax="false"  
+									    title="Регистриране на жалба" styleClass="ui-button-success"/>
+								</p:column>
+								
+								<p:columns value="#{dashboard.columns}" var="column" width="#{column.width}" sortBy="#{column.sortColumn}" style="#{column.width eq '*'?'width:100%':''}" styleClass="#{column.classWidth}" sortable="#{column.sortColumn== null?false:true}">
+									<f:facet name="header">
+										<h:outputText value="#{column.header}" rendered="#{column.columnTypeValue ne 7}"/>
+										<h:outputText value="#{column.header}" title="#{labels['docList.urgent']}" rendered="#{column.columnTypeValue eq 7}" />
+						            </f:facet>
+						            
+						          
+						            <p:selectBooleanCheckbox value="#{dashboard.selectedDocs[dashboard.castLong(row[column.property])]}" rendered="#{column.columnTypeValue eq 6 and row[column.property]!=null}">
+						            	<p:ajax event="change" update="@this dashboard:pnelbntgt" partialSubmit="true" process="@this" listener="#{dashboard.showGroupTaskBnt(row)}"/>
+						            </p:selectBooleanCheckbox>
+						             
+						            <h:outputText value="#{row[column.property]}" rendered="#{column.columnTypeValue eq 0}"/>
+						            
+						            <h:outputText value="#{systemData.decodeItem(column.codeClassif, row[column.property], dashboard.currentLang, now)}" rendered="#{column.columnTypeValue eq 1}"/>
+						            
+						            <h:outputText value="#{row[column.property]}"  rendered="#{column.columnTypeValue eq 2}">
+										<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{tasksList.timeZone}"/>
+									</h:outputText>	
+									
+									<h:outputText value="#{row[column.property]}"  rendered="#{column.columnTypeValue eq 3}">
+										<f:convertDateTime pattern="dd.MM.yyyy hh:mm" timeZone="#{tasksList.timeZone}"/>
+									</h:outputText>
+									
+									<h:outputText value="#{dashboard.valuecolumnConverter(row)}" rendered="#{column.columnTypeValue eq 4}"/>
+									
+									<h:outputText value="#{systemData.decodeItems(column.codeClassif, row[column.property], dashboard.currentLang, now)}" rendered="#{column.columnTypeValue eq 5}"/>
+									
+									<i class="fas fa-circle" style="#{row[column.property]==1?'color:#99ce6b;':(row[column.property]==2?'color:#fdbe02;':'color:#f28686;')}" 
+										   title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_URGENT, row[column.property], dashboard.currentLang, now)}" 
+										   jsf:rendered="#{column.columnTypeValue eq 7 and row[column.property] != null}" /> 
+										   
+								    
+								   <i class="fas #{row[column.property]==1?'fa-sd-card':'fa-file-signature'} fa-lg" style="#{row[column.property]==1?'color:#5E81AC' : 'color:grey'}" 
+									   title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_SIGN_METHOD, row[column.property], dashboard.currentLang, now)}" 
+									   jsf:rendered="#{column.columnTypeValue eq 8 and row[column.property] != null}" /> 
+										  
+										
+								</p:columns>
+								
+						 </p:dataTable>
+		            
+		           
+		           		<p:dataTable id="mailList" var="rowMail" value="#{dashboard.mailList}" lazy="true" 	 rendered="#{dashboard.mailList !=null}"  
+								rowIndexVar="idx" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}"  
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+								rows="#{dashboard.rows}" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+								paginatorAlwaysVisible="true" paginator="true">
+								
+        						<p:column width="35" exportable="false" headerText="N:" >
+									<h:outputText value="#{idx + 1}" />
+								</p:column>	
+								
+								<p:column width="35" exportable="false" >
+									<p:commandButton   action="#{dashboard.actionSelectMail}" icon="fas fa-eye" update=":dashboard:panelselObj"  partialSubmit="true" process="@this"  onclick="highlightElement(this ,'tr');"
+										oncomplete="#{dashboard.displayModalSelObj?'PF(\'dialogPanelSelObj\').show()':''}">
+						 				<f:param  name="messUID" value="#{rowMail[0]}"/>
+						 			</p:commandButton>	
+								</p:column>
+								
+								<p:column width="35" exportable="false" headerText="" >
+									<div jsf:rendered="#{rowMail[7]!=0}">
+										<i class="fas fa-paperclip" aria-hidden="true"></i>
+										<h:outputText value=" (#{rowMail[7]})" escape="false"/>
+									</div>
+								</p:column>							
+								<p:column width="120" exportable="false" headerText="#{labels['dashboard.izpraten']}" >
+									<h:outputText value="#{rowMail[3]}" >
+										<f:convertDateTime pattern="dd.MM.yyyy hh:mm" timeZone="#{tasksList.timeZone}"/>
+									</h:outputText>
+								</p:column>
+								
+								<p:column width="120" exportable="false" headerText="#{labels['dashboard.poluchen']}" >
+									<h:outputText value="#{rowMail[4]}">
+										<f:convertDateTime pattern="dd.MM.yyyy hh:mm" timeZone="#{tasksList.timeZone}"/>
+									</h:outputText>
+								</p:column>	
+								
+								<p:column width="200" exportable="false" headerText="#{labels['dashboard.from']}" >
+									<h:outputText value="#{rowMail[5]}" />
+								</p:column>	
+								
+								<p:column width="*" exportable="false" headerText="#{labels['general.otnosno']}" styleClass="dbCol200" >
+									<h:outputText value="#{rowMail[6]}" />
+								</p:column>	
+								
+						</p:dataTable>
+		            	</div>
+		            </div>
+		       </div>
+		       <div class="p-col-12"  jsf:id="panelselObj">
+		       		<c:if test="#{!dashboard.displayModalSelObj}">
+		       			<ui:include src="/pages/dashbordSelObjInc.xhtml" />
+		     		</c:if>
+		     		
+		     		<c:if test="#{dashboard.displayModalSelObj}">
+				       	<p:dialog widgetVar="dialogPanelSelObj"  positionType="absolute"  position="top" responsive="true" style="max-width:99% !important"> 
+				       		<ui:include src="/pages/dashbordSelObjInc.xhtml" />
+		               	</p:dialog>	
+	               	</c:if>
+               </div>
+            </div>
+        </div>
+        
+        
+     </div>
+     
+     
+
+   
+     <p:dialog  id="taskModalPanel" dynamic="true"  widgetVar="taskMP"  modal="true" position="top" positionType="absolute" header="#{dashboard.titleDoc}" responsive="true" style="max-width:98%"  closeOnEscape="true">     
+            <p:messages  showDetail="true" closable="true">
+		  		<p:autoUpdate />
+		  	</p:messages>
+            <ibg:taskData   idDoc="#{dashboard.idDoc}"  taskProcess="2"  dateDoc="#{dashboard.dateDoc}"  rendered="#{(dashboard.showDocTaskModuleOption or dashboard.showTaskModuleOption) and dashboard.showDocTaskNew}"  />
+	 </p:dialog>
+	 
+	 <p:dialog  id="groupTaskModalPanel" dynamic="true"  widgetVar="groupTaskMP"  modal="true" position="top" positionType="absolute" header="#{labels['dashboart.groupTask']}" responsive="true" style="max-width:98%"  closeOnEscape="true">     
+            <p:messages  showDetail="true" closable="true">
+		  		<p:autoUpdate />
+		  	</p:messages>
+		  	
+            <ibg:taskData   docList="#{dashboard.idDocs}"  taskProcess="2"  rendered="#{dashboard.showGroupDocTaskNew}" onComplete="hideGroupTaskMP()" />
+            
+	 </p:dialog>
+	  
+	 <p:remoteCommand name="dashboardNewTaskDoc"    update="taskModalPanel"   action="#{dashboard.actionNewTaskDoc}" oncomplete="PF('taskMP').show()"  autoRun="false" />
+	 
+	 <p:dialog  id="groupJalbiExpModalPanel" dynamic="true" width="500" widgetVar="groupJalbiExp"  modal="true" position="top" positionType="absolute" header="#{labels['dashboard.groupJalbiExp']}" responsive="true"  closeOnEscape="true">     
+            <p:messages  showDetail="true" closable="true">
+		  		<p:autoUpdate />
+		  	</p:messages>
+		  	<div class="p-grid">
+			  	<div class="p-col-9" >
+		       		<h:outputText value="#{labels['jp.vodeshExp']}" styleClass="form-label req"/>		
+					<ibg:autoCompleteListVod id="expert1" 
+							 			codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+										minQueryLength="2"
+										listVod="#{dashboard.zvenoSlList}"
+										selectedCode="#{dashboard.jalbaExpert}"
+										styleAutoComp="" 
+										withBtnClear="true" compType="2" title="#{labels['jp.vodeshExp']}"
+										update="dashboard:btnjs"/>	
+				</div>
+			  	<div class="p-col-3 p-as-end" jsf:id="btnjs">
+					   <p:commandButton icon="fas fa-save"	disabled="#{dashboard.jalbaExpert eq null}"		
+							value="#{ui_labels['general.save']}" 
+							id="btnSaveJExp" tabindex="-1"
+							update="groupJalbiExpModalPanel dashboard:tableList  dashboard:pnelbntgt dashboard:jalbiSection"
+							partialSubmit="true" process="groupJalbiExpModalPanel @this"
+							actionListener="#{dashboard.actionSaveGroupJalbiExp}"
+							title="#{labels['dashboard.saveJExpTitle']}"
+							styleClass="p-mr-2">
+						 </p:commandButton>
+			  	</div>
+            </div>
+	 </p:dialog>
+ 	
+	 
+	 
+	 <ui:remove><!-- Отказ от регистрация  --></ui:remove> 	 
+	 <p:dialog appendTo="@form" width="650px"  header="#{labels['docu.titleRejectDoc']}" 
+	    fitViewport="true" closeOnEscape="true" style="margin-top:50px !important" 
+		widgetVar="modalMailReject" dynamic="true" id="modalMailRejectId"  modal="true" >	
+		  
+		<div class="p-grid  ui-fluid">				
+			<div class=" p-col-12">
+				<h:outputText value="#{labels['docu.txtRejected']}"  styleClass="form-label req" />
+				<p:inputTextarea value="#{dashboard.textReject}" id="txtMailReject" rows="2" />
+			</div>
+			
+				
+		</div>
+		<f:facet name="footer">	
+			<p:commandButton value="#{ui_labels['general.cancel']}" icon="fas fa-save" update="mailList,txtMailReject ,panelselObj" oncomplete="PF('modalMailReject').hide();"
+				partialSubmit="true" process="txtMailReject  @this"  action="#{dashboard.actionRejectMail}">
+			</p:commandButton>
+		</f:facet>
+	 </p:dialog>	 
+	 
+	 
+	 
+	 
+	 
+	 <p:dialog header="#{labels['task.titleHistory2']}" widgetVar="historyTaskModalDash"  position="top" modal="true" closeOnEscape="true"  id="historyTaskModalDashId" appendTo="@form" responsive="true">
+	    	<div class="container #{guestPreferences.containerPosition}">
+	         <div class="table-toolbar">
+				<h:outputText value="#{ui_labels['general.reportResult']} #{dashboard.taskHistoryList.size()}" styleClass="form-label"/>
+			</div>
+		
+			<p:dataTable id="tableHistoryTaskDash" var="rowh" value="#{dashboard.taskHistoryList}" 	 scrollable="true"
+				rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rows="15" rowsPerPageTemplate="5,10,15,20" paginatorPosition="bottom"
+				paginatorAlwaysVisible="false" paginator="true" >
+						
+				
+				<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>	
+				
+				<p:column  sortBy="#{rowh[1]}" headerText="#{labels['task.statusData']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, rowh[1], dashboard.currentLang, now)}"/>					    
+				</p:column>
+				
+				<p:column width="120" sortBy="#{rowh[4]}" headerText="#{labels['delo.dateStatus']}" >									  
+					<h:outputText value="#{rowh[4]}">	
+						<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dashboard.timeZone}"/>
+					</h:outputText>							    
+				</p:column>
+				
+				<p:column  sortBy="#{rowh[2]}" headerText="#{labels['journal.jUser']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, rowh[2], dashboard.currentLang, now)}"/>					    
+				</p:column>
+				
+				<p:column  sortBy="#{rowh[3]}" headerText="#{labels['tasks.comment']}">
+					<h:outputText value="#{rowh[3]}"  />								    
+				</p:column>
+			  	
+				<p:column  sortBy="#{rowh[6]}" headerText="#{labels['tasks.opinion']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_OPINION , rowh[6], dashboard.currentLang, now)}"  />								    
+				</p:column>
+				
+			</p:dataTable>
+				</div>		
+	</p:dialog>
+     
+     <p:dialog header="#{labels['dashboard.taskspr']}" widgetVar="taskDokSprMP" modal="true" closeOnEscape="true"  position="top"  id="taskDokSprMPId" appendTo="@form" responsive="true" width="95%">
+     	
+     	<div jsf:id="taskModalPanelSpr">
+     		<p:dataTable id="tblTasksDocList" var="row" value="#{dashboard.tasksDocList}" lazy="true" 	
+				rowIndexVar="idx" sortMode="single" reflow="true"
+				emptyMessage="#{labels['docu.taskListEmpty']}"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+				paginatorAlwaysVisible="true" paginator="true">				
+				
+		
+				<p:column width="90" sortBy="#{row.a1}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.nomer']}" />
+					</f:facet>
+					<h:outputText value="#{row[1]}"  />
+				</p:column>
+				
+				<p:column width="130" sortBy="#{row.a2}" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.vid']}"  />
+					</f:facet>
+				    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row[2],  dashboard.currentLang, now)}" />		   						    
+				</p:column>
+				
+				<p:column width="80" sortBy="#{row.a4}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.srok']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[4]}"  >	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dashboard.timeZone}"/>
+					</h:outputText>	
+				    
+				</p:column>
+				
+				<p:column width="130" sortBy="#{row.a3}">
+					<f:facet name="header">
+						 <h:outputText value="#{labels['task.statusData']}" />									  
+					</f:facet>  
+				    <h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_STATUS, row[3], dashboard.currentLang, now)}  "/>
+				   
+				</p:column>
+				
+				
+				<p:column width="*"  styleClass="dbCol200" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['taskList.emplStatus']}" />									  
+					</f:facet>  
+				    <h:outputText value=" #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[15],  dashboard.currentLang, now)}"/>
+				   
+				</p:column>
+				
+				<p:column width="*"  styleClass="dbCol200" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['admStruct.employees']}" />									  
+					</f:facet>
+					<h:outputText value="#{labels['tasks.assignCode']}:" styleClass="form-label"></h:outputText> 
+					<h:outputText value="  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[8], dashboard.currentLang, now)} "> </h:outputText>
+					<h:outputText value="#{labels['tasks.exec']}:" styleClass="form-label"></h:outputText>	
+					<h:outputText value=" #{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[6],  dashboard.currentLang, now)}"/>
+				</p:column>
+			
+				<p:column width="100" sortBy="#{row.a5}" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['tasks.assign']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[5]}"  >	
+							<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dashboard.timeZone}"/>
+					</h:outputText>	
+				    
+				</p:column>
+				<p:column width="*"  styleClass="dbCol200" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['dashboard.mnenieKomentar']}" />									  
+					</f:facet>  
+					<h:outputText value="#{dashboard.titleInfo(row[10], row[9])}" />	
+										    
+				</p:column>
+				<p:column width="*"  styleClass="dbCol200" >
+					<f:facet name="header">
+						 <h:outputText value="#{labels['task.dopInfo']}" />									  
+					</f:facet>  
+					<h:outputText value="#{row[11]}" />	
+										    
+				</p:column>
+				<p:column style="text-align: center" width="50" exportable="false" >
+					
+					<p:button  icon="fas fa-eye" href="docView.xhtml?faces-redirect=true" target="_blank" 
+					           title="#{labels['tasks.delDocReq']} N: #{row[12]} / #{row[13]}" 
+			  				   rendered="#{row[14] != null}" >
+			  				   
+			  				   <f:param name="idObj" value="#{row[14]}"/>
+			  		</p:button>		
+				
+				</p:column> 
+			</p:dataTable>
+     	</div>
+     	
+     </p:dialog>
+     
+     
+     <p:dialog header="#{labels['docu.titleRejectDoc']}" widgetVar="rejectModalEGOV" modal="true" closeOnEscape="true"   id="testmpId" appendTo="@form" responsive="true" width="600">
+     			
+		  	<div  class="p-grid  ui-fluid ">	
+				<div class="p-col-12 ">	
+	   				<h:outputText value="#{dashboard.titleDoc}" styleClass="form-label" />
+	   			</div>
+	   			<div class="p-col-12 ">	
+	    			<h:outputText value="#{labels['dashboard.prichinaOtkaz']}" styleClass="form-label" />
+	    			<p:inputTextarea  value="#{dashboard.textReject}" id="prichinaReject"/>
+	   			</div>
+	  		</div>
+	  		<f:facet name="footer">	
+				<p:commandButton value="#{ui_labels['general.cancel']}" icon="fas fa-save" update="tableList @this" oncomplete="PF('rejectModalEGOV').hide();"
+					partialSubmit="true" process="prichinaReject  @this"  action="#{dashboard.actionRejectCEOC}">
+				</p:commandButton>
+			</f:facet>
+     </p:dialog>
+     
+    
+    <ui:remove><!-- "Търсене на предишни жалби - за добавяне на файлове от е-маил"		</div> --></ui:remove>
+	<p:dialog appendTo="@form" header="#{labels['jp.jalbiMail']}"
+		responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" onShow="$(function(){PrimeFaces.focus('dashboard:jRn');});"
+		position="top" style="margin-top:50px !important" 
+		widgetVar="modalJalbiSpr" dynamic="true" resizable="true"
+		id="modalJalbiSprId" modal="true">
+		
+		<div class="container #{guestPreferences.containerPosition}">	
+		
+			<div class="p-grid ui-fluid  p-align-end" jsf:id="pJalbi">	
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-2 p-xl-2">
+					<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+					 <p:selectOneMenu id="idPerR" value="#{dashboard.jalbaPeriodR}" height="250">
+	                        <f:selectItem value="#{null}" itemValue="#{null}" itemLabel=" "/>
+	                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, dashboard.currentLang)}" 
+	                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+	                        <p:ajax event="change" partialSubmit="true"
+	                        update="@this dateOtReg dateDoReg" listener="#{dashboard.changeJalbaPeriodR}"/>   
+	                 </p:selectOneMenu>
+				</div>
+				
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-2 p-xl-2">
+					<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+					 <p:datePicker id="dateOtReg" mask="true" showIcon="true"  locale="bg"  pattern="dd.MM.yyyy"
+			         	value="#{dashboard.jalbaDateFrom}" >
+			         	<p:ajax event="change" update="idPerR" listener="#{dashboard.changeJalbaDate}"/>
+			         	<p:ajax event="dateSelect" update="idPerR" listener="#{dashboard.changeJalbaDate}"/>      
+			         </p:datePicker>
+				</div>
+				
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-2 p-xl-2">
+					<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+					<p:datePicker id="dateDoReg" mask="true" showIcon="true"  locale="bg" pattern="dd.MM.yyyy"
+	         			    value="#{dashboard.jalbaDateTo}" >
+	         			 	<p:ajax event="change" update="idPerR" listener="#{dashboard.changeJalbaDate}"/>   
+	         			 	<p:ajax event="dateSelect" update="idPerR" listener="#{dashboard.changeJalbaDate}"/>   
+		         	</p:datePicker>
+				</div>
+			
+				<div class="p-col-4 p-sm-4 p-md-4 p-lg-2 p-xl-2">	
+					<h:outputText value="#{labels['jp.jalbaRn']}" styleClass="form-label req"/>
+					<p:inputText value="#{dashboard.jalbaRN}" id="jRn" />
+				</div>
+				
+				<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2">
+						<p:commandButton id="btnFindJalba" 						
+						    actionListener="#{dashboard.actionFindJalba}"
+							partialSubmit="true"	process="@this pJalbi" update="tblJalbiD" 
+							icon="fas fa-search"  
+							value="#{ui_labels['general.search']}" styleClass="p-mr-2"/>
+				</div>					
+			</div>
+			
+			<div jsf:id="tblJalbiD">
+				<p:dataTable id="tblJalbi" var="row" 
+					value="#{dashboard.jalbiList}" lazy="true" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{dashboard.jalbiList ne null ? labels['jp.emptyPrevios'] : ''}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true"
+					rowSelectMode="checkbox">
+					
+				  	<p:column  width="30" exportable="false" >	 	
+						<p:commandButton icon="fas fa-file-upload"				
+							id="btnFJalbi" tabindex="-1"
+							update="dashboard:mailList , dashboard:panelselObj" process="@this" partialSubmit="true" 
+							actionListener="#{dashboard.actionAddFilesТоJalba(row[0])}"
+							oncomplete="PF('modalJalbiSpr').hide();"
+							title="#{labels['dashboard.addFilesJalbaTitle']}">
+						</p:commandButton>
+			
+					</p:column>
+				  	<p:column  width="30" exportable="false" >	 	
+				    	<p:button  icon="fas fa-eye" href="#{dashboard.actionGotoViewJ(row[0])}" target="_blank"  title="#{ui_labels['general.view']}" />
+					</p:column>
+					<p:column width="100"  headerText="#{labels['repDoc.regnom']}" sortBy="#{row.a1}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+					<p:column width="110" headerText="#{labels['docu.docDate']}" sortBy="#{row.a2}">
+						<h:outputText value="#{row[2]}" >
+					 		<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{dashboard.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="280" headerText="#{labels['jl.jalbopodatel']} (#{ui_labels['general.egn']}/#{ui_labels['general.lnch']}/#{ui_labels['general.eik']})" sortBy="#{row.a3}">
+						<h:outputText value="#{row[3]}" />
+						<h:outputText value=" (#{row[4]})" rendered="#{row[4] ne null and row[4] ne ''}"/>
+					</p:column>
+					<p:column width="140" headerText="#{ui_labels['general.ekatte']}" sortBy="#{row.a5}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EKATTE, row[5], dashboard.currentLang, now)}" />
+					</p:column>
+					<p:column  width="*" headerText="#{labels['jbp.narOgan']}" sortBy="#{row.a6}">
+						<h:outputText value="#{row[6]}" />
+					</p:column>
+				</p:dataTable>
+			</div>
+		</div>
+	</p:dialog>
+    
+    
+     <ui:remove><!-- "Справка свързани документи"		</div> --></ui:remove>
+   <p:dialog header="#{labels['dashboard.linkdocspr']}" widgetVar="linkDocSprMP" modal="true" closeOnEscape="true"  position="top"  id="lickDocSprMPId" appendTo="@form" responsive="true" >
+     	
+     	<div jsf:id="linkDocModalPanelSpr" class="container #{guestPreferences.containerPosition}">
+     	
+     		<p:dataTable id="tblLinkDocList" var="row" value="#{dashboard.linkDocList}" lazy="false" 	
+				rowIndexVar="idx" sortMode="single" reflow="true"
+				emptyMessage="#{labels['docu.docListEmpty']}"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+				paginatorAlwaysVisible="true" paginator="true">				
+	
+				<p:column style="width:2rem">
+	                <p:rowToggler rendered="#{(row[5] ne null and (row[5]).size() > 0) or row[6] eq OmbConstants.CODE_ZNACHENIE_NE}"/>
+	            </p:column>	
+				<p:column  width="40" exportable="false" >
+					<p:button  icon="fas fa-eye" href="docView.xhtml?faces-redirect=true" target="_blank" title="#{ui_labels['general.view']}" 
+					           rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_DA}" >
+			  				   <f:param name="idObj" value="#{row[1]}"/>
+			  		</p:button>	
+				</p:column>
+				
+				<p:column width="130" sortBy="#{row[2]}" headerText="#{labels['jp.rnFullSpr']}">
+				    <h:outputText value="#{row[2]}" />		   						    
+				</p:column>
+				
+				<p:column width="110" headerText="#{labels['docu.docDatReg']}" sortBy="#{row[3]}">
+					<h:outputText value="#{row[3]}" >
+				 	  <f:convertDateTime  pattern="dd.MM.yyyy HH:mm" timeZone="#{dashboard.timeZone}"/>
+					</h:outputText>
+				</p:column>
+				
+				<p:column width="*"  styleClass="dbCol200"   headerText="#{labels['docu.dopInfo']}"  sortBy="#{row[4]}" >
+				    <h:outputText value="#{row[4]}"/>
+				</p:column>
+				
+				<p:rowExpansion>				
+					<div class="list-container" jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_DA}">
+						<p:repeat varStatus="rkv" value="#{row[5]}" var="file" id="rflst" >
+							<h:panelGroup styleClass="file-list" layout="block" id="lst">
+						
+								<p:commandLink ajax="false" action="#{dashboard.download(file[0])}" id="btnF" >
+									<div class="file-details">									
+										<span class="filename">#{file[1]}</span>									
+									</div>
+								</p:commandLink>
+									
+							</h:panelGroup>
+						</p:repeat>
+					</div>
+					<div class="list-container" jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_NE}">
+					 	<h:outputText value="#{labels['docu.docAccessDenied']}"/>
+					</div>
+				</p:rowExpansion>
+					
+			</p:dataTable>
+     	
+     	</div>
+     	
+     </p:dialog>
+     
+    
+    
+     
+     </h:form>
+    </ui:define>
+	
+</ui:composition>

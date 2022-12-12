@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+
+		<h:form id="testForm" >
+
+			  <p:autoComplete id="тatest" multiple="true" value="#{testRosi.scList}"
+                        completeMethod="#{testRosi.actionComplete}"
+                     var="item"
+						itemLabel="#{item.tekst}" itemValue="#{item}"
+                        converter="#{countryConverter}" forceSelection="true" scrollHeight="250">
+		            <p:column>
+		                
+		                <h:outputText style="vertical-align: middle; margin-left: .5rem" value="#{item.tekst}"/>
+		            </p:column>
+		        </p:autoComplete>
+		
+		
+			</h:form>
+
+	<ui:composition template="/template/template.xhtml">
+	
+		<ui:param name="pageTitle" value="Test" />
+		<ui:define name="title">#{pageTitle}</ui:define>
+	
+		<ui:define name="content">
+		  
+		  	<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			</f:metadata>
+		
+		<h:form id="testForm" >
+
+			  <p:autoComplete id="atest" multiple="true" value="#{testRosi.scList}"
+                        completeMethod="#{testRosi.actionComplete}"
+                     var="item"
+						itemLabel="#{item.tekst}" itemValue="#{item}"
+                      	converter="sysClassifItemConverter" forceSelection="true" scrollHeight="250">
+		            <p:column>
+		                
+		                <h:outputText style="vertical-align: middle; margin-left: .5rem" value="#{item.tekst}"/>
+		            </p:column>
+		        </p:autoComplete>
+		
+		
+			</h:form>
+		</ui:define>
+	</ui:composition>
+	
+</html>

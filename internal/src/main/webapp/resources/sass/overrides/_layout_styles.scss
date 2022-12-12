@@ -1,0 +1,327 @@
+/* Add your customizations of layout here */
+
+/* Customization for the mobile topbar */
+@media (max-width: $mobileBreakpoint) {
+    .layout-wrapper {
+        .layout-topbar {
+            .layout-topbar-wrapper {
+                .layout-topbar-right {
+                    height: 75px;
+
+                    .layout-topbar-actions {
+                        height: 100%;
+                        @include flex-justify-center();
+
+                        .profile-item {
+                            display: flex;
+                        }
+                    }
+                }
+            }
+        }
+
+        &.layout-topbar-mobile-active {
+            .layout-rightpanel {
+                top: 150px;
+                height: calc(100% - 150px);
+            }
+            .layout-sidebar {
+                top: 150px;
+
+                .layout-menu-container {
+                    height: calc(100% - 150px);
+                }
+            }
+        }
+    }
+}
+
+body {
+
+    .ui-inputfield, .ui-selectonemenu, .ui-selectcheckboxmenu {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-radius: 0px;
+        background: $inputFieldsBackground;
+        
+        &.ui-state-focus {
+            box-shadow: 0 3px 0px 0px $primaryLightColor;
+
+            &[readonly=readonly] {
+                box-shadow: none;
+                border-color: $inputFieldBorderColor;
+            }
+        }
+    }
+
+    .ui-datatable {
+        .ui-datatable-data {
+            > tr {
+                td {
+                    padding: 4px 10px;
+                }
+            }
+        }
+        thead {
+            th {
+                padding: 6px 10px;
+            }
+        }
+    }
+    
+    .ui-tree {
+        .ui-tree-container {
+            .ui-treenode {
+                padding: 0;
+
+                .ui-treenode-content {
+                    .ui-treenode-label {
+                        padding: 0.25rem;
+                    }
+
+                    .ui-treenode-leaf-icon, .ui-treenode-icon { 
+                        flex-shrink: 0;
+                    }
+                }
+            }
+        }
+
+        .ui-treenode-children {
+            padding-left: 26px;
+        }
+
+        .ui-tree-container {
+            white-space: normal;
+        }
+    }
+
+    .ui-selectonemenu-panel {
+        .ui-selectonemenu-items {
+            .ui-selectonemenu-item.ui-selectonemenu-row {
+                & > td {
+                    padding: 4px 10px 4px 10px;
+                }
+            }
+        }
+    }
+
+    .ui-radiobutton {
+        .ui-radiobutton-box {
+            .ui-radiobutton-icon {
+                width: 8px;
+                height: 8px;
+                margin-top: -4px;
+                margin-left: -4px;
+            }
+        }
+    }
+}
+
+/* Topbar in viewTemplate */
+.layout-wrapper.view-template {
+    .layout-main {
+        margin-left: 0;
+    }
+
+    .layout-topbar {
+        width: 100%;
+        -webkit-box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+        -moz-box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+
+        .layout-topbar-wrapper {
+            padding: 0 2em;
+            height: 75px;
+            flex-direction: row;
+            -webkit-box-orient: horizontal;
+            -webkit-box-shadow: 0 3px 5px 0 rgba(33, 35, 39, 0.15);
+            -moz-box-shadow: 0 3px 5px 0 rgba(33, 35, 39, 0.15);
+            box-shadow: 0 3px 5px 0 rgba(33, 35, 39, 0.15);
+
+            .layout-topbar-right {
+                display: block;
+                height: 75px;
+
+                .layout-topbar-actions {
+                    border-bottom: none;
+                }
+            }
+
+            .layout-topbar-left {
+                box-shadow: none;
+                padding: 0;
+
+                .layout-topbar-logo {
+                    display: -webkit-box;
+                    display: -ms-flexbox;
+                    display: flex;
+                    -webkit-box-align: center;
+                    -ms-flex-align: center;
+                    align-items: center;
+                }
+            }
+
+            .sidebar-menu-button,
+            .topbar-menu-mobile-button {
+                display: none;
+            }
+        }
+
+        .layout-topbar-logo-wrapper {
+            .layout-topbar-logo {
+                img {
+                    height: 45px;
+                    width: 45px;
+                }
+                .app-name {
+                    font-size: 22.5px;
+                    color: $textColor;
+                    margin: 0 10px;
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    .layout-wrapper.view-template .layout-main {
+        padding-top: 75px;
+    }
+}
+
+.layout-config {
+    width: $configMenuWidth;
+    transform: translate3d($configMenuWidth, 0px, 0px);
+
+    .layout-config-content {
+        .layout-themes {
+            > div {
+                padding: 0.5em;
+            }
+
+            a.large {
+                width: 7em;
+                height: auto;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+
+                img {
+                    width: 100%;
+                }
+
+                i {
+                    font-size: 1.5rem;
+                    margin-left: -0.75rem;
+                    margin-top: -0.75rem;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .layout-config {
+        transform: translate3d($configMenuWidth, 0px, 0px);
+
+        &.layout-config-active {
+            transform: translate3d(0px, 0px, 0px);
+        }
+
+        .layout-config-close {
+            right: 29px;
+        }
+    }
+}
+
+.login-body {
+    .login-content {
+        
+        .login-panel {
+            .login-panel-content {
+                .buttons {
+                    justify-content: center;
+                }
+
+                .forms .session-expired-wrapper {
+                    text-align: center;
+                }
+            }
+        }
+
+        .night-switch {
+            .ui-button {
+                .fas,
+                .far {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 32px;
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    margin-top: -16px;
+                    margin-left: -16px;
+                }
+            }
+        }
+    }
+}
+
+.layout-breadcrumb {
+    .breadcrumb {
+        .route-bar-breadcrumb {
+            li {
+                i {
+                    font-size: 2em;
+                }
+            }
+        }
+    }
+}
+
+/* Панелите със задачи отстрани в дашборда */
+.layout-dashboard {
+    .tasks {
+        padding-top: 0;
+
+        .title {
+            padding: 18px 18px 0 18px;
+            @include gradient(180deg, $primaryLightColor, scale-color($primaryLightColor, $lightness: -5%));
+            border-top-left-radius: $borderRadius;
+            border-top-right-radius: $borderRadius;
+        }
+
+        .checkboxes {
+            .checkbox-row {
+            
+                transition: all 0.1s ease-in;
+
+                .checkbox-row-info .time {
+                    @include border-radius(10px);
+                    background-color: #ffdd99;
+                    min-width: auto;
+                    font-weight: bold;
+                    color: unset;
+                }
+
+                &.ui-state-highlight {
+                    background-color: $primaryLightColor;
+                    color: $dashBoardLinksColor;
+                    background-color: #fff5e0;
+                    border-left: 7px solid #ffdd99;
+                    font-weight: bold;
+                }
+            }
+        }
+
+        .ui-commandlink {
+            color: $dashBoardLinksColor;
+            > .p-grid {
+                margin-bottom: -0.5rem;
+            }
+        }
+    }
+}
+
+.form-label {
+    color: $formLabelColor;
+}

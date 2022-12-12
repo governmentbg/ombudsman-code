@@ -1,0 +1,388 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:metadata>
+				<f:viewAction action="#{userData.checkPageAccess(103)}"
+					onPostback="false" />
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				<f:importConstants type="com.ib.indexui.system.Constants" />
+			</f:metadata>
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/notificationsDelete.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>#{navTexts['/pages/notificationsDelete.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<h:form id="formNotifDelete">
+
+			<!-- ФИЛТЪР -->
+			<h:panelGroup id="panelFilterNotifDel" layout="block"
+				class="container #{guestPreferences.containerPosition}">
+				<p:outputPanel styleClass="card" id="panelFilterPanelNotifDel">
+					<div class="p-grid">
+						<!-- ПЕРИОД -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{ui_labels['general.period']}"
+								styleClass="form-label" />
+							<p:selectOneMenu id="idPerNotif"
+								value="#{notificationsDelete.periodNotif}">
+								<f:selectItem value="#{null}" itemValue="#{null}" />
+								<f:selectItems
+									value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, notificationsList.currentLang)}"
+									var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+								<p:ajax event="change"
+									update="formNotifDelete:idPerNotif formNotifDelete:dateOtRegNotif formNotifDelete:dateDoRegNotif"
+									listener="#{notificationsDelete.changePeriodNotif}" />
+							</p:selectOneMenu>
+						</div>
+
+						<!-- ДАТА ОТ -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataOt']}"
+								styleClass="form-label" />
+							<p:datePicker id="dateOtRegNotif" pattern="dd.MM.yyyy" mask="true"
+								showIcon="true" locale="bg"
+								value="#{notificationsDelete.notifDateFrom}"
+								styleClass="form-control">
+								<p:ajax event="change" update="formNotifDelete:idPerNotif"
+									listener="#{notificationsDelete.changeDateNotif}" />
+								<p:ajax event="dateSelect" update="formNotifDelete:idPerNotif"
+									listener="#{notificationsDelete.changeDateNotif}" />
+							</p:datePicker>
+						</div>
+
+						<!-- ДАТА ДО -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataDo']}"
+								styleClass="form-label" />
+							<p:datePicker id="dateDoRegNotif" pattern="dd.MM.yyyy" mask="true"
+								showIcon="true" locale="bg"
+								value="#{notificationsDelete.notifDateTo}"
+								styleClass="form-control">
+								<p:ajax event="change" update="formNotifDelete:idPerNotif"
+									listener="#{notificationsDelete.changeDateNotif}" />
+								<p:ajax event="dateSelect" update="formNotifDelete:idPerNotif"
+									listener="#{notificationsDelete.changeDateNotif}" />
+							</p:datePicker>
+						</div>
+
+						<!-- ПРОЧЕТЕНА -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">
+							<p:outputLabel for="readNotif" value="Прочетена:"
+								styleClass="form-label" />
+							<p:selectOneRadio id="readNotif"
+								value="#{notificationsDelete.selectedRead}" unselectable="true">
+								<f:selectItem itemLabel="#{ui_labels['general.yes']}"
+									itemValue="1" />
+								<f:selectItem itemLabel="#{ui_labels['general.no']}"
+									itemValue="2" />
+							</p:selectOneRadio>
+						</div>
+
+						<!-- ТЕКСТ -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+							<h:outputText value="#{labels['notif.text']}"
+								styleClass="form-label" />
+							<p:inputText value="#{notificationsDelete.notifText}"
+								id="textNotif" />
+						</div>
+
+						<!-- ТИП -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+							<h:outputText value="#{labels['docu.type']}"
+								styleClass="form-label" />
+							<p:selectOneMenu id="typeNotifDel"
+								value="#{notificationsDelete.selectedTypeNotif}" filter="true"
+								filterMatchMode="startsWith" autoWidth="true">
+								<f:selectItem value="#{null}" itemValue="#{null}" />
+								<f:selectItems
+									value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_NOTIFF_EVENTS, now, notificationsList.currentLang)}"
+									var="pd" itemLabel="#{pd.tekst}" itemValue="#{pd.code}" />
+							</p:selectOneMenu>
+						</div>
+
+						<!-- ЗАГЛАВИЕ -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+							<h:outputText value="#{labels['notif.zaglavie']}"
+								styleClass="form-label" />
+							<p:selectOneMenu id="zaglNotif"
+								value="#{notificationsDelete.selectedZaglavie}" filter="true"
+								filterMatchMode="startsWith" autoWidth="true">
+								<f:selectItem value="#{null}" itemValue="#{null}" />
+								<f:selectItems value="#{notificationsDelete.zaglaviqList}"
+									var="pd2" itemLabel="#{pd2.label}" itemValue="#{pd2.value}" />
+							</p:selectOneMenu>
+						</div>
+
+
+						<!-- ДО СЛУЖИТЕЛ -->
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">
+							<h:outputText value="#{labels['notif.doSlujitel']}"
+								styleClass="form-label" />
+							<ibg:selectManyModalA id="selEmpList"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}"
+								dateClassif="#{notificationsDelete.decodeDate}"
+								withBtnClear="true" compType="2" filtered="false"
+								saveStateTree="true"
+								selectedClassifs="#{notificationsDelete.slujiteliClassif}"
+								selectedCodes="#{notificationsDelete.selectedEmpList}" />
+						</div>
+
+					</div>
+
+					<!-- БУТОНИ -->
+					<div class="filter-buttons">
+
+						<p:commandButton icon="fas fa-check"
+							value="#{labels['notif.deleteSelectedPer']}" id="btnDelPer"
+							update="formNotifDelete:pDialog"
+							oncomplete="PF('perDelConfirmDialog').show();" styleClass="p-mr-3">
+						</p:commandButton>
+
+						<p:commandButton icon="fas fa-search"
+							value="#{ui_labels['general.search']}" id="btnSearch"
+							update="panelDataNotif" partialSubmit="true"
+							process="@this panelFilterNotifDel"
+							actionListener="#{notificationsDelete.actionSearchNotif}"
+							title="#{ui_labels['general.titleSearch']}" styleClass="p-mr-3"/>
+						<p:defaultCommand target="btnSearch" />
+
+						
+						<p:commandButton icon="fas fa-eraser"
+							value="#{ui_labels['general.clear']}" id="btnClear"
+							update="panelDataNotif panelFilterNotifDel" partialSubmit="true"
+							process="@this panelFilterNotifDel"
+							actionListener="#{notificationsDelete.actionClearNotif}"
+							title="#{ui_labels['general.titleClear']}"
+							styleClass="ui-button-warning" />
+					</div>
+				</p:outputPanel>
+			</h:panelGroup>
+
+
+
+
+
+
+			<h:panelGroup id="panelDataNotif" layout="block"
+				styleClass="margin-top">
+
+				<h:panelGroup id="pResultNotif" layout="block" styleClass="card"
+					rendered="#{notificationsDelete.notificationsList != null}">
+
+					<div class="table-toolbar">
+						<h:panelGroup id="panelTblToolbar">
+
+							<p:commandButton icon="fas fa-check"
+								value="#{labels['notif.deleteSelected']}"
+								id="btnSelNotifConfirm"
+								actionListener="#{notificationsDelete.actionDeleteNotif}"
+								partialSubmit="true" update="panelDataNotif"
+								process="@this panelTblToolbar"
+								disabled="#{notificationsDelete.notifSelectedAll.size() eq 0}">
+
+								<p:confirm header="#{ui_labels['general.comfirmation']}"
+									message="#{ui_labels['general.confirmationMessage']}"
+									icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+
+							 <span class="fas fa-ellipsis-v p-mx-2" />
+							
+
+							<h:outputText
+								value="#{ui_labels['general.reportResult']} #{notificationsDelete.notificationsList.rowCount}"
+								styleClass="form-label" />
+
+							<span class="p-mx-2"
+								style="#{notificationsDelete.notifSelectedAll.size()&gt;0?'':'display:none'}"> <span
+								class="fas fa-ellipsis-v" />
+							</span>
+
+							<h:outputText
+								value="Бр. избрани: #{notificationsDelete.notifSelectedAll.size()}"
+								rendered="#{notificationsDelete.notifSelectedAll.size() > 0}"
+								styleClass="form-label" id="brSelected" />
+						</h:panelGroup>
+					</div>
+
+
+					<p:dataTable id="tblNotif" var="row" 
+						value="#{notificationsDelete.notificationsList}" lazy="true"
+						rowIndexVar="idx" sortMode="single" reflow="true"
+						emptyMessage="#{labels['doc.listEmptyMsg']}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25"
+						paginatorAlwaysVisible="true" paginatorPosition="bottom"
+						paginator="true"
+						selection="#{notificationsDelete.notifSelectedTmp}"
+						rowSelectMode="checkbox">
+
+						<p:ajax event="toggleSelect"
+							listener="#{notificationsDelete.onRowSelectAll}" process="@this"
+							update="formNotifDelete:panelTblToolbar" />
+						<p:ajax event="rowSelectCheckbox"
+							listener="#{notificationsDelete.onRowSelect}" process="@this"
+							update="formNotifDelete:panelTblToolbar" />
+						<p:ajax event="rowUnselectCheckbox"
+							listener="#{notificationsDelete.onRowUnselect}" process="@this"
+							update="formNotifDelete:panelTblToolbar" />
+						<p:ajax event="page"
+							listener="#{notificationsDelete.onPageUpdateSelected}" />
+
+
+						<f:facet name="{Exporters}">
+							<div style="float: left">
+								<h:commandLink id="excel"
+									rendered="#{notificationsDelete.notificationsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblNotif"
+										fileName="tasksXls"
+										postProcessor="#{notificationsDelete.postProcessXLS}" />
+								</h:commandLink>
+<ui:remove>
+								<h:commandLink id="pdf"
+									rendered="#{notificationsDelete.notificationsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+									<h:graphicImage library="images" name="pdf.png" />
+									<p:dataExporter type="pdf"  target="tblNotif" fileName="tasksPdf" encoding="windows-1251"
+					        			preProcessor="#{notificationsDelete.preProcessPDF}" options="#{notificationsDelete.pdfOptions()}"/>	
+								</h:commandLink>
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblNotif"
+										fileName="eventsCsv" encoding="CP1251" />
+								</h:commandLink>
+</ui:remove>
+							</div>
+						</f:facet>
+
+						<p:column selectionMode="multiple" exportable="false"
+							style="width:30px;text-align:center;" />
+
+						<p:column width="40" exportable="false"
+							headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column sortBy="#{row.a0}" headerText="ID">
+							<h:outputText value="#{row[0]}" />
+						</p:column>
+
+						<p:column width="130" sortBy="#{row.a1}"
+							headerText="#{ui_labels['general.date']}">
+							<h:outputText value="#{row[1]}">
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"
+									timeZone="#{notificationsDelete.timeZone}" />
+							</h:outputText>
+						</p:column>
+
+						<p:column width="160" sortBy="#{row.a2}"
+							headerText="#{labels['docu.type']}">
+							<h:outputText
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOTIFF_EVENTS, row[2], notificationsList.currentLang, now)}" />
+						</p:column>
+
+						<p:column width="100" sortBy="#{row.a3}" headerText="Прочетена">
+							<h:outputText
+								value="#{systemData.decodeItem(26, row[3], notificationsDelete.currentLang, now)}" />
+						</p:column>
+
+						<p:column width="250" sortBy="#{row.a4}"
+							headerText="#{labels['notif.zaglavie']}">
+							<h:outputText value="#{row[4]}" />
+						</p:column>
+
+						<p:column sortBy="#{row.a5}" headerText="#{labels['notif.text']}"
+							styleClass="col200">
+							<h:outputText value="#{row[5]}" />
+						</p:column>
+
+						<p:column sortBy="#{row.a6}"
+							headerText="#{labels['notif.doSlujitel']}" styleClass="col200">
+							<h:outputText
+								value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[6], notificationsDelete.currentLang, now)}" />
+						</p:column>
+
+					</p:dataTable>
+				</h:panelGroup>
+			</h:panelGroup>
+
+			<h:panelGroup id="pDialog">
+
+				<p:dialog appendTo="@form"
+					header="Изтриване на всички прегледани нотификации за даден период"
+					width="650" widgetVar="perDelConfirmDialog" dynamic="true"
+					id="perDelDialog" modal="true">
+
+					<p:messages>
+						<p:autoUpdate />
+					</p:messages>
+
+					<p:outputPanel id="panelDlgConfirm">
+						<div class="p-grid  ui-fluid">
+
+							<div class="p-col-6 p-sm-6 p-md-6  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}"
+									styleClass="form-label" />
+								<p:datePicker id="dateOtDialog" pattern="dd.MM.yyyy" mask="true"
+									showIcon="true" locale="bg"
+									value="#{notificationsDelete.notifDateFrom}"
+									styleClass="form-control">
+								</p:datePicker>
+							</div>
+
+
+							<div class="p-col-6 p-sm-6 p-md-6  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}"
+									styleClass="form-label req" />
+								<p:datePicker id="dateDoDialog" pattern="dd.MM.yyyy" mask="true"
+									showIcon="true" locale="bg"
+									value="#{notificationsDelete.notifDateTo}"
+									styleClass="form-control">
+								</p:datePicker>
+							</div>
+
+						</div>
+					</p:outputPanel>
+
+					<f:facet name="footer">
+						<div class="p-grid p-nogutter">
+							<div class="p-col-6" align="left">
+								<p:commandButton icon="fas fa-check"
+									process="@this formNotifDelete:panelDlgConfirm"
+									update="formNotifDelete:panelDataNotif "
+									action="#{notificationsDelete.actionDelforPer}"
+									value="#{labels['notif.potvardi']}" />
+							</div>
+
+							<div class="p-col-6" align="right">
+								<p:commandButton icon="fas fa-times"
+									update="formNotifDelete:pDialog"
+									process="@this panelDlgConfirm"
+									styleClass="ui-button-secondary"
+									value="#{ui_labels['general.cancel']}"
+									oncomplete="PF('perDelConfirmDialog').hide();" />
+							</div>
+						</div>
+					</f:facet>
+
+				</p:dialog>
+			</h:panelGroup>
+
+
+		</h:form>
+
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,475 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+	<style>
+		.ui-sticky#docForm\:tabsDoc\:tbtnPanel1t {
+			z-index: 9comand8 !important;
+		}
+	
+		.UrgentOneButtonG.ui-selectonebutton .ui-state-active {
+		    background-color:#99ce6b !important;
+		}
+		.UrgentOneButtonY.ui-selectonebutton .ui-state-active {
+		    background-color:#fdbe02 !important;
+		}
+		.UrgentOneButtonR.ui-selectonebutton .ui-state-active {
+		    background-color:#f28686 !important;
+		}
+	</style>
+
+	<ui:remove>
+		} <!--Документ - основни регистрационни данни    color:#99ce6b  --></ui:remove>
+	<h:panelGroup id="tdPanel0" layout="block">
+<p:sticky target="tbtnPanel1t" margin="#{isView eq 1 ? '75' : '125'}" >
+		
+		<p:focus  id="pFocus" context="#{isView eq null ? (docDataSpec.document.id eq null ? 'docForm:tabsDoc:tbtnPanel1t' :  'docForm:tabsDoc:tbtnPanel1t') : 'docForm:tabsDoc:tbtnPanel1t'}" />
+
+		<p:toolbar id="tbtnPanel1t" styleClass="margin-bottom">
+			<f:facet name="left">
+				<p:commandButton icon="fas fa-save"				
+					value="#{ui_labels['general.save']}" rendered="#{isView eq null}"
+					id="btnSave" tabindex="-1"
+					update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					actionListener="#{docDataSpec.actionSave}"
+					title="#{labels['doc.saveTitle']}"
+					oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" styleClass="p-mr-2">
+				</p:commandButton>
+
+				 
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+	
+			<ui:remove><!--  <p:commandButton id="btnTemplate" value="#{labels['docu.template']}" 
+				    rendered="#{docDataSpec.docSettingId ne null and isView ne 1}"
+					title="#{labels['docVidSettings.shablonVidDoc']}"  tabindex="-1"
+					action="#{docDataSpec.actionDocTemplateS}" styleClass="ui-button-info p-mr-2"
+					icon="fas fa-file-invoice"		
+					update="docForm:pDocTemplate panelFl"				
+				    partialSubmit="true" process="@this"/> --></ui:remove>	
+		       
+			
+						    
+		        <p:commandButton icon="fas fa-file" id="btnSpravka" tabindex="-1"
+			            rendered="#{docDataSpec.document.id ne null}"
+					 	styleClass="ui-button-info p-mr-2" value="#{labels['jp.spravkaBtn']}" 
+					 	title="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['specDoc.spravkaBtnTitle1'] : labels['specDoc.spravkaBtnTitle2']}"
+						partialSubmit="true"
+						update="pSpravka"
+						process="pSpravka @this" 	
+						actionListener="#{docDataSpec.actionSpravka()}">
+				</p:commandButton>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+				
+				<p:commandButton icon="fas fa-file" id="btnNewWRKDoc" tabindex="-1" styleClass="ui-button-success p-mr-2"
+				       rendered="#{isView ne 1 and docDataSpec.document.id ne null and docDataSpec.flagFW eq docDataComplaint.updateDoc}"  
+				 	   value="#{labels['jp.newWrkDocB']}" 
+		               title="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['specDoc.newNpmBtn3'] : labels['specDoc.newSamosBtn3']}"   
+		               action="#{docDataSpec.actionGotoWrkDoc}"  
+		               ajax="false">
+				</p:commandButton>	
+			
+				
+		        <p:commandButton icon="fas fa-file" id="btnNewDocN" tabindex="-1"
+				 	styleClass="ui-button-success p-mr-2" 
+				 	value="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['specdoc.newDocNpm'] : labels['specdoc.newDocSamosez']}"
+					rendered="#{isView ne 1 and  docDataSpec.flagFW eq docDataSpec.updateDoc}" partialSubmit="true"
+					update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					process="tdPanel0  @this" 
+					actionListener="#{docDataSpec.actionNewDocument()}">
+				</p:commandButton>
+				
+			</f:facet>
+
+			<f:facet name="right">
+
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2 p-mb-2" />
+				
+				<p:commandButton icon="fas fa-times" tabindex="-1"
+					value="#{ui_labels['general.delete']}" 
+					title="#{labels['docu.titleDeleteDoc']}"
+					update="breadcrumbForm:pTitle tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					rendered="#{isView ne 1 and docDataSpec.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}"
+					actionListener="#{docDataSpec.actionDelete}"
+					styleClass="ui-button-danger p-mr-2 p-mb-2" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;">
+					<p:confirm header="#{ui_labels['general.comfirmation']}"
+						message="#{beanMessages['jp.docDelete']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>			
+			</f:facet>
+		</p:toolbar>
+</p:sticky>
+
+		<h:panelGroup id="mainPanel">
+			<ui:remove><!-- Рег. номер, вид док. --></ui:remove>
+			<div jsf:id="p0" class="p-grid  p-align-center"
+				style="background-color:rgba(216,222,233,0.35);border-radius: 4px;" >
+				 <div class="p-col-fixed" style="width:450px">					
+					<h:outputText
+						value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, docDataSpec.document.docVid, docDataSpec.currentLang, now)} #{docDataSpec.rnFullDocEdit}"
+						styleClass="form-label" />
+				</div>
+				 <div class="p-col-fixed" style="width:350px">		
+					<p:selectOneRadio id="shInPbl" value="#{docDataSpec.document.docSpec.publicVisible}" layout="responsive" immediate="true" columns="2" disabled="#{isView eq 1}">
+					 	 <f:selectItem itemLabel="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['jl.publ'] : labels['jl.publ1']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_DA}" />
+						 <f:selectItem itemLabel="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? labels['jl.nepubl'] : labels['jl.nepubl1']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_NE}" />
+					</p:selectOneRadio>
+				<ui:remove><!-- 	TODO - директен запис!!	<p:ajax event="change" oncomplete="PF('confirmProcessed').show();"
+							partialSubmit="true" update="@this conifrmPrp" />  --> </ui:remove>
+				</div>
+			</div>
+
+			<div class="p-grid" >			   
+			     <div class="p-col-12 p-md-12 p-lg-6 p-xl-6 p-align-end">
+					<ui:remove><!-- Предмет на проверка и срокове  --></ui:remove>
+					<div class="title-group">
+						<p:commandLink styleClass="extended-search-toggle expanded " update="fSize pFiles"
+							onclick="toggleSection(this, '#docForm:tabsDoc:p1Anot'); if(document.getElementById('docForm:tabsDoc:fSize').value == '120'){ document.getElementById('docForm:tabsDoc:fSize').value = '350';} else { document.getElementById('docForm:tabsDoc:fSize').value = '120';}">
+							<h:outputText value="#{labels['docspec.predmetSrokEkip']}" />					
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+					<h:inputHidden id="fSize" value="#{docDataSpec.fSize}" type="text"  />
+					
+					<div jsf:id="p1Anot" class="p-grid ui-fluid  p-jc-start" >
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" jsf:id="otn">
+							<h:outputText value="#{labels['docspec.predmet']}" styleClass="form-label p-mr-4 req" />
+							<a href="#dopInfL" id="aInfo"  style="#{(docDataSpec.document.docInfo eq null or docDataSpec.document.docInfo.trim() eq '') ? 'display:none' : ''}"> <i class="fas fa-hand-point-right" >   #{labels['docu.gotoDopInfo']} </i></a>
+							<p:inputTextarea id="otnosno" value="#{docDataSpec.document.otnosno}" autoResize="false" rows="5"/>
+						</div>	
+							
+						<div class="p-col-6 p-md-5 p-lg-5 p-xl-3">						
+							<h:outputText value="#{labels['docspec.startDate']}" styleClass="form-label req" />
+							<p:datePicker  id="startDate" 
+							    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+							    rendered="#{isView ne 1}"
+							    value="#{docDataSpec.document.docSpec.startDate}"  />
+						 	<p:inputText id="srokDateV" rendered="#{isView eq 1}"
+								value="#{docDataSpec.document.docSpec.startDate}" 
+							    readonly="true">
+							   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataSpec.timeZone}"/>
+							</p:inputText>	 		
+						</div>
+							
+						<div class="p-col-6 p-md-5 p-lg-5 p-xl-3">						
+							<h:outputText value="#{labels['docspec.endDate']}" styleClass="form-label req " />
+							<p:datePicker  id="endDate" 
+							    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+							    rendered="#{isView ne 1}"
+							    value="#{docDataSpec.document.docSpec.srok}"  />
+						 	<p:inputText id="endDateV" rendered="#{isView eq 1}"
+								value="#{docDataSpec.document.docSpec.srok}" 
+							    readonly="true">
+							   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataSpec.timeZone}"/>
+							</p:inputText>	 		
+						</div>
+					
+						<div class="p-col-12 p-md-12 p-lg-12 p-xl-6" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+							<h:outputText value="#{labels['docspec.expLider']}" styleClass="form-label "/>					
+							<ibg:selectOneModalA id="expert1" readonly="#{isView eq 1}" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+									dateClassif="#{docDataSpec.decodeDate}" filtered="false" minQueryLength="2"
+									selectedCode="#{docDataSpec.document.docSpec.codeLeader}"
+									styleAutoComp="width:99%;" saveStateTree="true"
+									header="#{labels['docspec.expLider']}"  specifics="#{docDataSpec.specificsAdm}"
+									isSelectNode="false"
+									withBtnClear="true" compType="2" />
+						</div>
+						<div class="p-col-12 p-md-12 p-lg-12  p-xl-12" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+							<h:outputText value="#{labels['docspec.dopExp']}" styleClass="form-label "/>					
+							<ibg:selectManyModalA id="experts2"  
+							    readonly="#{isView eq 1}" 
+							    dateClassif="#{docDataSpec.decodeDate}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+								selectedCodes="#{docDataSpec.document.docSpec.dopExpertCodes}" 	
+								selectedClassifs="#{docDataSpec.scDopExpertsList}"
+								showRadioBtn="true"  styleAutoComp="" header="#{labels['docspec.dopExp']}"
+								minQueryLength="2" specifics="#{docDataSpec.specificsAdm}"
+								isSelectNode = "false"
+								compType="2" withBtnClear="true" saveStateTree="true"/>
+						</div>
+				 	</div>
+				</div>
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-6 ui-inputgroup"  jsf:id="pFiles" style="max-height:#{docDataSpec.fSize}px;overflow: auto;">
+									
+					<ui:remove><!-- Файлове  "--></ui:remove>
+					<p:remoteCommand name="cmdChangeFiles" 
+						partialSubmit="true" ignoreAutoUpdate="true" process="@this" 
+						actionListener="#{docDataSpec.actionChangeFilesJ}" /> 
+						 
+					<div jsf:id="panelFl">
+			
+						<ibg:compFileUpload listObj="#{docDataSpec.filesList}"  id="filesDoc"
+							codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+							idObj="#{docDataSpec.document.id}" hideDel="#{isView eq 1}" 
+							view="#{isView eq 1}"
+							autoSave="#{(docDataSpec.document.id eq null) ? 'false' : 'true'}"
+							saveFirst="false" display="list" 
+							onComplete="cmdChangeFiles()"
+							viewOfficial="true" showUserUpload="true"
+							showInfo="false" 
+							showSign="#{docData.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}"
+							showCompareBtn = "false"
+							typeSign="0"
+							showPersonalData="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+							downloadPDFiles="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+							showScanner="#{docDataSpec.scanModuleExist and isView ne 1}"
+							rnDocDateForSign="#{docDataSpec.rnFullDocSign}"
+							dragDropSupport="true"
+							rename="true"/>
+							
+							
+					</div>
+					
+					<h:panelGroup rendered="#{docDataSpec.scanModuleExist }">
+						<ibg:scannerDs codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docDataSpec.document.id}" id="scanDS" update="docForm:tabsDoc:panelFl" value="#{docDataSpec.reloadFile}"></ibg:scannerDs>
+						<ibg:scannerIB codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docDataSpec.document.id}" id="scanIB" update="docForm:tabsDoc:panelFl" value="#{docDataSpec.reloadFile}" 
+							showSign="#{docDataSpec.document.id ne null and docDataSpec.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}" 
+							fileName="#{docDataSpec.document.rnDoc}"></ibg:scannerIB>
+					</h:panelGroup>		
+				</div>
+			</div>
+				
+			
+			
+			<ui:remove><!-- Проверявани органи    docspec.addOrganTitle   --></ui:remove>
+			<div jsf:id="doc-organi" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-organi1')">
+					<h:outputText value="#{labels['docspec.chOrgani']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+				<p:commandButton icon="fas fa-plus"    rendered="#{isView ne 1}"
+							value="#{labels['docspec.addOrganList']}" disabled="false"
+							id="btnNewOrg" styleClass="p-mr-2"
+							partialSubmit="true"
+							process="@this organiList"
+							update="organiList" 
+							title="#{labels['docspec.addOrganListTitle']}" 
+							action="#{docDataSpec.actionNewOrgan}"/>  
+				<ui:remove>	<!--  Позовлява въвеждане на нов орган за проверка по НПМ--></ui:remove>
+				<p:commandButton id="btnOrganN" 	styleClass="ui-button-success p-mr-2"
+					rendered="#{isView ne 1}"
+					icon="fas fa-plus" partialSubmit="true" 
+					process="docForm:tabsDoc:dpOrganN @this"
+					update="docForm:tabsDoc:dpOrganN"
+					oncomplete="PF('mOrganN').show();"
+					value="#{labels['docspec.addOrgan']}"
+					title="#{labels['docspec.addOrganTitle']}" />
+			</div>			 
+			<div jsf:id="doc-organi1" class="p-grid ui-fluid" >	
+		
+				 <div class="p-col-12" jsf:id="organiList">
+					
+					<p:repeat value="#{docDataSpec.document.docSpec.specOrganList}" var="orgLst"  varStatus="key"  >	 
+					 
+						<div class="p-grid">
+							<div class="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? 'p-col-9 p-md-9 p-lg-6 p-xl-5' : 'p-col-6'}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+								<h:outputText value="#{key.index+1}. #{labels['specDoc.orgName']}" styleClass="form-label req"/>	
+								<p:commandLink  partialSubmit="true" process="@this" ajax="true" 
+			 								rendered="#{isView ne 1}" 
+			 								update="docForm:tabsDoc:organiList" 
+			 								actionListener="#{docDataSpec.actionRemoveOrgan(key.index)}"
+								          	title="#{labels['specDoc.organRemove']}">
+									  		<i class="fa fa-trash"></i>
+								  			<p:confirm header="#{ui_labels['general.comfirmation']}"
+											message="#{labels['specDoc.organRemoveCmfr']}" icon="fas fa-exclamation-triangle" />
+								</p:commandLink>
+								<div class="selectModalA-with-buttons">		
+									 <h:panelGroup id="refOrganInp" layout="block" styleClass="koresp-input">	
+							    	 	<ibg:selectOneModalA id="olCodeOrg" readonly="#{isView eq 1}"
+											codeClassif="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm ? OmbConstants.CODE_CLASSIF_ORGAN_NPM : OmbConstants.CODE_CLASSIF_REFERENTS}" 
+											selectedCode="#{orgLst.codeOrgan}"									
+											hiddenTxt="true"
+											saveStateTree="false" withBtnClear="true" minQueryLength="2"
+											compType="4" filtered="false"
+											styleAutoComp=""
+											itemtipAtPosition="center bottom"
+											update="docForm:tabsDoc:organiList" />
+									 </h:panelGroup>
+								     <p:commandButton id="btnCorrOrganD"
+										rendered="#{orgLst.codeOrgan ne null}"
+										icon="#{(isView ne 1) ? 'fas fa-edit' : 'fas fa-eye'}" partialSubmit="true"
+										process="docForm:tabsDoc:dpCorrOrgan @this"
+										update="docForm:tabsDoc:dpCorrOrgan"
+										oncomplete="PF('mCorrOrganD').show(); "
+										actionListener="#{docDataSpec.setRowOrgan(orgLst.codeOrgan)}"
+										title="#{isView ne 1 ? labels['specDoc.titleEditNpmS'] : labels['specDoc.titleViewNpmS']}"/>
+								</div>
+							</div>
+							
+							<div class="p-col-3 p-md-3 p-lg-2 p-xl-1" jsf:rendered="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+								<h:outputText value="#{labels['specDoc.npmKapacitet']}" styleClass="form-label " />
+								<p:inputNumber id="kapacitet" title="#{labels['specDoc.npmKapacitetTitle']}"
+									value="#{orgLst.capacity}"
+									minValue="0" decimalPlaces="0"
+									style="display:inline-block;">
+								</p:inputNumber>
+							</div>
+							
+							<div class="p-col-3 p-md-3 p-lg-2 p-xl-1"  jsf:rendered="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+								<h:outputText value="#{labels['specDoc.npmNastLica']}" styleClass="form-label " />
+								<p:inputNumber id="nLica" title="#{labels['specDoc.npmNastLicaTitle']}"
+									value="#{orgLst.nasLica}"
+									minValue="0" decimalPlaces="0"
+									style="display:inline-block;">
+								</p:inputNumber>
+							</div>
+						
+							<div class="p-col-9 p-md-9 p-lg-6 p-xl-5" jsf:rendered="#{docDataSpec.docVidInclude eq docDataSpec.inclNpm}">
+								<h:outputText value="#{labels['specDoc.narPrava'] }"  styleClass="form-label " />
+								<ibg:selectOneModalA id="olNarPrava" readonly="#{isView eq 1}"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_NAR_PRAVA}"
+									selectedCode="#{orgLst.narPrava}"									
+									hiddenTxt="true"
+									saveStateTree="false" withBtnClear="true" minQueryLength="2"
+									compType="4" filtered="false"
+									styleAutoComp=""
+									itemtipAtPosition="center bottom"
+									update="docForm:tabsDoc:organiList" />
+							</div>
+							
+							<div class="p-col-6" jsf:rendered="#{docDataSpec.docVidInclude ne docDataSpec.inclNpm}">
+								<h:outputText value="#{labels['jp.prava']}"  styleClass="form-label " />
+								<ibg:selectOneModalA id="olZasPrava" readonly="#{isView eq 1}"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ZAS_PRAVA}"
+									selectedCode="#{orgLst.zasPrava}"									
+									hiddenTxt="true"
+									saveStateTree="false" withBtnClear="true" minQueryLength="2"
+									compType="4" filtered="false"
+									styleAutoComp=""
+									itemtipAtPosition="center bottom"
+									update="docForm:tabsDoc:organiList" />
+							</div>
+							
+							<div class="p-col-12 p-md-12 p-lg-6 p-xl-5">
+								<h:outputText value="#{labels['specDoc.constatacii']}" styleClass="form-label " />
+								<p:inputTextarea id="const" value="#{orgLst.konstat}"  autoResize="false" rows="1"/>	
+							</div>
+							
+							<div class="p-col-4 p-md-4 p-lg-2 p-xl-2">
+								<h:outputText value="#{labels['specDoc.preporaka']}" styleClass="form-label " />
+								<p:selectOneRadio id="prepor" value="#{orgLst.prepor}" layout="responsive"
+								     unselectable="true"
+								     immediate="true" columns="2" disabled="#{isView eq 1}" >
+							 		 <f:selectItem itemLabel="#{ui_labels['general.yes']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_DA}" />
+				           		 	 <f:selectItem itemLabel="#{ui_labels['general.no']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_NE}" />
+								</p:selectOneRadio>
+							</div>
+							
+							<div class="p-col-4 p-md-4 p-lg-4 p-xl-3">
+								<h:outputText value="#{labels['specDoc.resultProverka']}" styleClass="form-label " />
+								<p:selectOneMenu id="validType" value="#{orgLst.vidResult}" disabled="#{isView eq 1}">
+								  	 <f:selectItem value="#{null}" itemValue="#{null}" />
+								     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_ORGAN_RES, now, docDataSpec.currentLang)}" 
+								         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+							    </p:selectOneMenu>	
+							</div>
+							
+							<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" >
+								<h:outputText value="#{labels['jp.resultDate']}" styleClass="form-label " />
+								<p:datePicker  id="rezultDate" 
+								    showIcon="true" mask="true"   pattern="dd.MM.yyyy" locale="bg" 
+								    rendered="#{isView ne 1}"
+									value="#{orgLst.dateResult}"  />
+							 	<p:inputText id="rezultDateV" rendered="#{isView eq 1}"
+									value="#{orgLst.dateResult}"
+								    readonly="true">
+								   <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataSpec.timeZone}"/>
+								</p:inputText>	 			
+							</div>  
+													
+					 </div>
+					 
+					 <p:divider />  
+					</p:repeat>
+				
+				</div>
+			
+			</div>
+		
+				
+			
+			<ui:remove><!-- 	Информация за обработка на заповедта --></ui:remove>
+			<div jsf:id="doc-status" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-status1')">
+					<h:outputText value="#{labels['docspec.infoObr']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>			
+			<div jsf:id="doc-status1" class="p-grid ui-fluid">	
+					
+				<div class="p-col-12 p-md-4 p-lg-4 p-xl-2" jsf:id="status1">
+					<h:outputText value="#{labels['docspec.sast']}" styleClass="form-label req" />					
+					<p:selectOneMenu id="status" value="#{docDataSpec.document.docSpec.sast}" disabled="#{isView eq 1}">
+						   <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PROVERKA_SAST, now,docDataSpec.currentLang)}" var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					</p:selectOneMenu>
+				</div>
+				
+				<div class="p-col-6 p-md-4 p-lg-3 p-xl-2">						
+					<h:outputText value="#{labels['jp.sastDate']}" styleClass="form-label" />
+					<div class="ui-inputgroup">
+					  	<p:inputText id="statusDateV" 
+							value="#{docDataSpec.document.docSpec.sastDate}"
+						    readonly="true">
+						   <f:convertDateTime  pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docDataSpec.timeZone}"/>
+						</p:inputText>
+						<p:commandButton id="btnSastH"
+								rendered="#{docDataSpec.document.id ne null}"
+								icon="fas fa-history" partialSubmit="true"
+								process="docForm:tabsDoc:pSastHistory @this"
+								update="docForm:tabsDoc:pSastHistory"
+								oncomplete="PF('modalSast').show(); "
+								actionListener="#{docDataSpec.actionSprSast()}"
+								title="#{labels['docspec.sastHistory']}"/>
+					</div>									
+				</div>
+				<div class="p-col-6 p-md-4 p-lg-4 p-xl-2">
+					<h:outputText value="#{labels['docu.valid']}" styleClass="form-label req" />
+			
+					<p:selectOneMenu id="validType" value="#{docDataSpec.document.valid}" 
+							 disabled="#{isView eq 1 or docDataSpec.rnFullProtocol ne null}">
+					    
+					     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, now, docDataSpec.currentLang)}" 
+					         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+				    </p:selectOneMenu>	
+				</div>
+				<div class="p-col-6 p-md-3 p-lg-3 p-xl-2">
+					<h:outputText value="#{labels['docu.validDate']}"
+						styleClass="form-label req" />
+					<p:datePicker id="validDat"  
+					    showIcon="true" mask="true"	    pattern="dd.MM.yyyy" locale="bg"  							    
+					    rendered="#{!(isView eq 1  or docDataSpec.rnFullProtocol ne null)}"
+						value="#{docDataSpec.document.validDate}" />
+					<p:inputText id="validDatV" 
+						rendered="#{isView eq 1  or docDataSpec.rnFullProtocol ne null}"
+					 	value="#{docDataSpec.document.validDate}"
+					    readonly="true">
+					   <f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docDataSpec.timeZone}"/>
+					</p:inputText>	
+				</div>
+				
+				<div class="p-col-12 p-md-12 p-lg-12  p-xl-12"> <!-- docInfo !! -->
+					<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label "/>	
+					<a id="dopInfL"/> 				
+					<p:inputTextarea id="dopInf" value="#{docDataSpec.document.docInfo}" 
+						readonly="#{isView eq 1}" rows="4" />
+				</div>	
+			</div>
+				
+		
+		</h:panelGroup>
+
+	</h:panelGroup>
+	
+	<ui:include src="docDataRegModalSpec.xhtml" /> 		
+	
+</ui:composition>

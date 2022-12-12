@@ -1,0 +1,49 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                template="#{(isView eq 1) ? '/template/templateView.xhtml' : '/template/template.xhtml'}">
+               
+    <ui:param name="pageTitle" value="#{isView == null ? navTexts['/pages/docEdit.xhtml'] : docData.rnFullViewDoc}" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+    
+    <ui:define name="viewname">        
+        <li>
+        	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+        <li>
+        	 <h:panelGroup id="pTitle">
+       				<h:outputText rendered="#{docData.document.id eq null and docData.docVidInclude eq docData.inclRegular}" value="#{labels['docu.newDoc']}" />							
+			  	    <h:outputText rendered="#{docData.document.id eq null and docData.docVidInclude eq docData.inclComplaint}" value="#{labels['docu.newComplaint']}" />
+			  	    <h:outputText rendered="#{docData.document.id eq null and docData.docVidInclude eq docData.inclNpm}" value="#{labels['docu.newNpm']}" />
+			  	    <h:outputText rendered="#{docData.document.id eq null and docData.docVidInclude eq docData.inclSamosez}" value="#{labels['docu.newSamosez']}" />
+							
+							
+					<h:outputText rendered="#{docData.document.id ne null and  isView eq null and docData.docVidInclude eq docData.inclRegular}" value="#{labels['docu.editDoc']}" />
+					<h:outputText rendered="#{docData.document.id ne null and  isView eq null and docData.docVidInclude eq docData.inclComplaint}" value="#{labels['docu.editComplaint']}" />	
+					<h:outputText rendered="#{docData.document.id ne null and  isView eq null and docData.docVidInclude eq docData.inclNpm}" value="#{labels['docu.editNpm']}" />
+					<h:outputText rendered="#{docData.document.id ne null and  isView eq null and docData.docVidInclude eq docData.inclSamosez}" value="#{labels['docu.editSamosez']}" />
+					
+					<h:outputText rendered="#{isView ne null}" value="#{labels['docu.viewDoc']}" />	
+			</h:panelGroup>
+				
+		</li>
+    </ui:define>
+
+    <ui:define name="content">
+    	<f:metadata>    	
+	        <f:viewAction action="#{userData.checkPageAccessMulti(65, 193, 196, 199)}" onPostback="false" />		 
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />	
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />			
+		</f:metadata>
+		
+		<ui:include src="/pages/docData.xhtml"  />
+        
+    </ui:define>
+ </ui:composition>
+    

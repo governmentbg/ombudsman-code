@@ -1,0 +1,691 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >	
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+		</f:metadata>
+	<h:form id="docListForm">
+		<div class="container #{guestPreferences.containerPosition}">
+			<!-- FILTER -->	
+			<h:panelGroup id="panelFilter" >
+				<div class="card">
+					<div class="p-grid  p-jc-start">														
+						<!--Регистрационен номер-->														
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+							<h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{docList.searchDoc.rnDoc}" id="rnDoc"/>
+								<p:focus id="focusRnDoc" for="rnDoc" />	
+								<p:selectBooleanButton id="rndEq" value="#{docList.searchDoc.rnDocEQ}" 
+										onLabel="#{ui_labels['general.yes']}"
+										offLabel="#{ui_labels['general.no']}"
+										title="#{labels['docu.docSrchRegNom']}" 
+										onIcon="fas fa-toggle-on"  
+										offIcon="fas fa-toggle-off" 
+										styleClass="inputgroup-button" >
+										<p:ajax update="@this rnDoc" partialSubmit="true"	process="@this rnDoc"/>			
+									</p:selectBooleanButton>
+							</div>
+						</div>
+						<!--Техен номер-->															 
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+							<h:outputText value="#{labels['docList.theirNum']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{docList.searchDoc.tehNomer}" id="tehNom"/>																				 													 
+									<p:selectBooleanButton id="tehNomEq" value="#{docList.searchDoc.tehNomerEQ}" 
+												      	  	onLabel="#{ui_labels['general.yes']}"
+												    	    offLabel="#{ui_labels['general.no']}"
+															title="#{labels['docu.docSrchTehNom']}" 
+														    onIcon="fas fa-toggle-on"  
+															offIcon="fas fa-toggle-off" 
+															styleClass="inputgroup-button">
+															<p:ajax update="@this tehNom" partialSubmit="true" process="@this tehNom"/>			
+									</p:selectBooleanButton>	
+							</div>									    	
+						</div>
+						
+						<!--Относно-->		
+						<div class="p-col-12 p-sm-12 p-md-12 p-lg-3 p-xl-4 ui-fluid">	
+							<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label p-mr-2"/>
+							
+							<i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{docList.isOkToRender}"></i>
+							<p:inputText value="#{docList.searchDoc.otnosno}" id="otnosno"/>
+												  
+						</div>						    	
+						<!--Период на регистрация-->	
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+							<p:selectOneMenu id="idPerR" value="#{docList.periodR}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docList.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+							     <p:ajax event="change" update="idPerR dateOtReg dateDoReg" listener="#{docList.changePeriodR}"/>   
+						    </p:selectOneMenu>
+					   </div>
+					   
+					   <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">																	
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtReg"  mask="true"  showIcon="true"  locale="bg"  pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.docDateFrom}"  >
+								<p:ajax event="change" update="idPerR" listener="#{docList.changeDate}"/>
+								<p:ajax event="dateSelect" update="idPerR" listener="#{docList.changeDate}"/>      
+							</p:datePicker>
+					  </div>
+												
+					  <div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoReg"    mask="true" showIcon="true" locale="bg"  pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.docDateTo}"  >
+								<p:ajax event="change" update="idPerR" listener="#{docList.changeDate}"/>   
+								<p:ajax event="dateSelect" update="idPerR" listener="#{docList.changeDate}"/>   
+							</p:datePicker>												    
+					 </div>
+			 
+					 <!--Тип на документа-->															
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid">					
+							<p:selectManyCheckbox value="#{docList.searchDoc.docTypeArr}" id="typeDoc"	>
+								<f:selectItems value="#{docList.docTypeList}" />
+								<p:ajax event="change" disabled="#{!docList.showWorkRegOfficial and isView!=1}" listener="#{docList.changeDocType}"  update="docListForm:triCheckGroup"/>
+							</p:selectManyCheckbox>
+						</div>
+																
+						<!--Вид на документа-->							
+						<div   class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+							<ibg:selectManyModalA id="lstDocsVid" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+								dateClassif="#{docList.searchDoc.docDateTo eq null ? docList.decodeDate : docList.searchDoc.docDateTo}" filtered="false"
+								saveStateTree="false" showRadioBtn="true" 
+								selectedCodes="#{docList.searchDoc.docVidList}"
+								selectedClassifs="#{docList.docsVidClassif}"
+								styleAutoComp="width:100%;"
+								withBtnClear="true" /> 
+													
+						</div>
+						
+						<!--Регистър-->							 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docu.register']}" styleClass="form-label"/>
+							<h:panelGroup id="register">
+								<ibg:selectManyModalA compType="2" maxResults="50" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI_SORTED}"
+									dateClassif="#{docList.decodeDate}" filtered="false"
+									selectedCodes="#{docList.searchDoc.registerIdList}"
+									selectedClassifs="#{docList.docsRegistriClassif}" 
+									specifics="#{docList.specificsRegister}" sortByName="false"
+									saveStateTree="false" withBtnClear="true" showRadioBtn="true" 
+									styleAutoComp="width:100%;" />
+							</h:panelGroup>																	   
+						</div>
+						
+							<!--Регистрирани като официални-->							 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4" jsf:id="triCheckGroup">	
+						 	<h:panelGroup  rendered="#{(docList.showWorkRegOfficial or isView==1) and docList.visibleCheckWork}">
+								  	<h:outputText value="#{labels['docList.oficialni']}" styleClass="form-label"/>
+								  	<p:selectOneRadio value="#{docList.triCheckWork}" id="triCheckWork" >
+											<f:selectItem  itemValue="1" itemLabel="да"/>
+											<f:selectItem  itemValue="2" itemLabel="не"/>
+											<f:selectItem  itemValue="0" itemLabel="всички"/>
+									</p:selectOneRadio>
+							</h:panelGroup>
+						</div>
+					   
+					 	<div class="p-col-12">
+							<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#event-extended')">
+								<h:outputText value="#{ui_labels['search.extend']}"/>
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>	
+					</div>
+																																								 
+					<div class="p-grid extended-search p-align-end" id="event-extended" style="display: none;">
+						
+						<ui:remove>						
+						<!--Наименование-->							
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label p-mr-2"/>
+							<i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{docList.isOkToRender}"></i>
+							<p:inputText value="#{docList.searchDoc.docName}" id="nameDoc"/>													   
+						</div>
+																
+						<!--Регистратура-->								
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['users.registratura']}" styleClass="form-label"
+							 rendered="#{docList.showRegList}"/>
+							<p:selectOneMenu id="registratura" value="#{docList.searchDoc.registraturaId}" label="#{labels['users.registratura']}"
+		                        	 rendered="#{docList.showRegList}" >
+					            <f:selectItem itemValue="" />      
+					            <f:selectItems value="#{docList.registraturaList}" />
+					            <p:ajax event="change" update="docListForm:register docListForm:roleMemberGroup docListForm:memberGroup" listener="#{docList.actionChangeReg}"/>
+					        </p:selectOneMenu>	
+										
+						</div>	
+						</ui:remove>	
+						<!--Начин на получаване-->								 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['doc.receiveMethod']}" styleClass="form-label"/>
+							<p:selectCheckboxMenu id="receiveBy" value="#{docList.searchDoc.receiveMethodArr}" multiple="true">
+								<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, docList.decodeDate, docList.currentLang)}"
+									 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+							</p:selectCheckboxMenu>													
+						</div>
+						
+						<!--Период на дата на получаване-->							 
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docList.periodDateRes']}" styleClass="form-label"/>
+							<p:selectOneMenu id="idPerRes" value="#{docList.periodRes}" height="250">
+								<f:selectItem value="#{null}" itemValue="#{null}"/>
+								<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docList.currentLang)}" 
+								  var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								<p:ajax event="change" update="idPerRes dateOtRes dateDoRes" listener="#{docList.changePeriodRes}"/>   
+							 </p:selectOneMenu>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">	
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtRes"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.receiveDateFrom}" >
+								<p:ajax event="change" update="idPerRes" listener="#{docList.changeDateRes}"/>
+								<p:ajax event="dateSelect" update="idPerRes" listener="#{docList.changeDateRes}"/>      
+							</p:datePicker>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoRes"   mask="true"  showIcon="true" locale="bg"  pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.receiveDateTo}"  >
+								<p:ajax event="change" update="idPerRes" listener="#{docList.changeDateRes}"/>   
+								<p:ajax event="dateSelect" update="idPerRes" listener="#{docList.changeDateRes}"/>   
+							</p:datePicker>
+						</div>
+						
+						<!--Доп. информация за получаване-->							
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docList.dopInfoReceived']}" styleClass="form-label p-mr-2"/>
+							
+							<p:inputText value="#{docList.searchDoc.receivedBy}" id="dopInfoReceived"/>													   
+						</div>
+						
+						<!--Кореспондент -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid ">												
+							<h:outputText value="#{labels['docu.corespondent']}" styleClass="form-label"/>	
+							<div class="ui-inputgroup">
+											
+								<p:inputText value="#{docList.txtCorresp}" id="coresp">	
+									<p:ajax event="keyup" listener="#{docList.actionChangeTxtCorresp}"/>   
+								</p:inputText>							
+								<!--  Разширено търсене на кореспондент -->
+								<p:commandButton id="btnCorrS" styleClass="inputgroup-button"
+									onmousemove="document.getElementById('docListForm:btnCorrS').focus();"
+									icon="fas fa-list-ul" partialSubmit="true"
+									process="docListForm:dpCorrSearch"							
+									update="docListForm:dpCorrSearch @this"
+									oncomplete="PF('mCorrS').show();"
+									title="" />																							
+							</div>
+							<p:remoteCommand name="cmdSelectCorresp" 
+											update="coresp"
+											process="coresp @this"
+											actionListener="#{docList.actionSelectCorresp}" />																										    
+						</div>
+						
+						
+						<!--Валидност-->							 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+							<h:outputText value="#{labels['docu.valid']}" styleClass="form-label"/>
+							 <p:selectCheckboxMenu id="validnost" value="#{docList.searchDoc.validArr}" multiple="true">
+								 <f:selectItems var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+								 value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, docList.decodeDate, docList.currentLang)}"/> 
+							 </p:selectCheckboxMenu>												
+						</div>
+						<ui:remove>
+						<!--Изпратен от регистратура-->							 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docList.sendRegistratura']}" styleClass="form-label"/>						
+								<ibg:selectManyModalA compType="2" maxResults="50" 
+									codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRATURI_OBJACCESS}"
+									dateClassif="#{docList.decodeDate}" filtered="false"
+									selectedCodes="#{docList.searchDoc.sendRegistraturaList}"
+									selectedClassifs="#{docList.docsRegistraturiClassif}" sortByName="true"
+									saveStateTree="true" withBtnClear="true" showRadioBtn="true" styleAutoComp="width:100%;" />														   
+						</div>
+						</ui:remove>
+						<!--Спешен-->						     
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+							<h:outputText value="#{labels['docList.urgent']}" styleClass="form-label"/>
+							<p:selectCheckboxMenu id="urgent" value="#{docList.searchDoc.urgentArr}" multiple="true">
+								<f:selectItems var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+								 value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_URGENT, docList.decodeDate, docList.currentLang)}" />
+							</p:selectCheckboxMenu>
+						</div>
+																								
+						<!-- Предадени документи, които не са върнати-->								
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+							<p:selectBooleanCheckbox value="#{docList.searchDoc.dvijNotReturned}" styleClass="form-label" itemLabel="#{labels['docList.dvijNotReturned']}" /> 	
+						</div>	
+						
+						<!--Предадени на -->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid ">												
+							<h:outputText value="#{labels['docList.dvijToText']}" styleClass="form-label"/>	
+							<p:inputText value="#{docList.searchDoc.dvijToText}" id="dvijToText"/>	
+						</div>
+						
+						<!--Компетентност-->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+							<h:outputText value="#{labels['docList.competence']}" styleClass="form-label"/>	
+							
+							<p:selectOneMenu id="competence" value="#{docList.searchDoc.competence}" label="#{labels['docList.competence']}" >
+					            <f:selectItem itemValue="" />      
+					            <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_COMPETENCE, docList.decodeDate, docList.currentLang)}"
+									 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+					           
+					        </p:selectOneMenu>	
+					        
+					        <ui:remove>
+								<p:selectOneRadio id="competence" value="#{docList.searchDoc.competence}" unselectable="true"  columns="3">
+									<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_COMPETENCE, docList.decodeDate, docList.currentLang)}"
+										 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>							
+								</p:selectOneRadio>
+							</ui:remove>
+						</div>
+						
+						<!--GUID-->						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid">
+							<h:outputText value="#{labels['registratura.guid']}" styleClass="form-label"/>
+							<p:inputText value="#{docList.searchDoc.guid}" id="guid"/>	
+						</div>
+						
+						<ui:remove>												
+						<!--Тематика -->							
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docu.topic']}" styleClass="form-label"/>
+							<ibg:selectManyModalA  compType="2" maxResults="50" codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_TOPIC}" 
+								id="topic" dateClassif="#{docList.searchDoc.docDateTo eq null ? docList.decodeDate : docList.searchDoc.docDateTo}" filtered="false"
+								selectedCodes="#{docList.searchDoc.docTopicList}" saveStateTree="true"
+								selectedClassifs="#{docList.docsTopicClassif}"
+								withBtnClear="true"   styleAutoComp="width:100%;" />
+						</div>
+						</ui:remove>	
+						
+						<!--Доп.инф.-->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	 
+							<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label p-mr-2"/>
+							<i class="fas fa-book-open" title="#{labels['global.fullTextField']}" jsf:rendered="#{docList.isOkToRender}"></i>
+							<p:inputText value="#{docList.searchDoc.docInfo}" id="dopInfo"/>												    
+						</div>
+																														    																								
+						<!--Период на дата на очакване на отговор-->							 
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docList.periodDateResAns']}" styleClass="form-label"/>
+							<p:selectOneMenu id="idPerAns" value="#{docList.periodAnswer}" height="250">
+								<f:selectItem value="#{null}" itemValue="#{null}"/>
+								<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docList.currentLang)}" 
+								     var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								<p:ajax event="change" update="idPerAns dateOtAns dateDoAns" listener="#{docList.changePeriodAnswer}"/>   
+							 </p:selectOneMenu>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">	
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtAns"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.waitAnswerDateFrom}" >
+								<p:ajax event="change" update="idPerAns" listener="#{docList.changeDateAnswer}"/>
+								<p:ajax event="dateSelect" update="idPerAns" listener="#{docList.changeDateAnswer}"/>      
+							</p:datePicker>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoAns"   mask="true" showIcon="true" locale="bg"  pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.waitAnswerDateTo}"  >
+								<p:ajax event="change" update="idPerAns" listener="#{docList.changeDateAnswer}"/>   
+								<p:ajax event="dateSelect" update="idPerAns" listener="#{docList.changeDateAnswer}"/>   
+							</p:datePicker>
+						</div>
+						
+						<!--Документи с поставена задача за -->							
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docList.docTaskAssign']}" styleClass="form-label"/>
+							<ibg:selectManyModalA  compType="2" maxResults="50" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+								id="taskAssign" dateClassif="#{docList.decodeDate}" filtered="false" sortByName="false"
+								selectedCodes="#{docList.searchDoc.taskReferentList}" saveStateTree="true"
+								selectedClassifs="#{docList.docsTaskAssignClassif}"
+								withBtnClear="true"   styleAutoComp="width:100%;" />
+						</div>
+																			
+						<!--Период на дата на поставяне-->													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['docList.periodDatAssign']}" styleClass="form-label"/>
+							<p:selectOneMenu id="idPerAssign" value="#{docList.periodAssign}" height="250">
+								 <f:selectItem value="#{null}" itemValue="#{null}"/>
+								 <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docList.currentLang)}" 
+								     var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+								 <p:ajax event="change" update="idPerAssign dateOtAssign dateDoAssign" listener="#{docList.changePeriodAssign}"/>   
+							</p:selectOneMenu>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">	
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtAssign"   mask="true"  showIcon="true" locale="bg"   pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.taskDateFrom}"  >
+								<p:ajax event="change" update="idPerAssign" listener="#{docList.changeDateAssign}"/>
+								<p:ajax event="dateSelect" update="idPerAssign" listener="#{docList.changeDateAssign}"/>      
+							</p:datePicker>
+						</div>
+													
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2  ui-fluid">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoAssign"   mask="true"  showIcon="true"  locale="bg"  pattern="dd.MM.yyyy"
+								value="#{docList.searchDoc.taskDateTo}"  >
+								<p:ajax event="change" update="idPerAssign" listener="#{docList.changeDateAssign}"/>   
+								<p:ajax event="dateSelect" update="idPerAssign" listener="#{docList.changeDateAssign}"/>   
+							</p:datePicker>												    
+						</div>
+						
+						<!--Служител-->						
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docList.employee']}" styleClass="form-label"/>
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 
+								id="employee" dateClassif="#{docList.decodeDate}" filtered="false"  sortByName="false"														
+								selectedCode="#{docList.searchDoc.docReferent}" saveStateTree="false"
+								withBtnClear="true" compType="2" styleAutoComp="" />	
+						</div>
+						
+						<!--Който е-->							
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docList.whichIs']}" styleClass="form-label"/>	
+							<p:selectManyCheckbox value="#{docList.searchDoc.docReferentRoles}" id="roles"	immediate="true">
+								<f:selectItems  var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+								value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_REF_ROLE, docList.decodeDate, docList.currentLang)}" />
+							</p:selectManyCheckbox>
+						</div> 
+						
+						<!--Потребител, регистрирал документа-->						 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docList.emplReg']}" styleClass="form-label"/>
+							<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_USERS}" 
+									id="user"  dateClassif="#{docList.decodeDate}" filtered="false" 													
+									selectedCode="#{docList.searchDoc.userReg}" saveStateTree="true"
+									withBtnClear="true" compType="4" styleAutoComp="" />
+														
+						</div>
+						
+						<ui:remove>															
+						<!--Статус на обработка-->						     
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docu.statusTitle']}" styleClass="form-label"/>
+							<p:selectCheckboxMenu id="statusObr" value="#{docList.searchDoc.statusArr}" multiple="true">
+								<f:selectItems var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+								 value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_STATUS, docList.decodeDate, docList.currentLang)}" />
+							</p:selectCheckboxMenu>
+						</div>
+						
+						
+						<!--Причини за нередовност-->								 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid">
+							<h:outputText value="#{labels['docList.irregular']}" styleClass="form-label"/>
+							<p:selectCheckboxMenu id="irregular" value="#{docList.searchDoc.irregularArr}" multiple="true">
+								<f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_IRREGULAR, docList.decodeDate, docList.currentLang)}"
+									 var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+							</p:selectCheckboxMenu>													
+						</div>
+						</ui:remove>
+						<ui:remove>
+						<!--Текст на документа-->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid" jsf:rendered="#{docList.isOkToRender}">
+							<h:outputText value="#{labels['docList.docText']}" styleClass="form-label"  />
+							<i class="fas fa-book-open" title="#{labels['global.fullTextField']}"></i>
+							<p:inputText value="#{docList.searchDoc.fileText}" id="docFileText" title="#{ui_labels['docList.fileTextSearch']}" />											
+						</div>
+						
+						<!--Участник-->
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4 ui-fluid " jsf:id="memberGroup">												
+							<h:panelGroup rendered="#{docList.settingMembers ne null and docList.settingMembers eq OmbConstants.CODE_ZNACHENIE_DA}">
+								<h:outputText value="#{labels['docList.member']}" styleClass="form-label"/>	
+								<p:inputText value="#{docList.searchDoc.docMemberName}" id="member"/>	
+							</h:panelGroup>
+						</div>
+						
+						<!--Роли -->							
+						<div  class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-4  ui-fluid" jsf:id="roleMemberGroup">
+							<h:panelGroup rendered="#{docList.settingMembers ne null and docList.settingMembers eq OmbConstants.CODE_ZNACHENIE_DA}">
+								<h:outputText value="#{labels['docMembers.roleMember']}" styleClass="form-label"/>
+								<ibg:selectManyModalA  compType="2" maxResults="50" codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_MEMBER_ROLES}" 
+									id="rolesMember" dateClassif="#{docList.decodeDate}" filtered="false"
+									selectedCodes="#{docList.searchDoc.docMemberRoleList}" saveStateTree="true"
+									selectedClassifs="#{docList.rolesMembersClassif}" isSelectNode="false"
+									withBtnClear="true"   styleAutoComp="width:100%;" />
+							</h:panelGroup>
+						</div>
+						</ui:remove>										
+										
+					</div>
+					
+					<div class="filter-buttons">
+						
+						<div style=" display:inline; " jsf:rendered="#{docList.isOkToRender}" >
+							<p:selectBooleanCheckbox id="chkSearchFullTextDoc" value="#{docList.fillTextSearch}" style="vertical-align: middle;" styleClass="p-mr-3"/>
+								
+							<p:outputLabel value="#{ui_labels['general.searchFullText']}" for="chkSearchFullTextDoc" style="vertical-align: middle;"/>
+							<p:link href="../resources/docs/fullTextSearchHelp.docx" target="_blank"  style="vertical-align: middle;"  title="#{labels['general.instructions']}" styleClass="p-mr-3">
+								<i class="fas fa-book-open" style="vertical-align: middle; font-size: 16px"></i>
+							</p:link>
+							
+						</div>
+						
+						
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"							    
+							id="btnSearchDoc" update="pResult" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{docList.actionSearchNew}" styleClass="p-mr-3"/> 
+							<p:defaultCommand target="btnSearchDoc" scope="panelFilter"/>
+
+					
+<ui:remove><!-- 
+						
+						<p:commandButton icon="fas fa-book-open" value="#{ui_labels['general.searchFullText']}"
+										 id="btnSearchFullTextDoc" update="pResult" partialSubmit="true"
+										 process="@this panelFilter" actionListener="#{docList.actionSearchFullText}"
+										 rendered="#{docList.isOkToRender}"
+										 />
+
+	 --> </ui:remove>				
+
+						
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+							id="btnClear" update="pResult panelFilter" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{docList.actionClear}"
+							 styleClass="ui-button-warning" /> 
+					</div>		
+				</div>
+			</h:panelGroup>	
+		</div>
+		<h:panelGroup id="pResult" layout="block" styleClass="margin-top">		
+				<h:panelGroup id="pResult1" rendered="#{docList.docsList != null}" layout="block" styleClass="card">		
+					<h:panelGroup id="panelTblToolbar">
+				
+					<div class="table-toolbar">
+						
+						
+						<p:splitButton id="btnAccess" value="#{labels['delo.group']}"   styleClass="p-mr-2"
+								rendered="#{docList.docSelectedAllM.size() > 0 and !docList.searchDoc.dvijNotReturned}">				                
+											
+				            <p:menuitem value="#{labels['delo.predavane']}" ajax="false"
+					            action="#{docList.actionPredavane}"
+					            partialSubmit="true" update="@this" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+				            
+				            <p:menuitem value="#{labels['general.delete']}" 
+					            actionListener="#{docList.actionDeleteSelected}"
+					            rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}" 
+					            partialSubmit="true" update="@this pResult" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}"  
+									message="#{beanMessages['docList.confGroupDelete']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+							
+				        </p:splitButton>
+				        
+				        <p:commandButton value="#{labels['delo.vrashtane']}" action="#{docList.actionVrashtane}" ajax="false"
+				        	rendered="#{docList.docSelectedAllM.size() > 0 and docList.searchDoc.dvijNotReturned}" 
+				        	partialSubmit="true" update="@this" process="@this" styleClass="p-mr-2">
+				        	<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+									message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+			        	</p:commandButton>
+				        			
+				        <span class="p-mr-2" style="#{docList.docSelectedAllM.size()>0?'':'display:none'}">
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="#{ui_labels['general.reportResult']} #{docList.docsList.rowCount}" styleClass="form-label p-mr-2"/>
+						
+						
+						<span class="p-mr-2" style="#{docsList.docsSelectedAllM.size()>0?'':'display:none'}" >
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="#{labels['opis.brIzbr']}: #{docList.docSelectedAllM.size()}" rendered="#{docList.docSelectedAllM.size()>0}" styleClass="form-label" id="brSel"/>
+						
+						</div>
+					</h:panelGroup>
+					 
+					<p:dataTable id="tblDocLst" var="row" value="#{docList.docsList}" lazy="true" 	 
+						rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}" 
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true"
+						rowSelectMode="checkbox" selection="#{docList.docSelectedTmp}" disabledSelection="#{row[10]!=null}"
+						sortBy="#{row.a4}"  >
+									
+						<p:ajax event="toggleSelect"	 	 listener="#{docList.onRowSelectAll}" process="@this" update="docListForm:panelTblToolbar"/>
+						<p:ajax event="rowSelectCheckbox"	 listener="#{docList.onRowSelect}"   process="@this"  update="docListForm:panelTblToolbar"/>
+						<p:ajax event="rowUnselectCheckbox"  listener="#{docList.onRowUnselect}" process="@this"  update="docListForm:panelTblToolbar"/>
+						<p:ajax event="page" listener="#{docList.onPageUpdateSelected}" />
+						
+								
+						<p:column selectionMode="multiple" style="width:30px;text-align:center;"  rendered="#{isView==null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GROUP_DOC)}"/>	
+						
+								
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  rendered="#{docList.docsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="tblDocLst" fileName="docsList"	
+					        			postProcessor="#{docList.postProcessXLS}" />
+					    		</h:commandLink>
+								<ui:remove>
+									<h:commandLink id="pdf"  rendered="#{docList.docsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+						        	 	  <h:graphicImage library="images" name="pdf.png" />
+						        	 	  <p:dataExporter type="pdf" target="tblDocLst" fileName="docsList"	 encoding="windows-1251"
+						        			preProcessor="#{docList.preProcessPDF}" options="#{docList.pdfOptions()}"/>
+						    		</h:commandLink>
+					    		</ui:remove>
+					    		
+					  		<ui:remove>
+					  		
+					    	<!--  <h:commandLink id="csv" >
+					        		<h:graphicImage library="images" name="csv.png"    rendered="#{isView==1}" />
+					        		<p:dataExporter type="csv" target="tblDocLst" fileName="docsList"  encoding="CP1251"/>
+					    		</h:commandLink> --> </ui:remove>
+				            </div>
+				       	</f:facet>	
+							
+											
+					  	<p:column width="40" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>	
+						
+						<p:column  width="40" exportable="false" >	
+							<p:button  icon="fas fa-eye" href="#{docList.actionGoto(1, row)}" target="_blank" 
+							           title="#{ui_labels['general.view']}" 
+					  				   rendered="#{isView eq 1}" >
+					  		</p:button>	
+	
+							<p:commandButton   icon="fas fa-edit"  action="#{docList.actionGoto(0, row)}" ajax="false" title="#{ui_labels['general.edit']}"  
+					 				   rendered="#{isView==null and isPrereg==null and row[10]==null}"  />	
+					 				   
+							<p:commandButton   icon="fas fa-edit"  action="#{docList.actionGoto(2, row)}" ajax="false" title="#{labels['doc.prereg']}"  
+					 				   rendered="#{isPrereg eq 0 and row[10]==null}"  />	
+					 				   
+					 	    <p:commandButton type="button"   icon="fas fa-lock"  id="lockButton" ajax="false" alt="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], docList.currentLang, now)}"
+							   title="#{beanMessages['docList.lockedDoc']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], docList.currentLang, now)}"   
+			 				   rendered="#{isView==null and row[10]!=null}" styleClass="ui-button-secondary"/>
+					 		<p:tooltip for="lockButton">
+					 			#{beanMessages['docList.lockedDoc']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], docList.currentLang, now)} на 
+					 			<h:outputText value="#{row[11]}" >
+					 				<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docList.timeZone}"/>
+					 			</h:outputText>
+					 		</p:tooltip>
+						</p:column>
+						
+						<p:column width="20" sortBy="#{row.a12}"  exportable="false" >
+							<i class="fas fa-paperclip" aria-hidden="true" title="#{labels['docList.files']}: #{row[12]}" jsf:rendered="#{row[12]>0}"></i>
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+							<h:outputText value="#{row[1]}"  />								    
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+							<h:outputText value="#{row[4]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{docList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column style="width:100%" styleClass="col200" sortBy="#{row.a6}" headerText="#{labels['docu.otnosno']}">
+							<h:outputText value="#{row[6]}"  />								    
+						</p:column>
+						
+						<p:column width="220" sortBy="#{row.a8}" headerText="#{labels['docList.idvaOtAvtori']}">
+							<h:outputText rendered="#{row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}" value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REFERENTS, row[8], docList.currentLang, now)}"/>					    
+							<h:outputText rendered="#{row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN or row[2]==OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}" value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], docList.currentLang, now)} "/>
+							<h:outputText value=" "/>	
+							<h:outputText value="#{labels['docList.sendFromReg']}: " rendered="#{row[13]!=null}"/>		
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI_OBJACCESS, row[13], docList.currentLang, now)}"  />		
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], docList.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], docList.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="160" sortBy="#{row.a5}" headerText="#{labels['docu.register']}" rendered="#{!docList.searchDoc.dvijNotReturned}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRI, row[5], docList.currentLang, now)}"/>					    
+						</p:column>
+						
+						<p:column width="160" sortBy="#{row.a15}" headerText="#{labels['docu.predadenNa']}" rendered="#{docList.searchDoc.dvijNotReturned}">
+							<h:outputText value="#{row[15]} (#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[14], docList.currentLang, now)})"/>					    
+						</p:column>
+					
+					</p:dataTable>
+				</h:panelGroup>
+		</h:panelGroup>
+
+		<h:panelGroup id="dpCorrSearch">
+			<p:dialog appendTo="@form"  closeOnEscape="true"
+					    header="#{labels['docu.titleExtSrchCoresp']}" 
+					    fitViewport="true"	
+					    resizable="true" 
+					    position="top"	
+						widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+						modal="true">
+								
+					<ibg:refCorrespSearch id="mCorrS1"
+						codeRef="#{docList.searchDoc.codeRefCorresp}"
+						searchTxt="#{docList.txtCorresp}"
+						dateClassif="#{docList.decodeDate}"
+						modal="true" update="docListForm:coresp"
+						onComplete="PF('mCorrS').hide();  cmdSelectCorresp()" />
+
+			</p:dialog>
+		</h:panelGroup>
+		
+	</h:form>
+</ui:composition>

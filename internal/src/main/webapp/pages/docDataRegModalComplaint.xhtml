@@ -1,0 +1,279 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"  >
+
+
+	<ui:remove><!-- Разширено търсене на нарушител	--></ui:remove>
+	<h:panelGroup id="dpCorrSearch">	
+	
+		<p:dialog appendTo="@form"  closeOnEscape="true"
+		    header="#{labels['search.extendNar']}" 
+		    fitViewport="true"	
+		    resizable="true"
+		    position="top"	
+			widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+			modal="true">
+		 		
+				 	<ibg:refCorrespSearch id="mCorrS1" myId="mCS1" 
+						 codeRef="#{docDataComplaint.document.jalba.codeNar}"
+						 searchTxt="#{docDataComplaint.txtNar}" 
+						 modal="true"
+						 update="docForm:tabsDoc:refCorrDopInf docForm:tabsDoc:refCorrInp docForm:tabsDoc:refCorr"
+						 onComplete = "PF('mCorrS').hide();"/>
+						
+		</p:dialog>	
+	</h:panelGroup>
+				
+				
+	<ui:remove><!--Редактиране на данни за нарушител--></ui:remove>
+	<h:panelGroup id="dpCorrData">	
+					
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) ? labels['jp.titleEditNar'] : labels['jp.narView']) : labels['jp.narView']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrD" dynamic="true" id="modalCorrD" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+				
+			 		<ibg:refCorrespData id="btnCorrD1"  readonly="#{isView eq 1}"
+						 codeRef="#{docDataComplaint.document.jalba.codeNar}"
+						 searchTxt="#{docDataComplaint.txtNar}" 
+						 modal="true"
+						 update="docForm:tabsDoc:refCorrDopInf docForm:tabsDoc:refCorrInp docForm:tabsDoc:refCorr"	
+						 onComplete = "PF('mCorrD').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"
+						 jalba="true"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+
+	<ui:remove><!--Редактиране на данни за орган/лице в резултата --></ui:remove>
+	<h:panelGroup id="dpCorrOrgan">	
+					
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) ? labels['docu.titleEditCoresp'] : labels['docu.correspView']) : labels['docu.correspView']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrOrganD" dynamic="true" id="modalCorrOrganD" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+			
+		 		<ibg:refCorrespData id="btnCorrOrganD1"  readonly="#{isView eq 1}"
+					 codeRef="#{docDataComplaint.rowOrgan}"
+					 modal="true"
+					 update="docForm:tabsDoc:rezultFinalLst"	
+					 onComplete = "PF('mCorrOrganD').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+
+
+	<ui:remove><!-- "Справка за други жалби"		--></ui:remove>
+	
+	<h:panelGroup id="pPreviosSpr">
+
+		<p:dialog appendTo="@form" header="#{labels['jp.sprPrevios']}"
+			responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" 
+			position="top" style="margin-top:50px !important" 
+			widgetVar="modalPreviosSpr" dynamic="true" resizable="true"
+			id="modalPreviosSprId" modal="true">
+			
+			<div class="container #{guestPreferences.containerPosition}">	
+					
+				<div class="table-toolbar"  jsf:id="tbTbl" jsf:rendered="#{isView ne 1 and docDataComplaint.docPreviosList ne null}" >
+					<p:commandButton icon="fas fa-check"  value="#{labels['jp.selPrevios']}"
+						id="btnSelConfirm"  disabled="#{docDataComplaint.selPreviosJalbiAll.size() eq 0}"
+						process="docForm:tabsDoc:commentD @this"
+						actionListener="#{docDataComplaint.actionConfirmSelJalbi}"
+						update="docForm:tabsDoc:commentD @this"							
+						title="#{labels['jp.selPreviosTitle']}"
+						oncomplete="$(function(){PrimeFaces.focus('docForm:tabsDoc:comment');});" >
+							<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+							message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+					</p:commandButton>	
+					
+					<span class="fas fa-ellipsis-v  p-mx-2" />
+					
+					<h:outputText value="#{ui_labels['general.brSelected']}: #{docDataComplaint.selPreviosJalbiAll.size()}"  styleClass="form-label" id="brSel"/>
+				
+				</div>
+	
+				<p:dataTable id="tblPrevios" var="row" 
+					value="#{docDataComplaint.docPreviosList}" lazy="true" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{labels['jp.emptyPrevios']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true"
+					rowSelectMode="checkbox"
+					selection="#{docDataComplaint.selPreviosJalbi}">
+					
+					<p:ajax event="toggleSelect"	 	 listener="#{docDataComplaint.onRowSelectAll}" process="@this" update="@this docForm:tabsDoc:tbTbl " />
+					<p:ajax event="rowSelectCheckbox"	 listener="#{docDataComplaint.onRowSelect}"    process="@this" update="@this docForm:tabsDoc:tbTbl "   />
+					<p:ajax event="rowUnselectCheckbox"  listener="#{docDataComplaint.onRowUnselect}"  process="@this" update="@this docForm:tabsDoc:tbTbl"   />
+					<p:ajax event="page"                 listener="#{docDataComplaint.onPageUpdateSelected}" />
+
+					<p:column selectionMode="multiple" style="width:25px;text-align:center;"  rendered="#{isView ne 1}" />
+				  
+				    <p:column  width="25"  headerText="" exportable="false" rendered="#{isView ne 1}" >				
+						<p:commandButton
+						   process="docForm:tabsDoc:commentD docForm:tabsDoc:p1RegD @this" partialSubmit="true"
+						   update="docForm:tabsDoc:commentD docForm:tabsDoc:p1RegD @this"		 
+						   actionListener="#{docDataComplaint.actionCopyAddrJalba(row)}"
+						   icon="fas fa-copy"
+						   title="Копира адреса, емейла, телефона в полетата за контакти на жалбоподателя" />
+				    </p:column>
+						  				   	
+				   	<p:column  width="25" exportable="false" >	 	
+				    	<p:button  icon="fas fa-eye" href="#{docDataComplaint.actionGotoViewJ(row[0], OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC, null)}" target="_blank"  title="#{ui_labels['general.view']}" />
+					</p:column> 	
+					
+					<p:column  width="15"  headerText="" >				
+						<i jsf:id="infoJ" class="fas fa-info-circle"  style="font-size: 18px;"/>
+				    	
+				    	<p:tooltip id="infoJt"  for="infoJ"  escape="false" 
+				    	    value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_JALBA_SAST, row[11], docDataComplaint.currentLang, now)};  
+				    		       Експерт: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[12], docDataComplaint.currentLang, now)}"	/>
+					</p:column>	  
+					<p:column width="100"  headerText="#{labels['repDoc.regnom']}" sortBy="#{row.a1}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+					<p:column width="110" headerText="#{labels['docu.docDate']}" sortBy="#{row.a2}">
+						<h:outputText value="#{row[2]}" >
+					 	  <f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{docDataComplaint.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="160" headerText="#{labels['admStruct.names']}" sortBy="#{row.a3}">
+						<h:outputText value="#{row[3]}" />
+						<h:outputText value=" (#{row[4]})" rendered="#{row[4] ne null and row[4] ne ''}"/>
+						<h:outputText value=" (#{row[5]})" rendered="#{row[5] ne null and row[5] ne ''}"/>
+						<h:outputText value=" (#{row[6]})" rendered="#{row[6] ne null and row[6] ne ''}"/>
+					</p:column>
+					<p:column  width="110" headerText="#{ui_labels['general.phone']}" sortBy="#{row.a7}">
+						<h:outputText value="#{row[7]}" />
+					</p:column>
+					<p:column width="130" headerText="#{ui_labels['general.email']}" sortBy="#{row.a8}">
+						<h:outputText value="#{row[8]}" />
+					</p:column>
+					<p:column width="130" headerText="#{ui_labels['general.ekatte']}" sortBy="#{row.a9}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EKATTE, row[9], docDataComplaint.currentLang, now)}" />
+					</p:column>
+					<p:column  width="120"  headerText="#{ui_labels['general.adres']}" sortBy="#{row.a10}">
+						<h:outputText value="#{row[10]}" />
+					</p:column>
+				</p:dataTable>
+		
+			</div>
+		</p:dialog>
+		
+	</h:panelGroup>
+
+	<ui:remove><!-- " Справка за документи в преписката по жалбата и т.н. "	 --></ui:remove>
+	<h:panelGroup id="pSpravka">
+
+		<p:dialog appendTo="@form" header="#{labels['jp.spravkaBtnTitle']}"
+			responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" 
+			position="top" style="margin-top:50px !important" 
+			widgetVar="modalSpravka" dynamic="true" resizable="true"
+			id="modalSpravkaId" modal="true">
+			
+			<div class="container #{guestPreferences.containerPosition}">	
+				<p:dataTable id="tblSpravka" var="row" 
+					value="#{docDataComplaint.spravkaList}" lazy="false" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{labels['jp.emptySpravka']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+					<p:column style="width:2rem">
+		              <p:rowToggler rendered="#{(row[5] ne null and (row[5]).size() > 0) or row[6] eq OmbConstants.CODE_ZNACHENIE_NE}"/>
+		            </p:column>		   	
+				   	<p:column  width="40" exportable="false" >
+				    	<p:button  icon="fas fa-eye" href="#{docDataComplaint.actionGotoViewJ(row[1], row[0], row[7])}" target="_blank"  title="#{ui_labels['general.view']}" />
+					</p:column> 		  
+					<p:column width="180"  headerText="#{labels['jp.rnFullSpr']}" sortBy="#{row[2]}">
+						<h:outputText value="#{row[2]}" />
+					</p:column>
+					<p:column width="110" headerText="#{labels['docu.docDatReg']}" sortBy="#{row[3]}">
+						<h:outputText value="#{row[3]}" >
+					 	  <f:convertDateTime  pattern="dd.MM.yyyy HH:mm" timeZone="#{docDataComplaint.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="*" styleClass="dbCol200"   headerText="#{labels['docu.dopInfo']}"  sortBy="#{row[4]}" >
+						<h:outputText value="#{row[4]}"/>					    
+					</p:column>
+					
+					<p:rowExpansion>				
+						<div class="list-container" jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_DA}">
+							<p:repeat varStatus="rkv" value="#{row[5]}" var="file" id="rflst" >
+								<h:panelGroup styleClass="file-list" layout="block" id="lst">
+							
+									<p:commandLink ajax="false" action="#{docDataComplaint.download(file[0])}" id="btnF" >
+										<div class="file-details">									
+											<span class="filename">#{file[1]}</span>									
+										</div>
+									</p:commandLink>
+										
+								</h:panelGroup>
+							</p:repeat>
+						</div>
+						<div class="list-container" jsf:rendered="#{row[6] eq OmbConstants.CODE_ZNACHENIE_NE}">
+						 	<h:outputText value="#{labels['docu.docAccessDenied']}"/>
+						</div>
+					</p:rowExpansion>
+					
+				</p:dataTable>
+					</div>
+		</p:dialog>
+	</h:panelGroup>
+
+	<ui:remove><!-- " История на състоянията на жалбата "	 --></ui:remove>
+	<h:panelGroup id="pSastHistory">
+
+		<p:dialog appendTo="@form" header="#{labels['docspec.sastHistory']}"
+			responsive="true" fitViewport="true" closeOnEscape="true" positionType="absolute" 
+			position="top" style="margin-top:50px !important" 
+			widgetVar="modalSast" dynamic="true" resizable="true"
+			id="modalSastId" modal="true">
+			
+			<div class="container #{guestPreferences.containerPosition}">	
+				<p:dataTable id="tblSast" var="row" 
+					value="#{docDataComplaint.sastHistoryList}" lazy="false" rowIndexVar="idx"   scrollable="true"
+					sortMode="single"  reflow="true"
+					emptyMessage="#{labels['jp.emptySpravka']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="5" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+				  
+					<p:column width="200"  headerText="#{labels['jp.sast']}" sortBy="#{row[0]}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_JALBA_SAST, row[0], docDataComplaint.currentLang, now)}" />
+					</p:column>
+					<p:column width="200" headerText="#{labels['jp.sastDate']}" sortBy="#{row[1]}">
+						<h:outputText value="#{row[1]}" >
+					 	  <f:convertDateTime  pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docDataComplaint.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="*"  headerText="#{labels['specDoc.userH']}"  sortBy="#{row[2]}" >
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[2], docDataComplaint.currentLang, now)}" />					    
+					</p:column>
+					
+				</p:dataTable>
+		
+			</div>
+		</p:dialog>
+	</h:panelGroup>
+	
+</ui:composition>

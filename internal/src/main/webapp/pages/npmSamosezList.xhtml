@@ -1,0 +1,440 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+	
+	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+	</f:metadata>
+               
+	<h:form id="npmSamosezForm">
+	
+		<div class="container #{guestPreferences.containerPosition}">
+		
+			<!-- FILTER -->
+			<div jsf:id="panelFilter">
+				<div class="card">
+					
+					<div class="p-grid ui-fluid p-align-end">
+						
+						<!--Рег. номер-->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['docu.regNom']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{npmSamosez.docSpecSearch.rnDoc}" id="rnDoc"/>
+								<p:focus for="rnDoc" />
+								<p:selectBooleanButton id="rndEq" value="#{npmSamosez.docSpecSearch.rnDocEQ}"
+										onLabel="#{ui_labels['general.yes']}"
+										offLabel="#{ui_labels['general.no']}"
+										title="#{labels['docu.docSrchRegNom']}"
+										onIcon="fas fa-toggle-on"
+										offIcon="fas fa-toggle-off"
+										styleClass="inputgroup-button" >
+									<p:ajax update="@this rnDoc" partialSubmit="true" process="@this rnDoc"/>
+								</p:selectBooleanButton>
+							</div>
+						</div>
+						
+						<!--Период на регистрация-->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodReg" value="#{npmSamosez.periodReg}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, npmSamosez.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodReg dateOtReg dateDoReg" listener="#{npmSamosez.changePeriodReg}"/>
+						    </p:selectOneMenu>
+					   	</div>
+					   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtReg" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.docDateFrom}">
+								<p:ajax event="change" update="periodReg" listener="#{npmSamosez.resetDateReg}"/>
+								<p:ajax event="dateSelect" update="periodReg" listener="#{npmSamosez.resetDateReg}"/>
+							</p:datePicker>
+					  	</div>
+						
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoReg" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.docDateTo}">
+								<p:ajax event="change" update="periodReg" listener="#{npmSamosez.resetDateReg}"/>
+								<p:ajax event="dateSelect" update="periodReg" listener="#{npmSamosez.resetDateReg}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Ръководител на екип -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['docspec.expLider']}" styleClass="form-label" />
+						    <ibg:selectOneModalA id="lider"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}"
+								dateClassif="#{npmSamosez.decodeDate}" filtered="false"
+								selectedCode="#{npmSamosez.docSpecSearch.codeLeader}"
+								styleAutoComp="" saveStateTree="true"
+								header="#{labels['docspec.expLider']}"
+								isSelectNode="false" minQueryLength="2"
+								withBtnClear="true" compType="2" />
+						</div>
+						
+						<!-- Период на датата на започване -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['docspec.periodZapoch']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodStart" value="#{npmSamosez.periodStart}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, npmSamosez.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodStart dateOtStart dateDoStart" listener="#{npmSamosez.changePeriodStart}"/>
+						    </p:selectOneMenu>
+					   	</div>
+				   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtStart" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.startDateFrom}">
+								<p:ajax event="change" update="periodStart" listener="#{npmSamosez.resetDateStart}"/>
+								<p:ajax event="dateSelect" update="periodStart" listener="#{npmSamosez.resetDateStart}"/>
+							</p:datePicker>
+					  	</div>
+						
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoStart" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.startDateTo}">
+								<p:ajax event="change" update="periodStart" listener="#{npmSamosez.resetDateStart}"/>
+								<p:ajax event="dateSelect" update="periodStart" listener="#{npmSamosez.resetDateStart}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Експерт от екипа -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['docspec.expEkip']}" styleClass="form-label" />
+						    <ibg:selectOneModalA id="ekspert"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}"
+								dateClassif="#{npmSamosez.decodeDate}" filtered="false"
+								selectedCode="#{npmSamosez.docSpecSearch.dopCodeExpert}"
+								styleAutoComp="" saveStateTree="true"
+								header="#{labels['docspec.expEkip']}"
+								isSelectNode="false" minQueryLength="2"
+								withBtnClear="true" compType="2" />
+						</div>
+						
+						<!-- Период на срока за приключване -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['docspec.periodSrokPrikliuch']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodEnd" value="#{npmSamosez.periodEnd}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, npmSamosez.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodEnd dateOtEnd dateDoEnd" listener="#{npmSamosez.changePeriodEnd}"/>
+						    </p:selectOneMenu>
+					   	</div>
+				   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtEnd" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.srokFrom}">
+								<p:ajax event="change" update="periodEnd" listener="#{npmSamosez.resetDateEnd}"/>
+								<p:ajax event="dateSelect" update="periodEnd" listener="#{npmSamosez.resetDateEnd}"/>
+							</p:datePicker>
+					  	</div>
+						
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoEnd" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{npmSamosez.docSpecSearch.srokTo}">
+								<p:ajax event="change" update="periodEnd" listener="#{npmSamosez.resetDateEnd}"/>
+								<p:ajax event="dateSelect" update="periodEnd" listener="#{npmSamosez.resetDateEnd}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Състояние -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['docspec.sast']}" styleClass="form-label"/>
+							<ibg:selectManyModalA id="selectManySastoianie" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_PROVERKA_SAST}"
+								dateClassif="#{npmSamosez.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{npmSamosez.docSpecSearch.sastList}"
+								selectedClassifs="#{npmSamosez.sastoiania}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+						
+						<!-- Допълнителна информация -->
+					 	<div class="p-col-12 p-md-4">
+					 		<h:outputText value="#{labels['docspec.dopInfo']}" styleClass="form-label"/>
+					 		<p:inputText value="#{npmSamosez.docSpecSearch.docInfo}"/>
+					 	</div>
+					 	
+					 	<!-- Видима в публичния регистър -->
+					 	<div class="p-col-12 p-md-4">
+					 		<p:selectBooleanCheckbox value="#{npmSamosez.vidima}" itemLabel="#{labels['complaint.vidimaPubl']}">
+					            <p:ajax listener="#{npmSamosez.checkVidima}" partialSubmit="true" process="@this"/>
+					        </p:selectBooleanCheckbox>
+					 	</div>
+					 	
+					 	<div class="p-col-12">
+							<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#event-extended')">
+								<h:outputText value="#{ui_labels['search.extend']}"/>
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>
+					</div>
+				
+					<!-- Разширено търсене -->
+					<div class="p-grid extended-search p-align-end ui-fluid" id="event-extended" style="display: none;">
+			
+					 	<!-- Предмет на проверката -->
+					 	<div class="p-col-12 p-md-6 p-lg-4">
+					 		<h:outputText value="#{labels['docspec.predmet']}" styleClass="form-label"/>
+					 		<p:inputText value="#{npmSamosez.docSpecSearch.otnosno}"/>
+					 	</div>
+					 	
+					 	<!-- Нарушени права (НПМ) -->
+						<div class="p-col-12 p-md-6 p-lg-4" jsf:rendered="#{variant eq 'npm'}">
+							<h:outputText value="#{labels['specDoc.narPrava']}" styleClass="form-label"/>
+							<ibg:selectManyModalA compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_NAR_PRAVA}"
+								dateClassif="#{npmSamosez.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{npmSamosez.docSpecSearch.narPravaList}"
+								selectedClassifs="#{npmSamosez.narPrava}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+						
+						<!-- Засегнати права (Самосез) -->
+						<div class="p-col-12 p-md-6 p-lg-4" jsf:rendered="#{variant eq 'samosez'}">
+							<h:outputText value="#{labels['specDoc.zasPrava']}" styleClass="form-label"/>
+						    <ibg:selectManyModalA compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ZAS_PRAVA}"
+								dateClassif="#{npmSamosez.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{npmSamosez.docSpecSearch.zasPravaList}"
+								selectedClassifs="#{npmSamosez.narPrava}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+						
+						<div class="p-col-0 p-lg-4" style="padding: 0"/>
+						
+						<!-- Проверен орган (НПМ) -->
+						<div class="p-col-12 p-md-6 p-lg-4" jsf:rendered="#{variant eq 'npm'}">
+							<h:outputText value="#{labels['specDoc.orgName']}" styleClass="form-label"/>
+					 		<p:selectOneMenu value="#{npmSamosez.docSpecSearch.codeOrgan}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_ORGAN_NPM, now, npmSamosez.currentLang)}"
+							         var="org" itemLabel="#{org.tekst}" itemValue="#{org.code}" />
+						    </p:selectOneMenu>
+						</div>
+						
+						<!-- Тип на орган по НПМ (НПМ) -->
+						<div class="p-col-12 p-md-6 p-lg-4" jsf:rendered="#{variant eq 'npm'}">
+							<h:outputText value="#{labels['refCorr.typeNpm']}" styleClass="form-label"/>
+							<ibg:selectManyModalA compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_TIP_ORGAN}"
+								dateClassif="#{npmSamosez.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{npmSamosez.docSpecSearch.tipOrganList}"
+								selectedClassifs="#{npmSamosez.tipOrganNpm}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+						
+						<div class="p-col-0 p-lg-4" style="padding: 0" jsf:rendered="#{variant eq 'npm'}"/>
+					
+						<!-- Проверен орган (Самосез) -->
+						<div class="p-col-12 p-md-6 p-lg-4" jsf:rendered="#{variant eq 'samosez'}">
+							<h:outputText value="#{labels['specDoc.orgName']}"  styleClass="form-label " />
+							<div class="ui-inputgroup">
+								
+								<p:inputText value="#{npmSamosez.textOrgan}" id="organ">
+									<p:ajax event="keyup" listener="#{npmSamosez.actionChangeTextOrgan}"/>
+								</p:inputText>
+								<!--  Разширено търсене на кореспондент -->
+								<p:commandButton id="btnCorrS" styleClass="inputgroup-button"
+									onmousemove="document.getElementById('npmSamosezForm:btnCorrS').focus();"
+									icon="fas fa-list-ul" partialSubmit="true"
+									process="npmSamosezForm:dpCorrSearch"
+									update="npmSamosezForm:dpCorrSearch @this"
+									oncomplete="PF('mCorrS').show();"
+									title="" />
+							</div>
+							<p:remoteCommand name="cmdSelectCorresp" update="organ" process="organ @this" actionListener="#{npmSamosez.actionSelectOrgan}" />
+						</div>
+						
+
+
+						<!-- Резултат от проверка  -->
+					 	<div class="p-col-12 p-md-6 p-lg-4">
+					 		<h:outputText value="#{labels['specDoc.resultProverka']}" styleClass="form-label"/>
+					 		<p:selectOneMenu id="rezult" value="#{npmSamosez.docSpecSearch.vidResult}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_ORGAN_RES, now, npmSamosez.currentLang)}"
+							         var="rez" itemLabel="#{rez.tekst}" itemValue="#{rez.code}" />
+						    </p:selectOneMenu>
+					 	</div>
+					 	
+					 	<!-- Дадена препоръка -->
+					 	<div class="p-col-12 p-md-4">
+					 		<p:selectBooleanCheckbox value="#{npmSamosez.preporuka}" itemLabel="#{labels['specDoc.preporaka']}">
+					            <p:ajax listener="#{npmSamosez.checkPreporuka}" partialSubmit="true" process="@this"/>
+					        </p:selectBooleanCheckbox>
+					 	</div>
+						
+					</div>
+					
+					<!-- Бутони -->
+					<div class="filter-buttons">
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"
+							id="btnSearch" update="pResult" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{npmSamosez.actionSearch}" styleClass="p-mr-3"/>
+						<p:defaultCommand target="btnSearch" scope="panelFilter"/>
+							
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+							id="btnClear" update="pResult panelFilter" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{npmSamosez.actionClear}"
+							styleClass="ui-button-warning" />
+					</div>
+					
+				</div>
+			</div>
+		
+		</div>
+
+		<div jsf:id="pResult" class="margin-top">
+			<div jsf:id="pResult1" jsf:rendered="#{npmSamosez.docsList != null}" class="card">
+			
+				<!--  Toolbar -->
+				<div jsf:id="panelTblToolbar">
+					<div class="table-toolbar">
+						<p:splitButton id="btnAccess" value="#{labels['delo.group']}"   styleClass="p-mr-2"
+								rendered="#{npmSamosez.docSelectedAllM.size() > 0}">
+				            <p:menuitem value="#{labels['general.delete']}"
+					            actionListener="#{npmSamosez.actionDeleteSelected}"
+					            rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}"
+					            partialSubmit="true" update="@this pResult" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" 
+									message="#{beanMessages['docList.confGroupDelete']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+				        </p:splitButton>
+				        			
+				        <span class="p-mr-2" style="#{npmSamosez.docSelectedAllM.size() > 0 ? '' : 'display : none'}">
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="#{ui_labels['general.reportResult']} #{npmSamosez.docsList.rowCount}" styleClass="form-label p-mr-2"/>
+						
+						<h:outputText value="#{labels['opis.brIzbr']}: #{npmSamosez.docSelectedAllM.size()}" rendered="#{npmSamosez.docSelectedAllM.size() > 0}" styleClass="form-label"/>
+					</div>
+				</div>
+
+				<!-- Table -->
+				<p:dataTable id="tblDocs" var="row" value="#{npmSamosez.docsList}" lazy="true"
+						rowIndexVar="index" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginator="true" paginatorAlwaysVisible="true"
+						rowSelectMode="checkbox" selection="#{npmSamosez.docSelectedTmp}" sortBy="#{row.a2}">
+				
+					<p:ajax event="toggleSelect"	 	listener="#{npmSamosez.onRowSelectAll}" process="@this" update="npmSamosezForm:panelTblToolbar"/>
+					<p:ajax event="rowSelectCheckbox"	listener="#{npmSamosez.onRowSelect}"    process="@this" update="npmSamosezForm:panelTblToolbar"/>
+					<p:ajax event="rowUnselectCheckbox" listener="#{npmSamosez.onRowUnselect}"  process="@this" update="npmSamosezForm:panelTblToolbar"/>
+					<p:ajax event="page" listener="#{npmSamosez.onPageUpdateSelected}" />
+				
+					<f:facet name="{Exporters}">
+			            <div style="float:left">
+				            <h:commandLink id="excel"  rendered="#{npmSamosez.docsList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+			        			<h:graphicImage library="images" name="excel2.png" />
+			        			<p:dataExporter type="xls" target="tblDocs" fileName="#{variant eq 'npm' ? 'npmList' : 'samosezList'}"	
+				        			postProcessor="#{npmSamosez.postProcessXLS}" />
+				    		</h:commandLink>
+			            </div>
+			       	</f:facet>
+			       	
+					<p:column selectionMode="multiple" style="width: 30px; text-align: center;" rendered="#{isView ne 1 and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GROUP_DOC)}"/>
+					
+					<p:column width="30" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+						<h:outputText value="#{index + 1}" />
+					</p:column>
+					
+					<p:column  width="40" exportable="false" >
+						<p:button icon="fas fa-eye" href="#{npmSamosez.actionGoto(1, row)}" target="_blank"
+							title="#{ui_labels['general.view']}" rendered="#{isView eq 1}" />
+
+						<p:commandButton icon="fas fa-edit" action="#{npmSamosez.actionGoto(0, row)}" ajax="false"
+							title="#{ui_labels['general.edit']}" rendered="#{isView != 1 and row[9] == null}"  />
+							
+				 	    <p:commandButton type="button" icon="fas fa-lock" id="lockButton" ajax="false" 
+				 	    	alt="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], npmSamosez.currentLang, now)}"
+						   	title="#{beanMessages['docList.lockedDoc']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], npmSamosez.currentLang, now)}"   
+		 				   	rendered="#{isView == null and row[9] != null}" styleClass="ui-button-secondary"/>
+		 				   
+				 		<p:tooltip for="lockButton">
+				 			#{beanMessages['docList.lockedDoc']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[9], npmSamosez.currentLang, now)} на 
+				 			<h:outputText value="#{row[10]}" >
+				 				<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{npmSamosez.timeZone}"/>
+				 			</h:outputText>
+				 		</p:tooltip>
+					</p:column>
+					
+					<p:column width="20" sortBy="#{row.a11}"  exportable="false" >
+						<i class="fas fa-paperclip" aria-hidden="true" title="#{labels['docList.files']}: #{row[11]}" jsf:rendered="#{row[11] gt 0}"></i>
+					</p:column>
+					
+					<p:column width="80" sortBy="#{row.a1}" headerText="#{labels['docu.regNom']}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+					
+					<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docu.docDate']}" >
+						<h:outputText value="#{row[2]}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{npmSamosez.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					
+					<p:column width="200" sortBy="#{row.a3}" headerText="#{labels['docspec.predmet']}">
+						<h:outputText value="#{row[3]}" />
+					</p:column>
+					
+					<p:column width="200" sortBy="#{row.a4}" headerText="#{labels['docspec.expLider']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[4], npmSamosez.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="200" sortBy="#{row.a5}" headerText="#{labels['docspec.ekip']}">
+						<h:outputText value="#{systemData.decodeItems(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[5], npmSamosez.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="80" sortBy="#{row.a6}" headerText="#{labels['docspec.srok']}" >
+						<h:outputText value="#{row[6]}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{npmSamosez.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a7}" headerText="#{labels['docspec.sast']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROVERKA_SAST, row[7], npmSamosez.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="130" sortBy="#{row.a8}" headerText="#{labels['docspec.dataSast']}" >
+						<h:outputText value="#{row[8]}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{npmSamosez.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					
+				</p:dataTable>
+
+			</div>
+		</div>
+
+		<div jsf:id="dpCorrSearch">
+			<p:dialog appendTo="@form"  closeOnEscape="true"
+					    header="#{labels['docu.titleExtSrchCoresp']}" 
+					    fitViewport="true"	
+					    resizable="true" 
+					    position="top"	
+						widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+						modal="true">
+				<ibg:refCorrespSearch id="mCorrS1"
+					codeRef="#{npmSamosez.docSpecSearch.codeOrgan}"
+					searchTxt="#{npmSamosez.docSpecSearch.nameOrgan}"
+					dateClassif="#{npmSamosez.decodeDate}"
+					modal="true" update="npmSamosezForm:organ"
+					onComplete="PF('mCorrS').hide();  cmdSelectCorresp()" />
+			</p:dialog>
+		</div>
+
+	</h:form>
+
+</ui:composition>

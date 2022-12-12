@@ -1,0 +1,610 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components">
+		
+	 
+	 <h:panelGroup id="mainPanel" >
+	 <p:sticky target="tbtnPanel1t" margin="130">
+		<p:toolbar id="tbtnPanel1t"	styleClass="margin-bottom" >
+			<f:facet name="left">									
+				<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"
+								 rendered="#{isView eq null}" id="btnSave"
+								 partialSubmit="true" 
+								 update="@form"
+								 process="tabsDelo  @this"  
+								 actionListener="#{deloBean.actionSave}"
+								 title="#{labels['delo.saveTitle']}" >
+				</p:commandButton>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" jsf:rendered="#{isView eq null}"/>
+                
+                 
+                <p:commandButton icon="fas fa-edit" value="#{labels['delo.newButton']}"  rendered="#{isView eq null}"
+								 actionListener="#{deloBean.actionDeloNew}" update="@form" styleClass="ui-button-success"
+								 title="#{labels['delo.newButtonTitle']}" >
+				</p:commandButton>
+				
+				 <span class="fas fa-ellipsis-v SoftGray p-mx-2" jsf:rendered="#{isView eq null}"/>
+               
+                 
+                 <p:splitButton action="#{deloBean.actionDostap}" ajax="true" 
+								 value="#{labels['delo.izrichenDostap']}" 
+								 title="#{isView eq null ? labels['delo.izrichenDostap'] : labels['delo.titleZaZapoznV']}"  
+					 			 rendered="#{deloBean.delo.id ne null and deloBean.obshtodostap}" >
+					  <p:menuitem id="btnAccess" 
+		                value="#{labels['docu.repAccess']}" 
+		                title="#{labels['docu.repAccess']}" 
+		                action="#{deloBean.actionFillDeloAccessList}"
+		                update="tblDeloAccess"
+		                disabled="false"
+		                icon="fas fa-user-friends"  
+	               	 	partialSubmit="true"
+						process=" @this"/>
+				</p:splitButton>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+	 				   
+				<p:commandButton action="#{deloBean.actionSastoqnieToms}" ajax="true"  styleClass=" p-mr-2"
+								 value="#{labels['delo.sastoqnieToms']}" title="#{labels['delo.sastoqnieToms']}"  
+			 				     rendered="#{false and isView!=1 and deloBean.delo.id ne null}"  />
+			 				   
+				<p:commandButton ajax="true" onclick="PF('storage').show();"
+								 value="#{labels['delo.sahranqvane']}" title="#{labels['delo.sahranqvane']}"  
+				 				 rendered="#{isView!=1 and deloBean.delo.id ne null and deloBean.deloStorageList!=null and deloBean.deloStorageList.size()>0}"  />
+			</f:facet>
+			 <f:facet name="right">						
+					
+			
+					
+				<p:commandButton icon="fas fa-times"
+					            value="#{ui_labels['general.delete']}" title="Изтриване"
+					           	update="@form" partialSubmit="true" 
+								process="@this"
+								rendered="#{isView eq null and deloBean.delo.id ne null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DELO)}"											
+								actionListener="#{deloBean.actionDelete}" styleClass="ui-button-danger" >
+					<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docu.deloDelete']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>
+			</f:facet>
+		</p:toolbar>
+	 </p:sticky>	
+		
+			
+			
+			<h:panelGroup id="panelRegDelo"  >		
+				 
+				<div>
+					<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#delo-regdata')">
+						<h:outputText value="#{labels['registratura.basicData']}" />
+						<h:outputText value=" (#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, deloBean.delo.registraturaId, deloBean.currentLang, now)})" 
+						rendered="#{deloBean.delo.registraturaId ne userData.getRegistratura()}"/>
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+					<p:selectBooleanCheckbox id="fAacc" value="#{deloBean.obshtodostap}"
+						disabled="#{isView eq 1 or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_JALBA or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NPM or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_SAMOS}"
+						itemLabel="#{labels['docu.ogranichen']}"  title="#{deloBean.obshtodostap ? labels['docu.ogranichenTitlep'] : labels['docu.freeTitlep']}" >
+						<p:ajax event="change" partialSubmit="true" update="@this tbtnPanel1t" process="@this"/>
+					</p:selectBooleanCheckbox>
+				</div>
+				
+				
+				
+				<div id="delo-regdata" class="p-grid"  >
+				
+					<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 ui-fluid " jsf:rendered="#{deloBean.protocolArchive ne null and (deloBean.delo.status==OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ARCHIVED_UA or deloBean.delo.status==OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ARCHIVED_DA)}">
+						<div class="ui-inputgroup">
+						 	<h:outputText value="#{deloBean.protocolArchive}" style="padding: 6px 12px;font-style: italic;background-color: rgba(216,222,233,0.35);border-radius: 4px;display:block;"/>
+						 	<p:button  icon="fas fa-eye" href="#{deloBean.actionGotoViewDoc()}" target="_blank" 
+							           title="#{labels['delo.protocolArchive']}" 
+							           style="width:30px;border-radius: 4px;"
+					  				    >
+					  		</p:button> 
+				  		</div>
+					</div>
+				
+					<h:panelGroup id="regNomData" styleClass="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid "  layout="block" >		
+						<h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label req" rendered="#{deloBean.delo.deloType!=OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"/>
+						<h:outputText value="#{labels['register.prefix']}" styleClass="form-label req" rendered="#{deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"/>
+							<div class="ui-inputgroup"> 	
+								<p:inputText id="regNomer" value="#{deloBean.delo.rnDelo}" 
+								   style=" display:inline-block;" disabled="#{deloBean.delo.id!=null}"
+								   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+								   <p:ajax event="change" process="regDate typeDelo @this" 
+									   				 partialSubmit="true" listener="#{deloBean.actionSearchRnDelo}"/>
+								</p:inputText>	
+						
+								 
+				 				 <p:commandLink  rendered="#{deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"  
+				 				 	 actionListener="#{deloBean.loadIndexes}" update="panelTableIndexes">
+								   <span class="fas fa-info-circle" style="margin-top:7px;font-size:20px;"></span> 
+								</p:commandLink>
+							</div> 
+					</h:panelGroup>
+				
+						<!-- тип док.  -->
+						
+						
+						
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid ">
+							<h:outputText value="#{labels['docu.dateDoc']}" styleClass="form-label req" />
+							
+							<div class="ui-inputgroup"> 
+								<p:datePicker id="regDate" showIcon="true"  locale="bg"
+										pattern="dd.MM.yyyy"  
+										mask="true" value="#{deloBean.delo.deloDate}"
+										disabled="#{isView==1 or deloBean.delo.id!=null}" readonly="#{isView==1 or deloBean.delo.id!=null}" >
+										<p:ajax event="change" process="regNomer typeDelo @this" 
+									   				 partialSubmit="true" listener="#{deloBean.actionSearchRnDelo}"/>
+									   	<p:ajax event="dateSelect" process="regNomer typeDelo @this" listener="#{deloBean.actionSearchRnDelo}"/>
+								</p:datePicker>
+							</div>
+											
+				      	</div>
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid "> 	
+							<h:outputText value="#{labels['docu.type']}" styleClass="form-label req" />
+							<div class="ui-inputgroup"> 
+								<p:selectOneMenu value="#{deloBean.delo.deloType}" id="typeDelo"  disabled="#{deloBean.delo.id!=null and (deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_JALBA or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NPM or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_SAMOS)}" >
+					 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+		                            <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_TYPE, now, deloBean.currentLang)}" 
+		                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+		                               <p:ajax event="change" update="panelRegDelo docsInPrepTable" process="regNomer regDate @this" 
+							   				 partialSubmit="true" listener="#{deloBean.actionTypeChange()}"/>
+								</p:selectOneMenu>
+							</div>
+											
+				      	</div>
+						<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid"> 	
+							<h:outputText value="#{labels['docu.status']}" styleClass="form-label req" />
+							<div class="ui-inputgroup"> 
+								<p:selectOneMenu value="#{deloBean.delo.status}" id="statusDelo" disabled="#{deloBean.delo.status==OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ARCHIVED_DA or deloBean.delo.status==OmbConstants.CODE_ZNACHENIE_DELO_STATUS_ARCHIVED_UA}">
+					 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+		                            <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_STATUS, now, deloBean.currentLang)}" 
+		                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+		                               <p:ajax event="change" process="panelRegDelo"
+										listener="#{deloBean.actionStatusDeloChange(true)}"
+										partialSubmit="true" update="panelRegDelo" />
+								</p:selectOneMenu>
+							</div>
+											
+				      	</div>
+				      	<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid"> 	
+							<h:outputText value="#{labels['delo.dateStatus']}" styleClass="form-label req" />
+							
+							<div class="ui-inputgroup"> 
+								<p:datePicker id="statusDate" showIcon="true" locale="bg"
+										pattern="dd.MM.yyyy"  
+										mask="true" value="#{deloBean.delo.statusDate}"
+										disabled="#{isView==1 }" readonly="#{isView==1 }" />
+							</div>
+											
+				      	</div>
+				      	<div class="p-col-12 p-sm-6 p-md-4 p-lg-3 p-xl-2 ui-fluid"> 	
+							<p:selectBooleanCheckbox value="#{deloBean.endTask}" id="prepStEndTask" style="margin-left:10px;margin-top:25px;"
+									rendered="#{isView ne 1 and  deloBean.accessFinishTask}"
+									itemLabel="#{labels['docu.finishTask']}" title="#{labels['docu.titleFinishTask']}"/>
+				      	</div>
+				      	<div class="p-col-12 p-sm-12 p-md-12 p-lg-8 p-xl-8 ui-fluid"> 	
+							<h:outputText value="#{labels['docu.nameDelo']}" styleClass="form-label req" />
+							<div class="ui-inputgroup">
+								<p:inputTextarea id="naimenovanie" value="#{deloBean.delo.deloName}" 
+									 style="width:100%" rows="2">
+								</p:inputTextarea>
+							</div>
+											
+				      	</div>
+				      	<div class="p-col-12 p-sm-12 p-md-12 p-lg-4 p-xl-4 ui-fluid" style="display:none;"> 
+							 	
+							<h:outputText value="#{labels['delo.vodeshtSluj']}" styleClass="form-label" />
+							<ibg:selectOneModalA id="vodeshtSluj"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+								
+								selectedCode="#{deloBean.delo.codeRefLead}" compType="2"
+								withBtnClear="true" saveStateTree="true"   
+							 	readonly="#{isView==1}" />  
+							<p:message for="vodeshtSluj" showDetail="true" showSummary="true" display="tooltip" escape="false">
+				      			<p:autoUpdate/>
+				      		</p:message>
+											
+				      	</div>
+				      	<div id="delo-regdata" class="p-grid p-col-12 ui-fluid p-align-end">
+					      	
+					      	<div class="p-col-12 p-sm-12 p-md-12 p-lg-8 p-xl-8 ui-fluid"> 	
+								<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label" />
+								<div class="ui-inputgroup">
+									<p:inputTextarea  id="otnosno" value="#{deloBean.delo.deloInfo}" 
+										 style="width:100%" rows="4">
+									</p:inputTextarea>
+								</div>
+												
+					      	</div>
+					      	<div class="p-grid p-sm-12 p-md-12 p-lg-12 p-xl-4  ui-fluid"> 
+						      	<div class="p-col-12 p-sm-12 p-md-6 ui-fluid" jsf:rendered="#{systemData.getSettingsValue('delo.deloWithToms')==1 or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"> 	
+									<p:selectBooleanCheckbox value="#{deloBean.hasToms}" id="toms" style="margin-left:10px;margin-top:25px;"
+											immediate="true" itemLabel="#{labels['delo.hasTom']}" disabled="#{isView==1 }">
+											<p:ajax event="change" update="panelRegDelo docsInPrepTable" process="@this panelRegDelo"  partialSubmit="true" />
+									</p:selectBooleanCheckbox>	
+													
+						      	</div>
+						      	<div class="p-col-12 p-sm-12 p-md-6  ui-fluid" > 	
+									<p:selectBooleanCheckbox value="#{deloBean.hasRazdeli}" id="razdeli" style="margin-left:10px;margin-top:25px;"
+											immediate="true" itemLabel="#{labels['delo.hasRazdeli']}" rendered="#{systemData.getSettingsValue('delo.deloWithSections')==1}"
+											disabled="#{isView==1 or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_JALBA or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NPM or deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_SAMOS}">
+											
+											 <p:ajax event="change" update="docsInPrepTable" process="@this" 
+									   				 partialSubmit="true" />
+									</p:selectBooleanCheckbox>
+									<h:outputText value="&nbsp;" escape="false"  rendered="#{systemData.getSettingsValue('delo.deloWithSections')==1}"/>				
+						      	</div>
+					      	
+						      	
+						      	<div class="p-col-12 p-sm-12 p-md-6 ui-fluid" jsf:rendered="#{deloBean.hasToms}"> 	
+									<h:outputText value="#{labels['delo.brToms']}" styleClass="form-label req" />
+									<div class="ui-inputgroup">
+										<p:inputText id="brToms" value="#{deloBean.delo.brTom}"  onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+										</p:inputText>
+										<p:commandButton id="tomAndSheets" icon="fas fa-window-restore" title="#{labels['delo.tomAndSheets']}" action="#{deloBean.actionCheckTomAndSheets}"
+											oncomplete="PF('modalTomAndSheets').show();" update="panelTomAndSheets" rendered="#{deloBean.delo.id ne null}"/>
+										
+									</div>
+													
+						      	</div>
+						      	<div class="p-col-12 p-sm-12 p-md-6 ui-fluid" jsf:rendered="#{deloBean.hasToms}"> 	
+									<h:outputText value="#{labels['delo.brPages']}" styleClass="form-label req" />
+									<div class="ui-inputgroup">
+										<p:inputText id="brPages" value="#{deloBean.delo.maxBrSheets}" 
+											  
+										   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+										</p:inputText>
+									</div>
+													
+						      	</div>
+					      	
+					      	</div>
+					       
+					       	<div class="p-col-12 p-sm-12 p-md-12 p-lg-5 p-xl-5" jsf:rendered="#{deloBean.delo.prevNomDelo ne null}">
+					       		<h:outputText value="#{labels['docu.prepPrevDelo']}" styleClass="form-label "/>
+								<i class="fas fa-book" title="Номенклатурно дело"></i>
+							
+								<p:inputText id="prevSt"
+									value="#{deloBean.delo.prevNomDelo}"
+								    readonly="true"/>
+					       	</div>
+					       	
+				      	</div>	
+						
+				</div>
+			</h:panelGroup>
+		
+		
+		<h:panelGroup id="panelPrepiska"  > 
+		
+		<div jsf:rendered="#{deloBean.delo.id != null and deloBean.delo.deloType!=OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}" >
+			
+				 
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#delo-prepiska')">
+						<h:outputText value="#{labels['delo.vlagane']} на преписка в дело/преписка" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+					<p:commandButton   	actionListener="#{deloBean.actionRemoveCurrentDeloFromDelo}" ajax="true" 
+										value="#{labels['delo.izvajdane']}" title="#{labels['delo.izvajdane']}"
+										partialSubmit="true"
+						   				process="@this" icon="fas fa-minus"
+						   				update="panelPrepiska panelRegDelo @this"  
+					 				   	rendered="#{isView!=1 and deloBean.delo.deloDelo.id != null}" styleClass="ui-button-danger" >
+					 		<p:confirm 	header="#{ui_labels['general.comfirmation']}" 
+					 		 
+					 		message="#{beanMessages[(deloBean.delo.status==OmbConstants.CODE_ZNACHENIE_DELO_STATUS_COMPLETED and deloBean.delo.deloDelo.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM)?'delo.confirmDeloOut':'docu.delDeloDelo']}" icon="fas fa-exclamation-triangle" />				   
+					 </p:commandButton>
+					 
+				</div>
+				
+				
+				
+				<div id="delo-prepiska"  jsf:rendered="#{deloBean.delo.id != null}">
+					<div class="p-grid  ui-fluid">
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2 ui-fluid">	
+							<h:outputText value="#{labels['docu.deloInpDate']}" styleClass="form-label" /> 
+							<p:datePicker id="inpDatDelo" showIcon="true"  showButtonPanel="true" showTime="true" showSeconds="true"
+										pattern="dd.MM.yyyy HH:mm:ss"
+										mask="true" value="#{deloBean.delo.deloDelo.inputDate}"
+										disabled="#{isView==1 or deloBean.delo.deloDelo.id ne null}" readonly="#{isView==1 or deloBean.delo.deloDelo.id ne null}" />							
+							<p:message for="inpDatDelo" display="tooltip" escape="false">
+				      			<p:autoUpdate/>
+				      		</p:message>
+					    </div>
+					    <div class="p-col-12 p-sm-12 p-md-6 p-lg-1 p-xl-1 ui-fluid" style="width:50px;margin-top:18px;">
+					    	<p:button  icon="fas fa-eye" href="deloView.xhtml?faces-redirect=true" target="_blank" 
+					           title="#{ui_labels['general.view']}" 
+			  				   rendered="#{deloBean.delo.deloDelo.deloId!=null}" >
+			  				  <f:param name="idObj" value="#{deloBean.delo.deloDelo.deloId}"/>
+			  				</p:button>
+					    </div>
+					    <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-2 ui-fluid" > 
+							<h:outputText value="Вложен в дело/преписка" styleClass="form-label req" />
+							<h:panelGroup rendered="#{deloBean.delo.deloDelo.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+									<i class="fas fa-book" 
+									title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  deloBean.delo.deloDelo.delo.deloType, deloBean.currentLang, now)}"></i>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{deloBean.delo.deloDelo.delo.deloType ne OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}">
+								<i class="fas fa-folder" 
+								title="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE,  deloBean.delo.deloDelo.delo.deloType, deloBean.currentLang, now)}"></i>
+							</h:panelGroup>
+						
+							
+							<div class="ui-inputgroup"> 
+								<p:inputText id="deloDeloN" value="#{deloBean.delo.deloDelo.delo.rnDelo}"
+								   readonly="#{isView==1 or deloBean.delo.deloDelo.id ne null}"
+								   style=" display:inline-block;"
+								   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+								   title="#{deloBean.deloName2}">
+								   <p:ajax event="change" update="dpDeloSearchPD panelPrepiska" process="panelPrepiska  @this" 
+								   		   listener="#{deloBean.actionSearchRnDeloP2(true)}"/>
+								</p:inputText>				
+								 
+								<p:commandButton    actionListener="#{deloBean.actionVlagane}"  ajax="true" 
+													
+													icon="fas fa-search" title="Търсене на дело/преписка"  
+						 				   			rendered="#{isView!=1 and deloBean.delo.deloDelo.id == null}" process="@this deloDeloN inpDatDelo"  update="@this "/>
+																				
+							</div>
+						</div>
+					    
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-1 ui-fluid" jsf:rendered="#{deloBean.hasToms or deloBean.delo.deloDelo.delo.deloType eq OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"> 	
+								<h:outputText value="#{labels['delo.tomNomer']}" styleClass="form-label req" />
+								<div class="ui-inputgroup">
+									<p:inputText id="tomNomer" value="#{deloBean.delo.deloDelo.tomNomer}" 
+										readonly="#{isView==1 or deloBean.delo.deloDelo.id ne null}"
+									   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+									</p:inputText>
+								</div>
+												
+					     </div>
+						 
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2 ui-fluid" >	
+							<h:outputText value="Дата на дело/преписка" styleClass="form-label " />		
+							<div class="ui-inputgroup">
+								<p:inputText id="deloD" value="#{deloBean.delo.deloDelo.delo.deloDate}"
+								   readonly="true">
+								   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloBean.timeZone}"/>
+								</p:inputText>		
+							</div>
+						</div>
+						<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2 ui-fluid" >	
+							<h:outputText value="Статус" styleClass="form-label " />	
+							<div class="ui-inputgroup">	
+								<p:inputText id="deloSt"
+									value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_STATUS, deloBean.delo.deloDelo.delo.status, deloBean.currentLang, now)}" 
+								    readonly="true"/>
+							</div>
+						</div>
+						
+					</div>
+	            	<div class="p-col-12 p-md-12 p-lg-12" jsf:rendered="#{deloBean.delo.deloDelo.id != null and false}">
+	            		<b>Предаване в архив</b><br/>	
+	            		<i>
+						 	<h:outputText value=" Предадена в архив с протокол TODO..... " />
+						</i>				   	
+					</div>
+				</div>
+            </div>
+         </h:panelGroup>   
+	</h:panelGroup>
+
+	<h:panelGroup id="dpDeloSearchPD">	
+		
+		<p:remoteCommand name="hideModalAcc" process="@this" actionListener="#{deloBean.actionConfirmAccess}"	/>
+		
+		<p:dialog appendTo="@form" position="top" positionType="absolute" style="margin-top:50px !important"
+		    header="#{labels['docu.deloPrepiskaTitle']}"  
+		    responsive="true"	fitViewport="true"		  							 
+			resizable="true" closeOnEscape="true"
+			widgetVar="modalDeloSearch" dynamic="true" id="modalDeloSearchId" 
+			modal="true">
+			
+
+		 	<ibg:compDeloSearch id="modalDeloSearchComp" 
+				 searchDeloS="#{deloBean.selectedDeloP}"
+				 searchRnDelo="#{deloBean.delo.deloDelo.delo.rnDelo}"
+				 dateClassif="#{deloBean.decodeDate}"
+				 idDeloDoc="#{deloBean.delo.id}"
+				 modal="true" multi="false"
+				 update="deloForm:panelPrepiska"
+				 onComplete = "PF('modalDeloSearch').hide();"/>						
+		</p:dialog>	
+		
+		<p:dialog appendTo="@form"
+		    header="Достъп" 
+		    responsive="true" fitViewport="true" closeOnEscape="true"
+		   	position="top" style="margin-top:50px !important"
+			widgetVar="modalAccess" dynamic="true" id="modalAccessModal" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+		 		<ibg:compAccess id="deloAccessComp"  
+		 					valueConfirmBtn="#{ui_labels['general.save']}"
+							dateClassif="#{deloBean.decodeDate}" 
+							saveStateTree="false" showRadioBtn="false" 
+							listDeloAccesss="#{deloBean.delo.deloAccess}"
+							typeDocDelo="1"	
+							readOnlyCodes="#{deloBean.zvenaCodesList}"							 
+							styleAutoComp="width:100%;"
+							onComplete = "#{deloBean.accView ne 1} ?  hideModalAcc() :  PF('modalAccess').hide(); "
+							readonly="#{deloBean.accView eq 1}"/> 		
+			</div>			
+		</p:dialog>
+		
+		<!-- Данни за съхранение -->
+				 
+		<p:dialog header="#{labels['delo.suhraneniePrep']}" appendTo="@form"  responsive="true" resizable="true" closeOnEscape="true" widgetVar="storage" modal="true" height="300">
+				   			 				    
+				    <div class="container #{guestPreferences.containerPosition}">
+		
+							<h:panelGroup id="panelTableStorage" layout="block" styleClass="margin-top">
+																	
+								<div class="card">
+					
+									<p:dataTable id="tblStorage" var="row" value="#{deloBean.deloStorageList}" rowIndexVar="idx" sortMode="single" reflow="true"									
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="10" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+																			
+										<p:column width="30"  headerText="#{labels['deloDvij.tom']}">
+											<h:outputText value="#{row[1]}" />
+										</p:column>
+												
+										<p:column width="60" headerText="#{labels['deloStorage.arhNo']}">												
+											<h:outputText value="#{row[2]}" />
+										</p:column>
+					
+										<p:column width="60" headerText="#{labels['deloList.room']}">
+											<h:outputText value="#{row[3]}" />
+										</p:column>
+											
+										<p:column width="60" headerText="#{labels['deloList.shkaf']}">
+											<h:outputText value="#{row[4]}" />																							
+										</p:column>		
+													
+										<p:column width="60"  headerText="#{labels['deloList.stillage']}">
+											<h:outputText value="#{row[5]}" />
+										</p:column>
+											
+										<p:column width="60" headerText="#{labels['deloList.box']}" >
+											<h:outputText value="#{row[6]}" />											
+										</p:column>
+																																				
+									</p:dataTable>					
+								</div>					
+							</h:panelGroup>															
+						
+					</div>
+			</p:dialog> 
+			
+		<p:dialog header="#{labels[deloBean.delo.id==null?'delo.indexValidNoReg':'delo.indexRegistered']}" appendTo="@form"  responsive="true" resizable="true" closeOnEscape="true" widgetVar="indexPanel" modal="true" height="300">
+				   			 				    
+				   			 				    
+				    <div class="container #{guestPreferences.containerPosition}">
+		
+							<h:panelGroup id="panelTableIndexes" layout="block" styleClass="margin-top">
+																	
+								<div class="card">
+					 
+									<p:dataTable id="tblIndexes" var="row" value="#{deloBean.deloIndexList}" rowIndexVar="idx" sortMode="single" reflow="true"									
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="10" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="false" paginator="true">
+																			
+										<p:column sortBy="#{row[2]}"  headerText="#{labels['register.prefix']}">												
+											<h:outputText value="#{row[2]}" />
+										</p:column>
+										
+										<p:column sortBy="#{row[1]}"  headerText="#{labels['docu.nameDelo']}">
+											<h:outputText value="#{row[1]}" />
+										</p:column>
+					
+										<p:column sortBy="#{row[3]}" headerText="#{labels['docSchema.validFrom']}">
+											<h:outputText value="#{row[3]}" />
+										</p:column>
+											
+										<p:column sortBy="#{row[4]}" headerText="#{labels['docSchema.validTo']}">
+											<h:outputText value="#{row[4]}" />																							
+										</p:column>		
+										
+										<p:column sortBy="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOM_DELO_PRIKL, row[7], deloBean.currentLang, now)}"  headerText="#{labels['docSchema.complMethod']}">
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_NOM_DELO_PRIKL, row[7], deloBean.currentLang, now)}"/>
+										</p:column>
+													
+										<p:column sortBy="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_SHEMA_PERIOD, row[5], deloBean.currentLang, now)}"  headerText="#{labels['docSchema.termStore']}">
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_SHEMA_PERIOD, row[5], deloBean.currentLang, now)}"/>
+										</p:column>
+											
+										<p:column sortBy="#{row[6]}" headerText="#{labels['docSchema.years']}" >
+											<h:outputText value="#{row[6]}" />											
+										</p:column>
+										
+										
+																																				
+									</p:dataTable>					
+								</div>					
+							</h:panelGroup>															
+						
+					</div>
+			</p:dialog> 
+		 
+			<p:dialog appendTo="@form" header="#{labels['docu.repAccess']}"
+			responsive="true" fitViewport="true" closeOnEscape="true"
+			position="top" style="margin-top:50px !important"
+			widgetVar="mdlDeloAccessSpr" dynamic="true" resizable="true"
+			id="mdlDeloAccessSprId" modal="true">
+
+			<div class="container #{guestPreferences.containerPosition}">
+
+				<p:dataTable id="tblDeloAccess" var="row"
+					value="#{deloBean.docAccessList}" lazy="true" rowIndexVar="idx"
+					scrollable="true" sortMode="single" reflow="true"
+					emptyMessage="#{labels['docu.emptyAccess']}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					rows="10" rowsPerPageTemplate="5,15,20,25"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false"
+					paginator="true">
+
+					<p:column headerText="#{labels['docu.accessName']}" sortBy="#{row.a1}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+
+					<p:column headerText="#{labels['docu.accessPosition']}" sortBy="#{row.a2}">
+						<h:outputText
+							value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row[2], deloBean.currentLang, now)}" />
+					</p:column>
+
+					<p:column headerText="#{labels['docu.accessZveno']}" sortBy="#{row.a3}">
+						<h:outputText rendered="#{row[3] != null and row[3] != 0}"
+							value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[3], deloBean.currentLang, now)}" />
+					</p:column>
+				</p:dataTable>
+			</div>
+		</p:dialog>
+		
+		<p:dialog appendTo="@form" header="#{labels['delo.tomAndSheets']}" widgetVar="modalTomAndSheets" dynamic="true" modal="true" width="300" closeOnEscape="true">
+						
+				<p:messages>
+			        <p:autoUpdate />
+			    </p:messages>	
+				
+				<p:outputPanel id="panelTomAndSheets">
+					
+					<div class="p-col-12 p-md-12">
+
+						<p:dataTable id="tblTomAndSheets" var="row" value="#{deloBean.tomAndSheets}" rowIndexVar="idx"
+							emptyMessage="#{ui_labels['general.norows']}" sortMode="single" reflow="true">	
+							
+							<p:column width="*" headerText="#{labels['opis.tomNomer']}">
+								<h:outputText value="#{row[0]}" />
+							</p:column>
+
+							<p:column width="*" headerText="#{labels['docu.brLista']}">
+								<h:outputText value="#{row[1]}" />
+							</p:column>
+							
+						</p:dataTable>
+						
+					</div>
+	
+				</p:outputPanel>
+				
+				<f:facet name="footer">
+					
+					<div class="p-grid p-nogutter">								
+						<div class="p-col-12" align="right">
+							<p:commandButton update="panelTomAndSheets" process="@this panelTomAndSheets" icon="fas fa-times"
+								styleClass="ui-button-secondary" value="#{ui_labels['general.close']}" oncomplete="PF('modalTomAndSheets').hide();" />
+						</div>
+					</div>
+				
+				</f:facet>
+					
+			</p:dialog>			
+		 
+	</h:panelGroup>
+</html>

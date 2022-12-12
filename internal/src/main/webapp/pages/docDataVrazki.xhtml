@@ -1,0 +1,217 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+
+	<!--Свързан с документи-->
+	<h:panelGroup id="tdPanel4" layout="block">
+
+		<h:panelGroup id="tabVrazki">
+
+			<f:event type="preRenderComponent"
+				listener="#{docDataVrazki.initVrazki}" />
+
+			<h:panelGroup id="vrazPanel">
+
+				<div class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded"
+						onclick="toggleSection(this, '#docForm:tabsDoc:doc-vrazkitbl')">
+						<h:outputText
+							value="#{labels['docu.vrazDoc']} #{docDataVrazki.rnFullDoc}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+
+				<div jsf:id="doc-vrazkitbl" >
+
+					<p:dataTable id="tblVrList" var="row" editable="true" lazy="false"
+						value="#{docDataVrazki.resultList}"   rowIndexVar="idx" scrollable="true"
+						sortMode="single" reflow="true"
+						emptyMessage="#{labels['docDoc.emptyRes']}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+						rows="5" rowsPerPageTemplate="5,15,20,25"
+						paginatorPosition="bottom" paginatorAlwaysVisible="false"
+						paginator="true">
+
+						<p:ajax event="rowEdit" listener="#{docDataVrazki.onRowEdit}"
+							partialSubmit="true" process="@this" />
+
+						<p:column width="15" exportable="false"
+							headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column style="text-align: center" width="65" exportable="false"
+							rendered="#{isView ne 1}">
+							<p:rowEditor cancelTitle="#{ui_labels['general.cancel']}" 
+								saveTitle="#{ui_labels['general.save']}"
+								editTitle="#{ui_labels['general.edit']}" />
+						</p:column>
+
+						<p:column style="text-align: center" width="40" exportable="false" >
+							<p:button icon="fas fa-eye"
+								href="#{docDataVrazki.actionGoto(row[2])}" target="_blank"
+								title="#{ui_labels['general.view']}">
+							</p:button>
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{labels['docDoc.relType']}" />
+							</f:facet>
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText rendered="#{docDataVrazki.docId1 == row[8]}"
+										value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_REL_TYPE, row[1], docDataVrazki.currentLang, now)}" />
+									<h:outputText rendered="#{docDataVrazki.docId1 != row[8]}"
+										value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_DOC_REL_TYPE, row[1], docDataVrazki.currentLang, now)}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:selectOneMenu id="chngVraz" value="#{row[1]}" rendered="#{docDataVrazki.docId1 == row[8]}"
+										autoWidth="false">
+										<f:selectItems value="#{docDataVrazki.relTypeList}"/>
+									</p:selectOneMenu>
+									<p:selectOneMenu id="chngVrazReverse" value="#{row[1]}" rendered="#{docDataVrazki.docId1 != row[8]}"
+										autoWidth="false">
+										<f:selectItems value="#{docDataVrazki.relTypeListReverse}"/>
+									</p:selectOneMenu>
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{labels['docDoc.regNum']}" />
+							</f:facet>
+							<h:outputText value="#{row[3]}" />
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{labels['docDoc.dateDoc']}" />
+							</f:facet>
+							<h:outputText value="#{row[4]}">
+								<f:convertDateTime pattern="dd.MM.yyyy"
+									timeZone="#{docDataVrazki.timeZone}" />
+							</h:outputText>
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{labels['docDoc.otnosno']}" />
+							</f:facet>
+							<h:outputText value="#{row[7]}" />
+						</p:column>
+
+						<p:column style="text-align: center" width="50" exportable="false"
+							rendered="#{isView ne 1}">
+							<p:commandButton id="delDocRel"
+								title="#{labels['docDoc.delRel']}" partialSubmit="true"
+								process="@this" update="docForm:tabsDoc:doc-vrazkitbl"
+								icon="fas fa-trash" styleClass="ui-button-danger"
+								actionListener="#{docDataVrazki.actionDelRel}">
+								<p:confirm header="#{ui_labels['general.comfirmation']}"
+									message="#{labels['docDoc.confirmDel']}" icon="fas fa-times" />
+								<f:param name="idDocDoc" value="#{row[0]}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</div>
+			</h:panelGroup>
+
+			<!-- Нова връзка с документ -->
+			<h:panelGroup id="dcVrazNew" rendered="#{isView ne 1}">
+
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle expanded"
+						onclick="toggleSection(this, '#doc-new')">
+						<h:outputText value="Нова връзка" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+
+				<div id="doc-new" class="p-grid  ui-fluid">
+
+					<div class="p-col-6 p-md-4 p-lg-2">
+						<h:outputText value="#{labels['docDoc.relType']}"
+							styleClass="form-label req" />
+						<div class="ui-inputgroup">
+							<p:selectOneMenu id="slcVraz" value="#{docDataVrazki.relType}"
+								autoWidth="false">
+								<f:selectItems value="#{docDataVrazki.relTypeList}" />
+							</p:selectOneMenu>
+						</div>
+					</div>
+
+					<div class="p-col-6 p-md-4 p-lg-2">
+
+						<h:outputText value="#{labels['docDoc.regNum']}"
+							styleClass="form-label" />
+
+						<div class="ui-inputgroup">
+							<p:inputText id="vrN" style=" display:inline-block;"
+								onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+								value="#{docDataVrazki.rnDoc}">
+								<p:ajax event="change" update="docPG cmdConfirmp"
+									process="docPG @this" partialSubmit="true"
+									listener="#{docDataVrazki.actionSearchDocBtn(true)}" />
+							</p:inputText>
+
+							<p:commandButton id="btnIn" icon="fas fa-search"
+								style="width:40px"
+								actionListener="#{docDataVrazki.actionSearchDocBtn(false)}"
+								partialSubmit="true"
+								title="#{labels['docDoc.searchDoc']}">
+								<f:param name="idDocDoc" value="#{row[0]}" />
+							</p:commandButton>
+							<h:panelGroup id="cmdConfirmp">
+								<p:confirmDialog id="cmdConfirm" appendTo="@form"
+								header="#{ui_labels['general.comfirmation']}"
+								closeOnEscape="true" widgetVar="confirmWV" modal="true"
+								resizable="false" responsive="true"
+								message="#{labels['docu.findDocMsg1']} #{docDataVrazki.rnFullDocOther}. #{labels['docu.findDocMsg3']}">
+
+								<div class="p-col-12 p-md-12 p-lg-12 cc-right">
+									<p:commandButton id="btnConfSave" styleClass="btn-save"
+										icon="fas fa-check" value="Да"
+										action="#{docDataVrazki.actionSaveDoc}" partialSubmit="true"
+										process="dcVrazNew " update="dcVrazNew, tblVrList" />
+									<p:commandButton value="Не" onclick="PF('confirmWV').hide();"
+										icon="fas fa-times" action="#{docDataVrazki.cancel(true)}"
+										update="dcVrazNew" />
+								</div>
+							</p:confirmDialog>
+							</h:panelGroup>
+						</div>
+					</div>
+				</div>
+			</h:panelGroup>
+		</h:panelGroup>
+	</h:panelGroup>
+
+
+	<h:panelGroup id="docPG">
+
+		<p:remoteCommand name="hideModal" process="@this"
+			update="docForm:tabsDoc:tabVrazki"
+			actionListener="#{docDataVrazki.actionHideModal}" />
+
+		<p:dialog appendTo="@form" position="top" header="#{labels['docu.vrazDocDialogTitle']}"
+			fitViewport="true" responsive="true" resizable="true"
+			closeOnEscape="true" widgetVar="mDocSPD" onHide="hideModal()"
+			dynamic="true" id="modalDocSPD" modal="true">
+
+			<ibg:compDocSearch id="cmpDocSearch" idDoc="#{docDataVrazki.docId1}"
+				buttonConfirmLabel="#{ui_labels['general.save']}"
+				searchRnDoc="#{docDataVrazki.rnDoc}" multi="true"
+				selectedDocList="#{docDataVrazki.selectedDocs}"
+				idRegistratura="#{docDataVrazki.docEdit.registraturaId}"
+				onComplete="PF('mDocSPD').hide(); " />
+		</p:dialog>
+
+	</h:panelGroup>
+</ui:composition>

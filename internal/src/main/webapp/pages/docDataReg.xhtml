@@ -1,0 +1,809 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+	<style>
+		.ui-sticky#docForm\:tabsDoc\:tbtnPanel1t {
+			z-index: 9comand8 !important;
+		}
+	
+		.UrgentOneButtonG.ui-selectonebutton .ui-state-active {
+		    background-color:#99ce6b !important;
+		}
+		.UrgentOneButtonY.ui-selectonebutton .ui-state-active {
+		    background-color:#fdbe02 !important;
+		}
+		.UrgentOneButtonR.ui-selectonebutton .ui-state-active {
+		    background-color:#f28686 !important;
+		}
+	</style>
+
+	<ui:remove>
+		} <!--Документ - основни регистрационни данни    color:#99ce6b  --></ui:remove>
+	<h:panelGroup id="tdPanel0" layout="block">
+<p:sticky target="tbtnPanel1t" margin="#{isView eq 1 ? '75' : '125'}" >
+		
+		<p:focus  id="pFocus" context="#{isView eq null ? (docData.document.id eq null ? 'docForm:tabsDoc:dVid:аutoCompl' :  'docForm:tabsDoc:otnosnoD') : 'docForm:tabsDoc:tbtnPanel1t'}" />
+				
+
+		<p:toolbar id="tbtnPanel1t" styleClass="margin-bottom">
+			<f:facet name="left">
+				<p:commandButton icon="fas fa-save"				
+					value="#{ui_labels['general.save']}" rendered="#{isView eq null}"
+					id="btnSave" tabindex="-1"
+					update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					actionListener="#{docData.actionSave}"
+					title="#{labels['doc.saveTitle']}"
+					oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;" styleClass="p-mr-2">
+				</p:commandButton>
+
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+			
+				
+				<p:commandButton id="btnForRezol" value="#{labels['docu.forRezol']}" rendered="#{docData.document.id != null and isView ne 1}"
+					title="#{labels['docu.titleZaRez']}"  tabindex="-1"
+					action="#{docData.actionTaskRezol}" styleClass="ui-button-info p-mr-2"
+					icon="fas fa-user-tie"		update="pRezolDoc"			
+				    partialSubmit="true" process="@this"/>
+	
+				<p:splitButton id="btnAccess" value="#{labels['docu.ZaZapoznavane']}" tabindex="-1"
+				    rendered="#{docData.document.id != null}"
+					title="#{isView eq 1 ? labels['docu.titleZaZapoznV'] : labels['docu.titleZaZapozn']}" 
+					icon="fas fa-user-friends" 
+					actionListener="#{docData.actionDocAccess}" 
+					update="pAccessDoc" partialSubmit="true" process="pAccessDoc @this" styleClass="p-mr-2">
+					  <p:menuitem id="btnRepAccess" 
+		                value="#{labels['docu.repAccess']}" 
+		                title="#{labels['docu.repAccess']}" 
+		                action="#{docData.actionFillDocAccessList}"
+		                disabled="false"
+		                icon="fas fa-user-friends"  
+	               	 	partialSubmit="true"
+					 	update="pAccessDocSpr"
+						process="pAccessDocSpr @this"/>
+				</p:splitButton>
+			    
+				<h:panelGroup id="pbtnTemplate" styleClass="p-mr-2"> 
+					<p:commandButton id="btnTemplate" value="#{labels['docu.template']}" 
+					    rendered="#{docData.docSettingId ne null and isView ne 1}"
+						title="#{labels['docVidSettings.shablonVidDoc']}"  tabindex="-1"
+						action="#{docData.actionDocTemplate}" styleClass="ui-button-info"
+						icon="fas fa-file-invoice"		
+						update="docForm:pDocTemplate panelFl"			
+					    partialSubmit="true" process="@this"/>
+				 </h:panelGroup>
+				
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2" />
+				
+		          <p:commandButton icon="fas fa-file" id="btnNewDocN" tabindex="-1"
+				 	styleClass="ui-button-success p-mr-2" value="#{ui_labels['general.new']}" 
+					rendered="#{isView ne 1 and docData.document.id eq null and docData.flagFW eq docData.updateDoc}" partialSubmit="true"
+					update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					process="tdPanel0  @this" 
+					actionListener="#{docData.actionNewDocument(false, true)}"
+					title="#{labels['docu.titleNewDoc']}  #{docData.specRnFullDoc}">
+				  </p:commandButton>		
+				  <p:splitButton id="btnNewDoc" value="#{ui_labels['general.new']}" tabindex="-1"
+			         title="#{labels['docu.titleNewDoc']} #{docData.specRnFullDoc}" 
+			    	 action="#{docData.actionNewDocument(false, true)}"
+	                 icon="fas fa-file" rendered="#{isView ne 1 and docData.document.id ne null and docData.flagFW eq docData.updateDoc}"  
+	               	 partialSubmit="true" 
+					 update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+					 process="tdPanel0  @this" styleClass="ui-button-success p-mr-2">
+		            <p:menuitem id="btnNewDocCopy" 
+		                value="#{labels['docu.newDocCopyD']}" 
+		                title="#{labels['docu.titleNewDoc']} #{docData.specRnFullDoc}" 
+		                action="#{docData.actionNewDocument(true, true)}"  
+		                icon="far fa-copy"  
+	               	 	partialSubmit="true"
+					 	update="breadcrumbForm:pTitle  tabsDoc docForm:pRegInfo"
+						process="tdPanel0  @this"/>
+		        </p:splitButton>
+		       
+		        
+			</f:facet>
+
+			<f:facet name="right">
+
+
+				<p:selectBooleanButton id="prCh" value="#{docData.processedCh}" tabindex="-1"
+					rendered="#{(docData.document.id ne null and  docData.viewBtnProcessed ne 0) and
+					 		    !(docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and docData.document.docVid eq OmbConstants.CODE_ZNACHENIE_DOC_VID_PZAPISKA)}"
+					disabled="#{isView eq 1 or (docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and docData.document.workOffId ne null)}"
+					onLabel="#{labels['docu.processedYes']}"
+					offLabel="#{labels['docu.processedNo']} "
+					onIcon="fas fa-check-square" offIcon="fas fa-square" styleClass="p-mr-2 p-mb-2">
+					<p:ajax event="change" oncomplete="PF('confirmProcessed').show();"
+						partialSubmit="true" update="@this conifrmPrp" />
+				</p:selectBooleanButton>
+
+				<span class="fas fa-ellipsis-v SoftGray p-mr-2 p-mb-2" />
+				
+
+				<p:commandButton icon="fas fa-times" tabindex="-1"
+					value="#{ui_labels['general.delete']}" 
+					title="#{labels['docu.titleDeleteDoc']}"
+					update="breadcrumbForm:pTitle tabsDoc docForm:pRegInfo"
+					partialSubmit="true" process="tdPanel0  @this"
+					rendered="#{isView ne 1 and docData.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}"
+					actionListener="#{docData.actionDelete}"
+					styleClass="ui-button-danger p-mr-2 p-mb-2" oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;">
+					<p:confirm header="#{ui_labels['general.comfirmation']}"
+						message="#{beanMessages['docu.docDelete']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>
+
+				<p:commandButton icon="fas fa-times" tabindex="-1" id="btnCancelReg"
+					value="#{ui_labels['general.cancel']}"
+					title="#{labels['docu.titleRejectDoc']}"
+					partialSubmit="true" process="@this p3Receive" update="docForm:modalRejectIdp"
+					rendered="#{isView ne 1 and (docData.flagFW eq docData.regOtherR or docData.flagFW eq docData.regFromMail or docData.flagFW eq docData.regFromEgov)}"
+					oncomplete = "PF('modalReject').show();"
+					styleClass="ui-button-secondary">	
+						<p:confirm header="#{ui_labels['general.comfirmation']}"
+						message="#{beanMessages['docu.rejectDoc']}" icon="fas fa-exclamation-triangle" />				
+				</p:commandButton>
+			
+			</f:facet>
+		</p:toolbar>
+</p:sticky>
+		<h:panelGroup id="mainPanel" >
+
+			<div jsf:id="p2RegD">
+				<p:commandLink styleClass="extended-search-toggle expanded "
+					onclick="toggleSection(this, '#docForm:tabsDoc:p1RegD')">
+					<h:outputText value="#{labels['doc.regData']}" />
+					<h:outputText value=" (#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, docData.document.registraturaId, docData.currentLang, now)})" 
+					rendered="#{docData.document.registraturaId ne userData.getRegistratura()}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+				<p:selectBooleanCheckbox value="#{docData.limitedAccessCh}"  id="fAacc" 
+						disabled="#{isView eq 1}"
+						itemLabel="#{labels['docu.ogranichen']}"  title="#{docData.limitedAccessCh ? labels['docu.ogranichenTitle'] : labels['docu.freeTitle']}" >
+						<p:ajax event="change" partialSubmit="true" update="@this tbtnPanel1t" process="@this"/>
+				</p:selectBooleanCheckbox>
+				
+					<p:selectBooleanCheckbox value="#{docData.readyForOfficial}" id="chBoxForReg"
+								itemLabel="#{labels['docu.wrkReady']}" title="#{labels['docu.msgRequestRegWrk']}"
+								disabled="#{isView eq 1}" 
+								rendered="#{docData.rnFullProtocol eq null and docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and docData.document.id ne null and docData.document.workOffId eq null}" >
+									<p:ajax update="prCh  @this " partialSubmit="true"
+										process="@this "
+										listener="#{docData.actionChangeReadyFO}" />								
+					</p:selectBooleanCheckbox>
+			</div>
+			<ui:remove><!-- Рег. номер, вид док., регистър, относно  --></ui:remove>
+			<div jsf:id="p1RegD" class="p-grid ui-fluid ">
+				
+				<div class="p-col-6 p-md-8 p-lg-3 p-xl-3 p-align-end">
+			
+					<p:selectOneRadio  value="#{docData.document.docType}" id="typeDoc"
+						valueChangeListener="#{docData.actionChangeDocType}"
+						immediate="true" unselectable="false"
+						rendered="#{docData.document.id eq null and docData.flagFW eq docData.updateDoc and docData.specDocId eq null}">
+						<f:selectItems value="#{docData.docTypeList}" />
+						<p:ajax event="change"
+							update="pFocus p1Ref  p2Ref p3Receive pRnDoc pRegister doc-dopInfo12 tnPanel otnosnoD idcomp deloDocInit panelDopData chBoxForReg" 
+							partialSubmit="true" process="@this otnosnoD" />
+					</p:selectOneRadio > 
+					
+					<div class="ui-inputgroup" jsf:rendered="#{docData.document.id ne null or docData.flagFW ne docData.updateDoc or docData.specDocId ne null}">
+						<span class="form-label" style="padding: 7px 12px;font-style: italic;background-color:rgba(216,222,233,0.35);border-radius: 4px;font-weight: bold;display:block;">
+							#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, docData.document.docType, docData.currentLang, now)} #{labels['docu.doctxt']} #{docData.specRnFullDoc}	   
+						</span>	
+						<p:button  icon="fas fa-eye" href="#{docData.actionGotoViewJalba()}" target="_blank" style="width:30px" rendered="#{docData.specDocId ne null}" />
+					</div>
+				</div>
+
+				<div class="p-col-6 p-md-4 p-lg-3 p-xl-2 p-align-end" jsf:id="deloDocInit">
+					<p:selectBooleanCheckbox value="#{docData.createPrep}"
+						itemLabel="#{labels['docu.newPrepiska']}"
+						rendered="#{isView ne 1 and docData.viewChboxCrPrep and docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and !docData.document.deloIncluded and (docData.deloDocPrep eq null or docData.deloDocPrep.deloId eq null)}" />
+					
+				</div>
+
+				<div class="p-col-10 p-md-10 p-lg-10 p-xl-6 p-align-end" jsf:id="panelDopData">		
+					<div class="ui-inputgroup">
+						<div class="ui-inputgroup" jsf:rendered="#{docData.document.workOffId ne null and !docData.fromOtherReg}" >
+						 	<h:outputText value="#{docData.rnFullDocOther}" style="padding: 7px 12px;font-style: italic;background-color: rgba(216,222,233,0.35);border-radius: 4px;display:block;"/>
+						 	<p:button  icon="fas fa-eye" href="#{docData.actionGotoViewDoc(1)}" target="_blank" 
+							           style="width:30px" styleClass="p-mr-3">
+					  		</p:button> 
+				  		</div>
+
+				 		<div class="ui-inputgroup" jsf:rendered="#{docData.rnFullProtocol ne null}" >
+						 	<h:outputText value="#{docData.rnFullProtocol}" title="#{labels['docu.titleProtocol']}" 
+						 			  style="padding: 7px 12px;font-style: italic;background-color: rgba(216,222,233,0.35);border-radius: 4px;display:block;"/>
+						 	<p:button  icon="fas fa-eye" href="#{docData.actionGotoViewDoc(0)}" target="_blank" 
+							          style="width:30px" styleClass="p-mr-3">
+					  		</p:button> 
+					  		
+				  		</div>
+				  		
+				  		<div class="ui-inputgroup" jsf:id="idcomp"  >
+							<h:panelGroup rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}" >
+								<p:selectBooleanCheckbox value="#{docData.competence}"  
+								    disabled="#{isView eq 1 or (docData.document.competence eq OmbConstants.CODE_ZNACHENIE_COMPETENCE_SENT  and  !userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC) )}"
+									itemLabel="#{labels['docu.compForSend']}"  title="#{docData.document.competenceText}"
+									rendered="#{docData.rnFullProtocol eq null}" />
+																
+								<i class="fas fa-paper-plane"  style="font-size: 20px;"
+									jsf:rendered="#{docData.document.competence eq OmbConstants.CODE_ZNACHENIE_COMPETENCE_SENT}"
+									title="#{labels['docu.compSent']}"></i> 
+							</h:panelGroup>
+						</div>	
+					</div>	 
+				</div>
+
+				<div class="p-col-2 p-md-2 p-lg-2 p-xl-1 p-align-end" >
+				
+					<p:selectOneButton value="#{docData.document.urgent}" id="urgent" 
+						styleClass="#{(docData.document.urgent eq 1) ? 'UrgentOneButtonG' : (docData.document.urgent eq 2 ? 'UrgentOneButtonY':'UrgentOneButtonR')}"
+						immediate="true" disabled="#{isView eq 1}">
+						<f:selectItems  
+							value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_URGENT, now, docData.currentLang)}"
+							itemDescription="#{labels['docu.urgent']} - #{clPer.tekst}"
+							var="clPer"
+							itemLabel="#{(clPer.code eq 1) ?'Н' : (clPer.code eq 2) ? 'Б' : 'МБ'}"
+							itemValue="#{clPer.code}">
+						</f:selectItems>
+						<p:ajax event="change"
+							update="@this"
+							partialSubmit="true" process="@this " />
+					</p:selectOneButton>
+				</div>
+
+				<div class="p-grid p-col-12 p-md-12 p-lg-6 p-xl-5 p-align-end">
+					<h:panelGroup id="pRnDoc" styleClass="p-col-12 p-md-4 p-lg-6  p-xl-6"
+						layout="block">
+						
+						<h:outputText value="#{labels['docu.regNom']}"
+							styleClass="form-label req" />
+						<div class="ui-inputgroup">
+							<p:inputText id="regN" value="#{docData.document.rnDoc}" rendered="#{docData.document.id == null}"
+								readonly="#{docData.avtomNo or docData.specDocId ne null}"
+								style="display:inline-block;"
+								onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+								<p:ajax event="change" update="dpDeloSearch p1RegD p2RegD"
+									process="dpDeloSearch p1RegD p2RegD @this" partialSubmit="true"
+									listener="#{docData.actionSearchRnDelo(true)}" 
+									oncomplete="document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+							</p:inputText>
+							<p:inputText id="regNv" value="#{docData.rnFullDocEdit}" rendered="#{docData.document.id != null}" readonly="true"/>																
+			
+							<p:commandButton icon="fas fa-search" id="btnSrcRnDelog"  style="width:40px" ignoreAutoUpdate="true"
+								rendered="#{!docData.avtomNo and docData.deloDocPrep.deloId eq null and docData.document.id == null and docData.specDocId eq null}"
+								actionListener="#{docData.actionSearchRnDeloBtn}"  
+								partialSubmit="true" process="dpDeloSearch @this"
+								update="dpDeloSearch " title="#{labels['docu.titleSrchPrep']}">
+							</p:commandButton>
+
+							<p:selectBooleanButton id="avtNom" value="#{docData.avtomNo}"
+								disabled="#{docData.avtomNoDisabled}"
+								onLabel="#{ui_labels['general.yes']}"
+								offLabel="#{ui_labels['general.no']}"
+								rendered="#{docData.document.id==null and  docData.specDocId eq null}"
+								title="#{labels['docu.avtomRegNom']}"
+								onIcon="fas fa-toggle-on" offIcon="fas fa-toggle-off"
+								styleClass="inputgroup-button">
+								<p:ajax update="pRnDoc  deloDocInit otnosnoD @this"
+									partialSubmit="true"
+									process="@this pRnDoc  deloDocInit otnosnoD"
+									listener="#{docData.actionChangeAvtomNo}"
+									oncomplete="$(function(){PrimeFaces.focus('docForm:tabsDoc:regN');});" />
+							</p:selectBooleanButton>
+						</div>
+					</h:panelGroup>
+
+					<div class="p-col-12 p-md-4 p-lg-4">
+						<h:outputText value="#{labels['docu.docDatReg']}"
+							styleClass="form-label req" />
+						<p:datePicker  id="regDat"   
+						    showIcon="true" mask="true"   pattern="dd.MM.yyyy HH:mm:ss" locale="bg"
+						    rendered="#{isView ne 1 and docData.nastrZadnaData}"
+						    showTime="true" showSeconds="true"
+						    value="#{docData.document.docDate}"  />
+					 	<p:inputText id="regDatV"  rendered="#{isView eq 1 or !docData.nastrZadnaData}"
+						 	value="#{docData.document.docDate}"
+						    readonly="true">
+						   <f:convertDateTime  pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{docData.timeZone}"/>
+						</p:inputText>	   
+						
+					</div>
+
+				<ui:remove>	<!-- вид документ --></ui:remove>
+					<div class=" p-col-12" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+						<h:outputText value="#{labels['docu.vid']}"
+							styleClass="form-label req" />
+						<p:remoteCommand name="cmdChangeDocVid" 
+							update="p1RegD p1Ref p2Ref p3Receive  pbtnTemplate doc-dopInfo12 tabsDoc"
+							partialSubmit="true" process="p1RegD p1Ref p2Ref p3Receive  doc-dopInfo12 @this"
+							actionListener="#{docData.actionChangeDocVid(true)}" 
+							oncomplete="$(function(){PrimeFaces.focus('docForm:tabsDoc:registerId:аutoCompl_input');});"/>
+					
+						<ibg:selectOneModalA id="dVid" readonly="#{isView eq 1}"  rendered="#{docData.specDocId eq null}"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}"
+							dateClassif="#{docData.decodeDate}" filtered="true" minQueryLength="2"
+							selectedCode="#{docData.document.docVid}"
+							styleAutoComp="" saveStateTree="true"
+							header="#{labels['docVidSetting.typeDoc']}"
+							isSelectNode="false"
+							withBtnClear="true" compType="2" onComplete="cmdChangeDocVid()" />
+							
+						<ibg:autoCompleteListVod id="dVidSpec" readonly="#{isView eq 1}"  rendered="#{docData.specDocId ne null}"
+									codeClassif="#{docData.codeClassifVidDoc}"
+									minQueryLength="2"
+									listVod="#{docData.specVidDocList}"
+									selectedCode="#{docData.document.docVid}"
+									styleAutoComp="" 
+									withBtnClear="true" compType="2" title="#{labels['docVidSetting.typeDoc']}"
+									onComplete="cmdChangeDocVid()"/>		
+
+
+					</div>
+ 
+					<ui:remove>	<!--регистър / коресп. групи!! --></ui:remove>
+					<div jsf:id="pRegister" class="p-col-9 p-md-9 p-lg-10 p-xl-10" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}" >
+						<h:outputText value="#{labels['docu.register']}"	styleClass="form-label req" />
+						<p:remoteCommand name="cmdChangeRegister" update="pRnDoc"
+							partialSubmit="true" process="pRnDoc @this"
+							actionListener="#{docData.actionChangeRegister}" />
+						
+						<ibg:selectOneModalA id="registerId" 
+							readonly="#{docData.document.id ne null}"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+							dateClassif="#{docData.decodeDate}"
+							filtered="#{docData.regUserFiltered}"
+							selectedCode="#{docData.document.registerId}"
+							saveStateTree="false" withBtnClear="true" minQueryLength="2"
+							styleAutoComp=""
+							specifics="#{docData.specificsRegister}" sortByName="true"
+							compType="4" onComplete="cmdChangeRegister()"
+							header="#{labels['docu.register']}"
+							dopInfoAutoComp="true" dopInfoTitleAutoComp="#{labels['register.prefix']}" 
+							onClear="cmdChangeRegister()" />
+					</div>
+					
+					<div class="p-col-3 p-md-3 p-lg-2 p-xl-2"  >
+						<h:outputText value="#{labels['docu.brLista']}" 	styleClass="form-label" />
+						<p:inputNumber id="brLista" title="#{labels['docu.brListaTitle']}"
+							value="#{docData.document.countSheets}"
+							minValue="0" decimalPlaces="0">
+						</p:inputNumber>
+					</div>	
+					
+					<ui:remove><!-- техен номер/дата - само а вх. --></ui:remove>
+					<div class="p-grid p-col-12  ui-fluid" jsf:id="tnPanel" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+						<div class="p-col-6 p-md-4 p-lg-6 p-xl-6" jsf:id="tehNPan"
+							jsf:rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+							
+							<h:outputText value="#{labels['docList.theirNum']} " styleClass="form-label " />
+							
+							<i jsf:id="tnIcon1" class="fas fa-external-link-square-alt"  style="font-size: 18px;" jsf:rendered="#{docData.document.workOffId ne null and docData.fromOtherReg}"></i> 
+							<p:tooltip id="tnIcon1T"  for="tnIcon1"  escape="false" value="#{docData.rnFullDocOther}"	/>	
+							
+							<i jsf:id="tnIcon2" class="fas fa-info-circle p-mr-2"  style="font-size: 18px;" jsf:rendered="#{docData.document.tehNomer ne null and not empty docData.document.tehNomer.trim() and docData.tnRez ne 0}"></i>
+							<p:tooltip id="tnIcon2T"  for="tnIcon2"  escape="false" value="#{labels['docu.titleInfoTehNom']}"	/>
+							
+							<div class="ui-inputgroup">
+								<p:inputText id="tehN" value="#{docData.document.tehNomer}" 
+								    readonly="#{docData.document.id ne null and docData.document.workOffId ne null and docData.fromOtherReg}"
+									style="display:inline-block;">
+									<p:ajax event="change" update="docTehNPG tehNPan @this"
+										process="docTehNPG  @this" partialSubmit="true"
+										listener="#{docData.actionSearchDocBtnTn}" />									
+								</p:inputText> 
+								<p:commandButton id="btnDocIn" icon="fas fa-search"  style="width:40px"
+									rendered="#{docData.document.tehNomer ne null and not empty docData.document.tehNomer.trim() and docData.tnRez ne 0}"
+									title="#{labels['docDoc.searchDoc']}" 
+									actionListener="#{docData.actionSearchDocBtnTn}"
+									update="docTehNPG"  partialSubmit="true">
+								</p:commandButton>
+								<p:commandButton id="btnLinkedRel" style="width:40px"
+									styleClass="ui-button-danger" icon="fas fa-times"
+									rendered="#{not empty docData.selectedDocsTn}"
+									title="#{labels['docu.docTnMsgClear']}"
+									process="@this" partialSubmit="true"
+									update="docTehNPG tehNPan @this"
+									actionListener="#{docData.actionCancelRelTn(false)}">
+								</p:commandButton>
+							</div>
+							
+						</div>
+
+						<div class="p-col-6 p-md-4 p-lg-4 p-xl-4" jsf:id="tehNDat"
+							jsf:rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+							<h:outputText value="#{labels['docu.datTehNom']}"
+								styleClass="form-label " />
+								
+							<p:datePicker  id="tehDat"  pattern="dd.MM.yyyy" locale="bg"
+							    showIcon="true" mask="true"
+								rendered="#{!(isView eq 1 or (docData.document.id ne null and docData.document.workOffId ne null and docData.fromOtherReg))}"
+								value="#{docData.document.tehDate}" />
+							<p:inputText id="tehDatV" 
+							    rendered="#{isView eq 1 or (docData.document.id ne null and docData.document.workOffId ne null and docData.fromOtherReg)}"
+						 		value="#{docData.document.tehDate}"
+						  	 	readonly="true">
+						  	 	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docData.timeZone}"/>
+							</p:inputText>	   	
+						</div>
+					
+					</div>
+			
+				</div>
+
+				<div class="p-col-12 p-md-12 p-lg-6 p-xl-7 ui-inputgroup" >
+
+						<ui:remove><!-- Файлове  ел. подписване - само за собствени док."--></ui:remove>
+						<p:remoteCommand name="cmdChangeFiles" 
+							partialSubmit="true" ignoreAutoUpdate="true" process="@this" 
+							actionListener="#{docData.actionChangeFiles}" /> 
+						<div jsf:id="panelFl">
+					
+						<ibg:compFileUpload listObj="#{docData.filesList}"  id="filesDoc"
+							codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" header="false"
+							idObj="#{docData.document.id}" hideDel="#{isView eq 1}"
+							view="#{isView eq 1}"
+							autoSave="#{(docData.document.id eq null) ? 'false' : 'true'}"
+							saveFirst="false" display="list" 
+							onComplete="cmdChangeFiles()" 
+							viewOfficial="true" showUserUpload="true" showCompareBtn = "false"
+							showInfo="false"						
+							showSignWord="#{docData.document.id ne null and ((docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN) ) or docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK)}"
+						    prefixSignWord="OmbuWrk"
+						    stylelabelSignWord ="font-weight: bold !important;" 
+						    typeSign="0"
+							labelSignWord="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK ? labels['omb.elSignWrk'] : ui_labels['general.elSign']}"
+							showSign="#{docData.document.id ne null and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN) and docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}" 
+							showPersonalData="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+							downloadPDFiles="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+							showScanner="#{docData.scanModuleExist and isView ne 1}"
+							rnDocDateForSign="#{docData.rnFullDocSign}"
+							dragDropSupport="true"
+							rename="true"/>
+						</div>
+						<h:panelGroup rendered="#{docData.scanModuleExist}">
+							<ibg:scannerDs codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docData.document.id}" id="scanDS" update="docForm:tabsDoc:panelFl" value="#{docData.reloadFile}"></ibg:scannerDs>
+							<ibg:scannerIB codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_DOC}" idObj="#{docData.document.id}" id="scanIB" update="docForm:tabsDoc:panelFl" value="#{docData.reloadFile}" 
+								showSign="#{docData.document.id ne null and docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and  userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DIGITAL_SIGN)}"
+								fileName="#{docData.document.rnDoc}"></ibg:scannerIB>
+						</h:panelGroup>
+
+				</div>
+			
+				<ui:remove> <!-- относно    -->   </ui:remove>	
+				<div class="p-col-12 p-align-end" jsf:id="otnosnoD" >
+					
+					<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label req p-mr-4" />
+					
+					<a href="#dopInfL" id="aInfo"  style="#{(docData.document.docInfo eq null or docData.document.docInfo.trim() eq '') ? 'display:none' : ''}"> <i class="fas fa-hand-point-right" >   #{labels['docu.gotoDopInfo']} </i></a>
+					
+					<p:inputTextarea id="otnosno" value="#{docData.document.otnosno}" autoResize="false" rows="5"/>
+	
+				</div>
+						
+			</div>
+			
+			<ui:remove><!-- кореспондент(идва от / отнася се за)   - без работни; за собствени - само при вкл. настройка --></ui:remove>
+			<h:panelGroup id="p1Ref" >
+				<div class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded"
+						onclick="toggleSection(this, '#docForm:tabsDoc:doc-refdata')"
+						rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN or (docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and docData.showCoresp)}">
+						<h:outputText value="#{labels['docu.corespondent']}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+
+				<div jsf:id="doc-refdata" class="p-grid  ui-fluid" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+					jsf:rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN or (docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN and docData.showCoresp)}">
+
+					<div class=" p-grid  p-col-12 p-md-12 p-lg-6 p-xl-5">
+					
+						<div class="p-col-12">
+							<h:outputText value="#{labels['docu.refCorrInp']}"
+								styleClass="form-label" />
+							<div class="selectModalA-with-buttons">
+								<h:panelGroup id="refCorrInp" layout="block" styleClass="koresp-input">
+									<ibg:selectOneModalA id="refCorrInp1" readonly="#{isView eq 1}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+										dateClassif="#{docData.decodeDate}"
+										onComplete="#{docData.clearInfoAdres()}"
+										onClear="#{docData.clearInfoAdres()}"
+										selectedCode="#{docData.document.codeRefCorresp}"
+										selectedText="#{docData.txtCorresp}" hiddenTxt="true"
+										saveStateTree="false" withBtnClear="true" minQueryLength="2"
+										compType="3" filtered="false"
+										styleAutoComp=""
+										dopInfoAutoComp="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}"
+										itemtipAtPosition="center bottom"
+										update="docForm:tabsDoc:refCorrAdr docForm:tabsDoc:refCorr" />
+								</h:panelGroup>
+								
+								<div jsf:id="refCorr">
+									<ui:remove>	<!--  Корекция на данни на кореспондент	--></ui:remove>
+							
+									<p:commandButton id="btnCorrD"
+										rendered="#{docData.document.codeRefCorresp ne null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA) }"
+										icon="#{(isView ne 1) ? 'fas fa-edit' : 'fas fa-eye'}" partialSubmit="true"
+										process="docForm:tabsDoc:dpCorrData @this"
+										update="docForm:tabsDoc:dpCorrData"
+										oncomplete="PF('mCorrD').show(); "
+										actionListener="#{docData.clearInfoAdres()}"
+										title="#{isView ne 1 ? (userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)? labels['docu.titleEditCoresp'] : labels['docu.correspView']) : labels['docu.correspView']}"/>
+	
+									<ui:remove><!--  Разширено търсене на кореспондент --></ui:remove>
+									<p:commandButton id="btnCorrS"
+										onmousemove="document.getElementById('docForm:tabsDoc:btnCorrS').focus();"
+										rendered="#{isView ne 1 and docData.document.codeRefCorresp eq null}"
+										icon="fas fa-list-ul" partialSubmit="true"
+										process="docForm:tabsDoc:dpCorrSearch @this"
+										update="docForm:tabsDoc:dpCorrSearch"
+										oncomplete="PF('mCorrS').show(); "
+										actionListener="#{docData.clearInfoAdres()}"
+										title="#{labels['search.extendRef']}" />
+	
+									<ui:remove>	<!--  Нов кореспондент	--></ui:remove>
+									<p:commandButton id="btnCorrN"
+										onmousemove="document.getElementById('docForm:tabsDoc:btnCorrN').focus();"
+										rendered="#{isView ne 1 and docData.document.codeRefCorresp eq null and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)}"
+										icon="fas fa-plus" partialSubmit="true" 
+										process="docForm:tabsDoc:dpCorrData @this"
+										update="docForm:tabsDoc:dpCorrData"
+										oncomplete="PF('mCorrD').show();"
+										actionListener="#{docData.clearInfoAdres()}"
+										title="#{labels['docu.refCorrNew']}" />
+								</div>
+							</div>
+
+						</div>
+						
+					</div>
+
+					<div class="p-col-12 p-md-12 p-lg-6 p-xl-7">
+						<h:outputText value="#{ui_labels['general.adres']}"	styleClass="form-label" />
+						<p:inputTextarea readonly="true" id="refCorrAdr" rows="1" 
+							title="#{docData.document.codeRefCorresp eq null ? '' : (userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP) ? labels['docu.refCorrAdrMsg'] : '')}"
+							value="#{docData.dopInfoAdres}" />
+					</div>
+
+				</div>
+
+			</h:panelGroup>
+
+
+			<ui:remove><!-- Референити  само за собствени и работни #{labels['doc.referents']}--></ui:remove>
+			<h:panelGroup id="p2Ref">
+				<div class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded"
+						onclick="toggleSection(this, '#docForm:tabsDoc:doc-referents')"
+						rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+						<h:outputText value="#{labels['docu.avtorPodpSagl']}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+				<div jsf:id="doc-referents" class="p-grid  ui-fluid" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}"
+					jsf:rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+					
+					<div class="p-col-12 p-md-12 p-lg-12 p-xl-12">
+						<h:outputText value="#{labels['doc.avtori']}"
+							styleClass="form-label" />
+
+						<ibg:selectReferents id="autorsM" filtered="false"
+							readonly="#{isView eq 1}"
+							typeRef="#{OmbConstants.CODE_ZNACHENIE_DOC_REF_ROLE_AUTHOR}"
+							maxResults="50" styleAutoComp=""
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+							dateClassif="#{docData.decodeDate}"
+							idDoc="#{docData.document.id}" saveStateTree="false"
+							showRadioBtn="fasle" isSelectNode="true" 
+							selectedReferents="#{docData.document.referentsAuthor}"
+							withBtnClear="true" header="#{labels['docu.titleModalAvtor']}" 
+							headerSelectedValues="#{labels['docu.liceAvtor']}"  />
+					</div>
+
+					
+					<div class="p-col-12 p-md-12 p-lg-12 p-xl-12">
+						<h:outputText value="#{labels['doc.saglasuvali']}"
+							styleClass="form-label" />
+						<ibg:selectReferents id="agreedM" filtered="false"
+							readonly="#{isView eq 1 or (docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and !docData.editReferentsWRK)}"
+							typeRef="#{OmbConstants.CODE_ZNACHENIE_DOC_REF_ROLE_AGREED}"
+							maxResults="50" styleAutoComp=""
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+							dateClassif="#{docData.decodeDate}"
+							idDoc="#{docData.document.id}" saveStateTree="false"
+							showRadioBtn="false" isSelectNode="true" 
+							selectedReferents="#{docData.document.referentsAgreed}"
+							withBtnClear="true" header="#{labels['docu.titleModalSagl']}"
+							headerSelectedValues="#{labels['docu.liceSagl']}"  />
+					</div>
+
+				
+					<div class="p-col-12 p-md-12 p-lg-12 p-xl-12">
+						<h:outputText value="#{labels['doc.podpisali']}"
+							styleClass="form-label" />
+
+						<ibg:selectReferents id="signedM" filtered="false"
+							readonly="#{isView eq 1 or (docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK and !docData.editReferentsWRK)}"
+							typeRef="#{OmbConstants.CODE_ZNACHENIE_DOC_REF_ROLE_SIGNED}"
+							maxResults="50" styleAutoComp=""
+							codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+							dateClassif="#{docData.decodeDate}"
+							idDoc="#{docData.document.id}" saveStateTree="false"
+							showRadioBtn="false" isSelectNode="true" 
+							selectedReferents="#{docData.document.referentsSigned}"
+							withBtnClear="true"
+							header="#{labels['docu.titleModalPodpisali']}"
+							headerSelectedValues="#{labels['docu.licePodisal']}"  />
+					</div>
+				</div>
+
+			</h:panelGroup>
+
+
+			<ui:remove><!--Получаване  - само за вх. --></ui:remove>
+			<h:panelGroup id="p3Receive">
+
+				<div class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded"
+						onclick="toggleSection(this, '#docForm:tabsDoc:doc-receive')"
+						rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+						<h:outputText value="#{labels['docu.receiveTitle']}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+
+				<div jsf:id="doc-receive" class="p-grid ui-fluid"	jsf:rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_IN}">
+				
+						<ui:remove><!--начин/дата на получаване--></ui:remove>
+						<div class="p-col-7 p-md-4 p-lg-4 p-xl-2">
+							<h:outputText value="#{labels['doc.receiveMethod']}" styleClass="form-label" />
+							<p:selectOneMenu id="receiveType" value="#{docData.document.receiveMethod}"
+							  	 disabled="#{isView eq 1 or  (docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL and docData.document.fromMail ne null)
+							  	   			or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SEOS
+										  	or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SSEV}">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, now, docData.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						    </p:selectOneMenu>	
+							
+						</div>
+						<div class="p-col-5 p-md-4 p-lg-3 p-xl-2" >
+							<h:outputText value="#{labels['docu.receiveDate']}"	styleClass="form-label" />
+							<p:datePicker id="receiveDat"  
+							    rendered="#{!(isView eq 1 or (docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL and docData.document.fromMail ne null)
+							    		  or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SEOS
+										  or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SSEV)}"
+								showIcon="true" mask="true"  pattern="dd.MM.yyyy" locale="bg"
+								value="#{docData.document.receiveDate}"	/>	
+								
+							<p:inputText id="receiveDatV" 
+							     rendered="#{isView eq 1 or (docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL and docData.document.fromMail ne null)
+							    		  or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SEOS
+										  or docData.document.receiveMethod eq OmbConstants.CODE_ZNACHENIE_PREDAVANE_SSEV}"
+						 		 value="#{docData.document.receiveDate}"	
+						  	 	 readonly="true">
+						  	 	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docData.timeZone}"/>
+							</p:inputText>	
+						</div>
+						<div class="p-col-12 p-md-4 p-lg-5  p-xl-4" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+							<ui:remove><!--получен чрез --></ui:remove>
+							<h:outputText value="#{labels['docu.receiveBy']}"	styleClass="form-label" />
+							<p:inputText id="receiveBy" 
+								value="#{docData.document.receivedBy}"
+								title="#{labels['docu.receiveByTitle']}" 
+								readonly="#{isView eq 1}"/> 
+						</div>
+						<ui:remove><!--Представяне на резултат (Отговор)  - само за вх. / дата за отговор  --></ui:remove>
+						<div class="p-col-7 p-md-4 p-lg-4 p-xl-2">
+							<h:outputText value="#{labels['docu.deliveryTitle']}"	styleClass="form-label" />
+							<p:selectOneMenu id="replayType" value="#{docData.document.deliveryMethod}"  disabled="#{isView eq 1}">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, now, docData.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						    </p:selectOneMenu>	
+						</div>
+						<div class="p-col-5 p-md-4 p-lg-3 p-xl-2">
+							<h:outputText value="#{labels['docu.answerDate']}"	styleClass="form-label" />
+							<p:datePicker id="replayDat"
+								rendered="#{isView ne 1}"
+								title="#{labels['docu.answerDateTitle']}"  showIcon="true" 
+								mask="true" pattern="dd.MM.yyyy" locale="bg"
+								value="#{docData.document.waitAnswerDate}"/>
+								
+							<p:inputText id="replayDatV" rendered="#{isView eq 1}"
+							 	value="#{docData.document.waitAnswerDate}"
+							    readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docData.timeZone}"/>
+							</p:inputText>
+						</div>
+				</div>
+			</h:panelGroup>
+		
+		
+			<ui:remove><!-- Допълнителна информация --></ui:remove>
+			<div jsf:id="doc-dopInfo11" class="title-group">
+				<p:commandLink
+					styleClass="extended-search-toggle expanded"
+					onclick="toggleSection(this, '#docForm:tabsDoc:doc-dopInfo12')">
+					<h:outputText value="#{labels['docu.dopInfo']}" />
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>			
+		
+				<div jsf:id="doc-dopInfo12" class="p-grid ui-fluid">
+					
+					<div class="p-grid  p-col-12" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()}">
+					
+						<ui:remove><!-- валидност на документа --></ui:remove>
+						<div class="p-col-7 p-md-4 p-lg-2 p-xl-2" jsf:rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}">
+							<h:outputText value="#{labels['docu.valid']}"
+								styleClass="form-label" />
+					
+							<p:selectOneMenu id="validType" value="#{docData.document.valid}" disabled="#{isView eq 1 or docData.rnFullProtocol ne null}">
+							    <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, now, docData.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						    </p:selectOneMenu>	
+							
+						</div>
+						<div class="p-col-5 p-md-4 p-lg-2 p-xl-2" jsf:rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}">
+							<h:outputText value="#{labels['docu.validDate']}"
+								styleClass="form-label" />
+							<p:datePicker id="validDat"  
+							    showIcon="true" mask="true"	    pattern="dd.MM.yyyy" locale="bg"  							    
+							    rendered="#{!(isView eq 1  or docData.rnFullProtocol ne null)}"
+								value="#{docData.document.validDate}" />
+							<p:inputText id="validDatV" 
+								rendered="#{isView eq 1  or docData.rnFullProtocol ne null}"
+							 	value="#{docData.document.validDate}"
+							    readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docData.timeZone}"/>
+							</p:inputText>	
+						</div>
+						
+						<ui:remove><!--за собствени докуменит - отговор до	--></ui:remove>
+						<div class= "p-col-6 p-md-4 p-lg-4 p-xl-2" jsf:rendered="#{docData.document.docType eq OmbConstants.CODE_ZNACHENIE_DOC_TYPE_OWN}">
+							<h:outputText value="#{labels['docu.answerDate']}"		styleClass="form-label" />
+							<p:datePicker id="replayDat2"
+								rendered="#{isView ne 1}"
+								showIcon="true"  mask="true"  pattern="dd.MM.yyyy" locale="bg"
+								title="#{labels['docu.answerDateTitle']}"
+								value="#{docData.document.waitAnswerDate}"/>
+							<p:inputText id="replayDat2V" 
+								rendered="#{isView eq 1}"
+							 	value="#{docData.document.waitAnswerDate}"
+							    readonly="true">
+							   <f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docData.timeZone}"/>
+							</p:inputText>	
+						</div>
+						<div  class= "p-col-6 p-md-4 p-lg-2 p-xl-2">
+							<h:outputText value="#{labels['docu.signMethod']}"		styleClass="form-label" />
+							<p:selectOneMenu value="#{docData.document.signMethod}" id="sgnMethod" disabled="#{isView eq 1}">
+								 <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_SIGN_METHOD, now, docData.currentLang)}" 
+							         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+							</p:selectOneMenu>
+						</div>
+					</div>
+						
+					<div class="p-col-12">
+						<a id="dopInfL"/> 	
+						<h:outputText value="#{labels['docu.dopInfo']}"	styleClass="form-label" rendered="#{docData.document.docType ne OmbConstants.CODE_ZNACHENIE_DOC_TYPE_WRK}"/>					
+						<p:inputTextarea id="dopInf" value="#{docData.document.docInfo}" 
+							readonly="#{isView eq 1}" rows="4" />
+					</div>
+						
+			</div>
+		
+		</h:panelGroup>
+
+	</h:panelGroup>
+
+	<ui:include src="docDataRegModal.xhtml" />
+
+</ui:composition>

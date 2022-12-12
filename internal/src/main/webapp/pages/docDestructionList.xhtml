@@ -1,0 +1,248 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(59)}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/docDestructionList.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li>#{navTexts['/pages/docDestructionList.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<h:form id="formDocDestrucList">
+
+			<div class="container #{guestPreferences.containerPosition}">
+			
+				<!-- FILTER -->	
+				<h:panelGroup id="panelFilter" rendered="#{docDestructionList.docVid ne null}">
+
+					<div class="card">
+	
+						<div class="p-grid">
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 ui-fluid">
+								<h:outputText value="#{labels['docDestrucList.period']}" styleClass="form-label" />
+								<p:selectOneMenu id="period" value="#{docDestructionList.period}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDestructionList.currentLang)}"
+										var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+									<p:ajax event="change" update="period dateOt dateDo" listener="#{docDestructionList.changePeriod}"/>  
+								</p:selectOneMenu>
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2 ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label" />
+								<p:datePicker id="dateOt"  mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docDestructionList.dateFrom}" >
+								<p:ajax event="change" update="period" listener="#{docDestructionList.changeDate}"/>
+								<p:ajax event="dateSelect" update="period" listener="#{docDestructionList.changeDate}"/> 
+								</p:datePicker>  
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2  p-xl-2 ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+								<p:datePicker id="dateDo"  mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docDestructionList.dateTo}" >
+								<p:ajax event="change" update="period" listener="#{docDestructionList.changeDate}"/>
+								<p:ajax event="dateSelect" update="period" listener="#{docDestructionList.changeDate}"/>
+								</p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 ui-fluid">
+						        <h:outputText value="#{labels['docDestrucList.regNumWorkProt']}"  styleClass="form-label"/>
+						    	<div class="ui-inputgroup">
+							        <p:inputText value="#{docDestructionList.rnWorkProt}" id="rnWorkProt"/> 
+						    		<p:selectBooleanButton id="rnWorkEqWorkPrto" value="#{docDestructionList.rnWorkProtEQ}" 
+								      	    onLabel="#{ui_labels['general.da']}"
+								    	    offLabel="#{ui_labels['general.ne']}"
+											title="#{labels['docu.docSrchRegNom']}" 
+										    onIcon="fas fa-toggle-on"  
+											offIcon="fas fa-toggle-off"  >
+												<p:ajax update="@this rnWorkProt" partialSubmit="true" process="@this rnWorkProt"/>			
+									</p:selectBooleanButton>
+								</div>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 ui-fluid">
+								<h:outputText value="#{labels['docDestrucList.periodOficDoc']}" styleClass="form-label" />
+								<p:selectOneMenu id="periodOficProt" value="#{docDestructionList.periodOficProt}">
+									<f:selectItem value="#{null}" itemValue="#{null}" />
+									<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, docDestructionList.currentLang)}"
+										var="clPerOfic" itemLabel="#{clPerOfic.tekst}" itemValue="#{clPerOfic.code}" />
+									<p:ajax event="change" update="periodOficProt dateOtOficProt dateDoOficProt" listener="#{docDestructionList.changePeriodOficProt}"/>  
+								</p:selectOneMenu>
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2 ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label" />
+								<p:datePicker id="dateOtOficProt"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docDestructionList.dateFromOficProt}" >
+								<p:ajax event="change" update="periodOficProt" listener="#{docDestructionList.changeDateOficProt}"/>
+								<p:ajax event="dateSelect" update="periodOficProt" listener="#{docDestructionList.changeDateOficProt}"/> 
+								</p:datePicker>  
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2 ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+								<p:datePicker id="dateDoOficProt" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docDestructionList.dateToOficProt}" >
+								<p:ajax event="change" update="periodOficProt" listener="#{docDestructionList.changeDateOficProt}"/>
+								<p:ajax event="dateSelect" update="periodOficProt" listener="#{docDestructionList.changeDateOficProt}"/>
+								</p:datePicker>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 ui-fluid">
+						        <h:outputText value="#{labels['docDestrucList.regNumOficProt']}"  styleClass="form-label"/>
+						    	<div class="ui-inputgroup">
+							        <p:inputText value="#{docDestructionList.rnOficProt}" id="rnOficProt"/> 
+						    		<p:selectBooleanButton id="rnWorkEqOficProt" value="#{docDestructionList.rnOficProtEQ}" 
+								      	    onLabel="#{ui_labels['general.da']}"
+								    	    offLabel="#{ui_labels['general.ne']}"
+											title="#{labels['docu.docSrchRegNom']}" 
+										    onIcon="fas fa-toggle-on"  
+											offIcon="fas fa-toggle-off"  >
+												<p:ajax update="@this rnOficProt" partialSubmit="true" process="@this rnOficProt"/>			
+									</p:selectBooleanButton>
+								</div>
+							</div>	
+							
+							<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 ui-fluid">
+						        <h:outputText value="#{labels['docDestrucList.rnInclProt']}"  styleClass="form-label"/>
+						    	<div class="ui-inputgroup">
+							        <p:inputText value="#{docDestructionList.incRnDoc}" id="incRnDoc"/> 						    		
+								</div>
+							</div>
+							
+							<div class="p-col-12 p-sm-12 p-md-2 p-lg-2 p-xl-2 ui-fluid">
+								<h:outputText value="#{labels['docDestrucList.dateInclProt']}" styleClass="form-label" />
+								<p:datePicker id="dateInclProt"   mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy"
+											value="#{docDestructionList.incDocDate}"> 
+								</p:datePicker>
+							</div>
+	
+							<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 ui-fluid" align="left">
+								<p:selectBooleanCheckbox value="#{docDestructionList.onlyWorkProt}" itemLabel="#{labels['docDestrucList.onlyWorkProtocols']}" />
+							</div>
+						</div>
+	
+						<div class="filter-buttons">
+							<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+											id="btnSearchDoc" update="resultTable panelFilter" partialSubmit="true"
+											process="@this panelFilter resultTable" actionListener="#{docDestructionList.actionSearch}"  styleClass="p-mr-3"/>
+							<p:defaultCommand target="btnSearchDoc" />
+							
+							<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+											 id="btnClear" update="resultTable panelFilter" partialSubmit="true"
+											 process="@this panelFilter resultTable" actionListener="#{docDestructionList.actionClear}"
+											 styleClass="ui-button-warning" />	
+						</div>
+	
+					</div>
+				
+				</h:panelGroup>
+			
+			</div>
+
+			<h:panelGroup id="resultTable" layout="block" styleClass="margin-top">
+
+				<h:panelGroup layout="block" styleClass="card">
+
+					<div class="table-toolbar">
+
+						<p:commandButton icon="fas fa-file" action="#{docDestructionList.actionGotoNew}" ajax="false" value="#{labels['docDestrucList.newWorkProtForDest']}" styleClass="ui-button-success  p-mr-2" />
+
+						<span class="p-mr-2" jsf:rendered="#{docDestructionList.docsDestrucList.rowCount > 0}"> 
+							<span class="fas fa-ellipsis-v" />
+						</span>
+
+						<h:outputText value="#{ui_labels['general.reportResult']} #{docDestructionList.docsDestrucList.rowCount} " styleClass="form-label" rendered="#{docDestructionList.docsDestrucList.rowCount > 0}"/>
+
+					</div>
+
+					<p:dataTable id="tblDocDestrucList" var="row" value="#{docDestructionList.docsDestrucList}" lazy="true" rendered="#{docDestructionList.docsDestrucList != null}"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="15" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									<p:dataExporter type="xls" target="tblDocDestrucList" fileName="docDestrucListXls" postProcessor="#{docDestructionList.postProcessXLS}" />
+								</h:commandLink>
+
+								<ui:remove><!-- 
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									<p:dataExporter type="pdf"  target="tblDocDestrucList" fileName="docDestrucListPdf" 	 encoding="windows-1251"
+					        			 preProcessor="#{docDestructionList.preProcessPDF}" options="#{docDestructionList.pdfOptions()}"/>	
+			        			</h:commandLink>
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblDocDestrucList" fileName="docDestrucListCsv" encoding="CP1251" />
+								</h:commandLink>
+							 -->	</ui:remove>
+							</div>
+
+						</f:facet>
+
+						<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="10" exportable="false">
+							<p:commandButton icon="fas fa-edit" action="#{docDestructionList.actionGoto(row[0])}" ajax="false" styleClass="btn-new" />							
+						</p:column>
+
+						<p:column width="100" sortBy="#{row.a1}" headerText="#{labels['docDestrucList.regNumWorkProt']}">
+							<h:outputText value="#{row[1]}" />
+						</p:column>
+
+						<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docDestrucList.dateWorkProt']}">
+							<h:outputText value="#{row[2]}" >
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDestructionList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+
+						<p:column width="100" sortBy="#{row.a4}" headerText="#{labels['docDestrucList.regNumOficProt']}">
+							<h:outputText value="#{row[4]}" />
+						</p:column>
+
+						<p:column width="80" sortBy="#{row.a5}" headerText="#{labels['docDestrucList.dateOficProt']}">
+							<h:outputText value="#{row[5]}" >
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{docDestructionList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+
+						<p:column width="50" sortBy="#{row.a6}" headerText="#{labels['docDestrucList.destroyed']}">
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row[6], docDestructionList.currentLang, now)}" />
+						</p:column>
+
+					</p:dataTable>
+
+				</h:panelGroup>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>
+

@@ -1,0 +1,265 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+			    xmlns:ui="http://java.sun.com/jsf/facelets"
+			    xmlns:f="http://java.sun.com/jsf/core"
+			    xmlns:jsf="http://xmlns.jcp.org/jsf"
+			    xmlns:h="http://java.sun.com/jsf/html"
+			    xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components"> 
+
+	<!--Основни данни за регистратурата-->
+	<h:panelGroup id="panelTab1" layout="block">
+		
+		<p:toolbar styleClass="margin-bottom" id="tbPanelTab1">
+			<f:facet name="left">
+				<p:commandButton icon="fas fa-save" action="#{registraturaData.actionSave}" update="formRegistratura" value="#{ui_labels['general.save']}" />
+					
+					<ui:remove> <span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                   
+				 <p:commandButton icon="fas fa-edit" action="#{registraturaData.actionNew}" update="formRegistratura" value="#{labels['regList.newReg']}" styleClass="ui-button-success" /> </ui:remove>
+			</f:facet>
+			<f:facet name="right">
+				<ui:remove> <p:commandButton icon="fas fa-times" action="#{registraturaData.actionDelete}" update="formRegistratura" value="#{ui_labels['general.delete']}" styleClass="ui-button-danger" rendered="#{registraturaData.registratura.id ne null}" onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/> </ui:remove>
+			</f:facet>
+		</p:toolbar>
+		
+	<h:panelGroup id="panelDataReg">
+			
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataReg')">
+				<h:outputText value="#{labels['registratura.basicData']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+	
+		<div id="basicDataReg" class="p-grid ui-fluid p-align-end">			
+			
+			<!-- Наименование на регистратура -->
+			<div class="p-col-12  p-md-8">	
+				<h:outputText value="#{labels['regList.naimReg']}" styleClass="form-label req" />	
+				<p:inputText id="naimReg" value="#{registraturaData.registratura.registratura}" />		
+			</div>
+			
+			<!-- Активна -->
+			<ui:remove> <div class="p-col-12  p-md-4">
+				<div class="ui-inputgroup">						
+				<p:selectBooleanButton id="validReg" value="#{registraturaData.activeReg}"
+					onLabel="#{labels['registratura.active']}" onIcon="fas fa-check"
+					offLabel="#{labels['registratura.inactive']}" offIcon="fas fa-remove"
+					styleClass="btn-normal" style="width:110px">							
+				</p:selectBooleanButton>
+				</div>
+			</div> </ui:remove>
+			
+			<!-- Наименование на организацията -->
+			<div class="p-col-12  p-md-8">	
+				<h:outputText value="#{labels['regList.naimOrg']}" styleClass="form-label" />	
+				<p:inputText id="naimOrgReg" value="#{registraturaData.registratura.orgName}" />		
+			</div>
+			
+			<!-- ЕИК на организацията -->
+			<div class="p-col-12  p-md-4">	
+				<h:outputText value="#{labels['regList.eikOrg']}" styleClass="form-label" />	
+				<p:inputText id="eikOrgReg" value="#{registraturaData.registratura.orgEik}" maxlength="13">
+					<p:ajax event="change" update="formRegistratura:tabsRegistraturi:eikOrgReg" partialSubmit="true" 
+					 process="@this formRegistratura:tabsRegistraturi:eikOrgReg" listener="#{registraturaData.actionCheckEik}"	/>
+				</p:inputText>	
+			</div>
+			
+			<!-- Населено място на регистратурата -->
+			<div class="p-col-12  p-md-4">							
+				<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label req"/>
+				<ibg:selectOneModalA id="mesto"
+					update="formRegistratura:tabsRegistraturi:OblObsh"
+					codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"	
+					selectedCode="#{registraturaData.registratura.ekatte}"
+					emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+					saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="3"
+					styleAutoComp="" dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>						
+			</div>
+			
+			<!-- Област, община на регистратурата -->									
+			<div class="p-col-12 p-md-4" jsf:id="OblObsh">
+				<h:outputText value="#{ui_labels['general.ekatteObshObl']}" styleClass="form-label" />
+				<p:inputText readonly="true" value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, registraturaData.registratura.ekatte, registraturaData.currentLang, now)}" />
+			</div>
+			
+			<!-- Контакти на регистратурата -->
+			<div class="p-col-12  p-md-4">	
+				<h:outputText value="#{labels['registratura.contacts']}" styleClass="form-label" />	
+				<p:inputText id="contactsReg" value="#{registraturaData.registratura.contacts}" />		
+			</div>	
+				
+			<div class="p-col-12 p-md-10" style="padding-top: 0; padding-bottom: 0;" jsf:id="addrOrPb">
+				<div class="p-grid">
+					<!-- Адрес на регистратурата -->
+					<div class="p-col-12 p-md-10">
+						<h:outputText value="#{labels['registratura.adres']}" styleClass="form-label" />	
+						<p:inputText id="adresReg" value="#{registraturaData.registratura.address}" />		
+					</div>
+					
+					<!-- Пощенска кутия на регистратурата -->
+					<div class="p-col-12 p-md-2">
+						<h:outputText value="#{ui_labels['general.adrPostBox']}" styleClass="form-label" />
+						<p:inputText id="postBox" value="#{registraturaData.registratura.postBox}" />
+					</div>
+				</div>
+			</div>									
+			
+			<!-- Пощенски код на регистратурата -->
+			<div class="p-col-12 p-md-2">
+				<h:outputText value="#{ui_labels['general.adrPostCode']}" styleClass="form-label" />
+				<p:inputText value="#{registraturaData.registratura.postCode}" />
+			</div>
+			
+		</div>								
+			
+		<ui:remove> 
+			<!-- Файлове - saveFirst="#{registraturaData.registratura.id == null}"-->		
+			<ibg:compFileUpload listObj="#{registraturaData.filesList}" headerLabel="#{labels['registratura.logo']}"
+				codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_REISTRATURA}" header="false"
+				idObj="#{registraturaData.registratura.id}"	btnLabel="#{labels['registratura.newLogo']}"		
+				autoSave="true" saveFirst="#{registraturaData.registratura.id == null}"
+				id="filesRegistratura" display="list" />				
+		</ui:remove>
+			
+		<div class="title-group" jsf:id="titlePanel">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#uploadFile')">
+				<h:outputText value="#{labels['registratura.logo']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+			<p:fileUpload id="fileUpload" 
+				listener="#{registraturaData.uploadFileListener}"
+				disabled="#{registraturaData.registratura.id eq null or registraturaData.filesList.size() > 0}" 
+				mode="advanced" multiple="false" auto="true"
+				allowTypes="/(\.|\/)(gif|jpe?g|png)$/" invalidFileMessage="Разрешени за прикачване са само изображения от следните типове: jpg, jpeg, png, gif!"
+				label="#{labels['registratura.newLogo']}" update="formRegistratura:tabsRegistraturi:filesList formRegistratura:tabsRegistraturi:titlePanel" />
+		</div>
+
+		<div id="uploadFile" class="p-grid ui-fluid">
+
+			<h:panelGroup id="filesList" layout="block" class="p-col-12 p-nogutter">
+
+				<div class="list-container">
+					
+					<p:repeat varStatus="rkv" value="#{registraturaData.filesList}" var="file" id="fileList">
+
+						<h:panelGroup styleClass="file-list" layout="block" id="lis">
+
+							<p:commandLink ajax="false" action="#{registraturaData.downloadFile(file)}" id="btnF">
+								<div class="file-details">
+									<span class="filename">#{file.filename}</span>
+								</div>
+							</p:commandLink>
+
+							<div class="file-options">
+								<p:commandLink id="fileOptions">
+									<i class="fas fa-caret-down"></i>
+								</p:commandLink>
+							</div>
+
+							<p:menu id="options-menu" for="fileOptions" trigger="fileOptions" styleClass="user-options" overlay="true" my="right top" at="right bottom" style="width:230px">
+								
+								<p:menuitem value="#{ui_labels['general.download']}" ajax="false" action="#{registraturaData.downloadFile(file)}" icon="fas fa-download" />
+
+								<p:menuitem value="#{ui_labels['general.delete']}" icon="fas fa-times"
+									update="formRegistratura:tabsRegistraturi:filesList formRegistratura:tabsRegistraturi:titlePanel"
+									partialSubmit="true" process="formRegistratura:tabsRegistraturi:filesList formRegistratura:tabsRegistraturi:titlePanel @this"
+									actionListener="#{registraturaData.deleteFile(file)}">
+									<p:confirm header="#{ui_labels['general.comfirmation']}" escape="false" message="#{ui_labels['files.confirmDelete']}" icon="fas fa-exclamation-triangle" />
+								</p:menuitem>
+							</p:menu>
+						</h:panelGroup>
+
+					</p:repeat>
+				</div>
+
+				</h:panelGroup>
+
+			</div>
+
+			<h:panelGroup rendered="#{registraturaData.useSEOS}">
+			
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#seosReg')">
+						<h:outputText value="#{labels['registratura.seosSettings']}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+		
+				<div id="seosReg" class="p-grid ui-fluid">	
+				
+					<!-- СЕОС - GUID -->
+					<div class="p-col-12  p-md-6">	
+						<h:outputText value="#{labels['registratura.guid']}" styleClass="form-label" />	
+						<p:inputText id="seosGuid" value="#{registraturaData.registratura.guidSeos}" />		
+					</div>
+					
+					<!--Път до сертификата - СЕОС -->
+					<div class="p-col-12  p-md-6">	
+						<h:outputText value="#{labels['registratura.certPath']}" styleClass="form-label" />
+						<p:inputText id="seosCertPath" value="#{registraturaData.registratura.certPathSeos}" />		
+					</div>
+				
+				</div>
+				
+			</h:panelGroup>
+			
+			<h:panelGroup rendered="#{registraturaData.useSSEV}">
+			
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#ssevReg')">
+						<h:outputText value="#{labels['registratura.ssevSettings']}" />
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+		
+				<div id="ssevReg" class="p-grid ui-fluid">	
+				
+					<!-- ССЕВ - GUID -->
+					<div class="p-col-12  p-md-6">	
+						<h:outputText value="#{labels['registratura.guid']}" styleClass="form-label" />	
+						<p:inputText id="ssevGuid" value="#{registraturaData.registratura.guidSsev}" />		
+					</div>
+					
+					<!--Път до сертификата - ССЕВ-->
+					<div class="p-col-12  p-md-6">	
+						<h:outputText value="#{labels['registratura.certPath']}" styleClass="form-label" />	
+						<p:inputText id="ssevCertPath" value="#{registraturaData.registratura.certPathSsev}" />		
+					</div>
+				
+				</div>
+				
+			</h:panelGroup>
+			
+			<ui:remove> <h:panelGroup rendered="#{registraturaData.registratura.id ne null}">
+			
+				<div class="title-group">
+					<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#zvenaAdmStruc')">
+						<h:outputText value="#{labels['registratura.zvenaFromAdmStruc']}" /> 
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+					
+					<p:selectBooleanCheckbox value="#{registraturaData.showSluj}" itemLabel="#{labels['registratura.showSluj']}" > 
+				 	 	 <p:ajax event="change" update="formRegistratura:tabsRegistraturi:zvena" listener="#{registraturaData.actionShowHideSluj}"/>
+				 	 </p:selectBooleanCheckbox>
+				</div>
+		
+				<div id="zvenaAdmStruc" class="p-grid ui-fluid">							
+					 
+					 <p:tree value="#{registraturaData.rootNode}" var="node" style="width:100%;border:none" id="zvena" nodeVar="rowNode">					        
+				    
+				      <p:treeNode expandedIcon="fas fa-folder-open" collapsedIcon="fas fa-folder" icon="#{node.codeExt ne '1'?'fas fa-user':'fas fa-folder'}" >
+				            <h:outputText value="#{node.tekst}" escape="false"/>
+				        </p:treeNode>
+				        
+				    </p:tree>
+				    
+				</div>
+				
+			</h:panelGroup> </ui:remove>
+		
+		</h:panelGroup>
+		
+	</h:panelGroup>
+
+</ui:composition>

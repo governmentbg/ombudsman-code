@@ -1,0 +1,39 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/correspEditForget.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li> 
+			<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+
+		<li><h:outputText rendered="#{correspEditForget.codeCorresp ne null}" value="#{labels['correspEditForget.forgetCorr']}" /></li>
+
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<!-- 	<f:viewAction action="#{userData.checkPageAccess(1053)}" onPostback="false" /> -->
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:importConstants type="com.ib.system.SysConstants" />
+		</f:metadata>
+		
+		<h:form id="formCorrespEdit">
+						
+			<ibg:refCorrespData id="corrEditForget" codeRef="#{correspEditForget.codeCorresp}" dateClassif="#{correspEditForget.decodeDate}" modal="false" admin="true" showDocs="true" correspForget="true"/>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

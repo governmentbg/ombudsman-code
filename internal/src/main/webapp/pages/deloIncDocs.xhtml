@@ -1,0 +1,374 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components">
+		
+
+	 <h:panelGroup id="docsInPrepPanel" rendered="#{deloBean.delo.id ne null}" styleClass="layout-dashboard">
+		
+			
+		<div class="card timeline " jsf:id="tbtnPanel2t" style="padding:0px; margin:0px">	 
+			<div class=" timeline-row p-nogutter"  style=" margin:0px">
+			 	<div class="p-grid p-col-12 p-xl-9"  >
+			 		<div  class="p-col-12 p-sm-6 p-md-6 p-lg-2 p-xl-2  ui-fluid" jsf:rendered="#{systemData.getSettingsValue('delo.docWithExemplars') eq 1}">			
+	 					<h:outputText value="#{labels['docu.ekzN']}" styleClass="form-label" />
+			      		<p:inputText id="inpEkzDeloDoc" value="#{deloBean.currentDeloDoc.ekzNomer}" 
+						   onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+						</p:inputText>
+		      		</div>
+			 		<div  class="p-col-12 p-sm-6 p-md-6 p-lg-3 p-xl-3  ui-fluid" >			
+				 		
+	 					<h:outputText value="#{labels['docu.deloInpDate']}" styleClass="form-label" />
+						<p:datePicker id="inpDatDeloDoc" showIcon="true" showTime="true" showSeconds="true"
+									pattern="dd.MM.yyyy HH:mm:ss"
+									mask="true" value="#{deloBean.currentDeloDoc.inputDate}"
+									disabled="#{isView==1}" readonly="#{isView==1}" />							
+						<p:message for="inpDatDeloDelo" display="tooltip" escape="false"  style="padding:0px; margin:0px">
+			      			<p:autoUpdate/>
+			      		</p:message>
+		      		</div>
+		      		<div  class="p-col-12 p-sm-6 p-md-6 p-lg-2 p-xl-2  ui-fluid" jsf:rendered="#{deloBean.hasToms}">			
+						<h:outputText value="#{labels['delo.tomNomer']}" styleClass="form-label"  />
+						<p:inputText id="tomNomerDeloDoc" value="#{deloBean.currentDeloDoc.tomNomer}" 
+							onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} ">
+						</p:inputText>
+						 
+					</div>			
+			     	<div  class="p-col-12 p-sm-6 p-md-6 p-lg-2 p-xl-2  ui-fluid" jsf:rendered="#{deloBean.hasRazdeli}">			
+						<h:outputText value="#{labels['delo.razdel']}" styleClass="form-label"/>
+						
+						<p:selectOneMenu value="#{deloBean.currentDeloDoc.sectionType}" id="typeDocInDeloRazdel" >
+			 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                            <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_SECTION, now, deloBean.currentLang)}" 
+                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+                               
+						</p:selectOneMenu>
+					</div>
+					<div  class="p-col-12 p-sm-6 p-md-6 p-lg-3 p-xl-3 " >
+							<p:commandButton 
+					            value="#{labels['delo.vlaganeDoc']}" title="Влагане на документ"
+					           	update="docsInPrepPanel" partialSubmit="true" style="margin-top:20px;"
+								process="@this tomNomerDeloDoc typeDocInDeloRazdel inpDatDeloDoc inpEkzDeloDoc"
+								rendered="#{isView eq null and deloBean.delo.id ne null }"											
+								actionListener="#{deloBean.actionOpenModalDocs}" styleClass="btn-save" >
+								
+							</p:commandButton>
+					</div>
+					<div  class="p-col-12 p-sm-6 p-md-6 p-lg-3 p-xl-2  ui-fluid" jsf:rendered="#{systemData.getSettingsValue('delo.docWithExemplars') ne 1}">
+								
+					</div>
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid" jsf:rendered="#{!deloBean.hasToms}">
+							
+					</div>
+					<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2  ui-fluid" jsf:rendered="#{!deloBean.hasRazdeli}">
+							
+					</div>
+				</div>
+			</div>
+		</div>	 
+	<div style="display: flex;align-items:center;padding-bottom:10px;">
+		<div class="title-group" style="flex-grow:1;pading-bottom:0;">
+			<p:commandLink id="table-expanderDocs" onclick="toggleSection(this, '#deloForm:deloDocs-table')"
+				styleClass="extended-search-toggle #{deloDvijenia.viewNewPanel ? '' : 'expanded'}" >
+				<h:outputText value="#{labels['delo.docVlojvPrep']}  #{deloBean.delo.rnDelo}/"/>
+			 	<h:outputText value="#{deloBean.delo.deloDate}">
+			 		<f:convertDateTime  pattern="dd.MM.yyyy" timeZone="#{deloBean.timeZone}"/>
+			 	</h:outputText>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+	</div>
+	<div jsf:id="deloDocs-table" style="#{deloDvijenia.viewNewPanel ? 'display:none' : ''}">
+		<div jsf:id="transferDataDocs" jsf:rendered="#{isView ne 1}" class="card table-toolbar">
+			
+				<div  class="p-grid ui-fluid p-align-end">			
+				 	
+				 	<div  class="p-col-fixed">			
+				 		<p:selectBooleanButton id="visibleTransferDocs" value="#{deloBean.visibleTransferDocs}" rendered="#{!deloBean.visibleMoveDocs}"
+							onLabel="#{labels['transferDeloDoc.transfer']}" offLabel="#{labels['transferDeloDoc.transfer']}"
+							title="#{labels['delo.transferDelo']}"
+							onIcon="fas fa-toggle-on" offIcon="fas fa-toggle-off" 
+							styleClass="inputgroup-button">
+							<p:ajax update="@this deloDocs-table" listener="#{deloBean.clearTransfData()}" partialSubmit="true" process="@this"/>			
+						</p:selectBooleanButton>			 					
+			      	</div>     
+			      	
+			      	<div  class="p-col-fixed">			
+				 		<p:selectBooleanButton id="visibleMoveDocs" value="#{deloBean.visibleMoveDocs}" rendered="#{!deloBean.visibleTransferDocs and deloBean.hasToms and deloBean.delo.deloType==OmbConstants.CODE_ZNACHENIE_DELO_TYPE_NOM}"
+							onLabel="#{labels['admStruct.move']}" offLabel="#{labels['admStruct.move']}"
+							title="#{labels['deloIncDocs.moveTooltip']}" 
+							onIcon="fas fa-toggle-on" offIcon="fas fa-toggle-off" 
+							styleClass="inputgroup-button">
+							<p:ajax update="@this deloDocs-table" partialSubmit="true" listener="#{deloBean.clearMoveData()}" process="@this"/>			
+						</p:selectBooleanButton>			 					
+			      	</div>     		
+					
+					<h:panelGroup rendered="#{deloBean.visibleTransferDocs}">	
+						<div  class="p-col-12 p-sm-12 p-md-4 p-lg-2 p-xl-2 ">			
+							<h:outputText value="#{labels['delo.dateTransfer']}" styleClass="form-label req"/>
+								<p:datePicker id="dateTransferDocs" pattern="dd.MM.yyyy HH:mm:ss" 
+								     mask="true"  showIcon="true" showTime="true" showSeconds="true"  locale="bg"  
+								     value="#{deloBean.dateTransfer}">
+								 </p:datePicker>
+						</div>
+						
+						<div  class="p-col-12 p-sm-12 p-md-4 p-lg-1 p-xl-1" jsf:rendered= "#{deloBean.visibleTom}">			
+								<h:outputText  value="#{labels['delo.tomNomer']}" styleClass="form-label req"/>
+								<p:inputText id="tomNomerTransfDocs" value="#{deloBean.tomNomer}"/>
+						</div>
+						
+						<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" jsf:id="moveInDeloDocsGroup"> 
+								<h:outputText value="#{labels['deloIncDocs.moveIn']}" styleClass="form-label req" />
+																	
+								<div class="ui-inputgroup"> 
+									<p:inputText id="prepNDocs" value="#{deloBean.rnDelo}" readonly="true" style=" display:inline-block;"							  
+									   title="#{labels['transferDeloDoc.delaSearch']}">								   
+									</p:inputText>				
+						
+									<p:commandButton id="btnPrepInDocs" icon="fas fa-search"  style="width:40px"								 
+									   onclick="PF('mDeloDocsTrans').show();"
+									  
+									   title="#{labels['docu.titleSrchPrep']}" >
+								 	</p:commandButton>
+	
+								</div>
+						</div>
+						<div  class="p-col-12 p-sm-12 p-md-4 p-lg-1 p-xl-1 ">		
+							<p:commandButton icon="fas fa-save" update="deloForm:deloDocs-table" style="width: auto;"
+								action="#{deloBean.actionSaveTransferDocs}" value="#{ui_labels['general.save']}" >	
+								<p:confirm message="#{labels['general.confirm']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>				
+						</div>			
+					</h:panelGroup>		
+					
+					<h:panelGroup rendered="#{deloBean.visibleMoveDocs}">	
+						
+						
+						<div  class="p-col-12 p-sm-12 p-md-4 p-lg-1 p-xl-1" jsf:rendered= "#{deloBean.hasToms}">			
+								<h:outputText  value="#{labels['delo.tomNomer']}" styleClass="form-label req"/>
+								<p:inputText id="tomNomerMoveDocs" value="#{deloBean.tomNomer}"/>
+						</div>
+						
+				
+							<div  class="p-col-12 p-sm-12 p-md-4 p-lg-1 p-xl-1 ">		
+								<p:commandButton icon="fas fa-save"  style="width: auto;" update="deloForm:deloDocs-table"
+									action="#{deloBean.actionSaveMoveDocs}" value="#{ui_labels['general.save']}" >	
+									<p:confirm message="#{labels['general.confirm']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>				
+							</div>	
+		
+					</h:panelGroup>
+						
+				</div>
+			</div>	
+					
+			<h:panelGroup id="panelDocsInPrepiska"  >
+				
+					<p:dataTable id="docsInPrepTable" var="row" value="#{deloBean.deloDocList}" lazy="true" 	
+						rowIndexVar="idx" sortMode="single" reflow="true" rowKey="#{row[0]}" scrollable="true" liveResize="true"
+						emptyMessage="Няма вложени документи." selection="#{deloBean.selectedDeloList}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+						paginatorAlwaysVisible="true" paginator="true" editable="true" >				
+							
+						<p:ajax event="rowEdit" immediate="false" resetValues="true" update="@this" listener="#{deloBean.actionSaveEditDeloDocRow}" /> 
+			
+						<f:facet name="{Exporters}">
+						
+				            <div style="float:left">
+					            <h:commandLink id="excel"  >
+					        			<h:graphicImage library="images" name="excel2.png" />
+					        			<p:dataExporter type="xls" target="docsInPrepTable" fileName="docsList"	
+					        			postProcessor="#{deloBean.postProcessXLSDocs}" />
+					    		</h:commandLink>
+					<ui:remove><!-- 
+					    		<h:commandLink id="pdf"  >
+					        	 	  <h:graphicImage library="images" name="pdf.png" />
+					        	 	  <p:dataExporter type="pdf"  target="docsInPrepTable" fileName="docsList" 	 encoding="windows-1251"
+					        			preProcessor="#{deloBean.preProcessPDFDocs}" options="#{deloBean.pdfOptions()}"/>						        	 	 
+					    		</h:commandLink> 
+					  		
+					    		<h:commandLink id="csv" >
+					        		<h:graphicImage library="images" name="csv.png"    rendered="#{isView==1}" />
+					        		<p:dataExporter type="csv" target="docsInPrepTable" fileName="docsList"  encoding="CP1251"/>
+					    		</h:commandLink>
+					    		 --></ui:remove>
+				            </div>
+				       	</f:facet>
+						<p:column width="15" exportable="false"
+							headerText="#{ui_labels['general.No-symbol']}">
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+											
+						<p:column width="15" rendered="#{deloBean.visibleTransferDocs or deloBean.visibleMoveDocs}" selectionMode="multiple" style="text-align: center"/>
+						
+						<p:column  width="35" exportable="false" >
+							 
+					 		<p:button  icon="fas fa-eye" href="#{deloBean.actionViewDeloDoc(row[1])}" target="_blank" 
+					           title="#{labels['delo.view']}">
+			  				</p:button>
+						</p:column>
+						<p:column width="100" sortBy="#{row.a2}" >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.regNom']}"  />
+							</f:facet>
+						    <h:outputText value="#{row[2]}" />		   						    
+						</p:column>
+						
+						<p:column width="70" sortBy="#{row.a3}">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.dateDoc']}" />									  
+							</f:facet>  
+						    <h:outputText value="#{row[3]}">
+						    	<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{deloBean.timeZone}"/>
+						    </h:outputText>
+						</p:column>
+						
+						<p:column width="100" sortBy="#{row.a4}" >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.vid']}" />									  
+							</f:facet>  
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[4], deloBean.currentLang, deloBean.today)}"  />	
+						</p:column>
+						
+						<p:column >
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.otnosno']}" />									  
+							</f:facet>  
+						    <h:outputText value="#{row[10]}"/>				   		    
+						</p:column>
+						<p:column width="180" sortBy="#{row.a6}">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.deloInpDate']}" />									  
+							</f:facet>  
+							  <p:cellEditor >
+							    <f:facet name="output">
+									 <h:outputText value="#{row[6]}" >
+								    	<f:convertDateTime type="date" pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+								    </h:outputText>
+								</f:facet>
+								<f:facet name="input">
+									<p:datePicker  showIcon="true" showTime="true" showSeconds="true" size="14"
+										pattern="dd.MM.yyyy HH:mm:ss" showButtonPanel="true" locale="bg"
+										mask="true" value="#{row[6]}"  id="dateDocDelo" validator="#{deloBean.validateInputDateDoc}"
+										rendered="#{isView ne 1}" >
+										<f:convertDateTime type="date" pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+									</p:datePicker>	
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						
+						<p:column width="50" sortBy="#{row.a7}" rendered="#{systemData.getSettingsValue('delo.docWithExemplars')==1}">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['docu.ekzN']}"  />
+							</f:facet>
+							
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{row[7]}" />
+								</f:facet>
+								<f:facet name="input">
+									<h:inputText value="#{row[7]}" id="ekzDocDelo"/>
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						
+						<p:column width="110" sortBy="#{row.a9}" rendered="#{deloBean.hasRazdeli}">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['delo.razdel']}" />									  
+							</f:facet>  
+								
+						    <p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_SECTION, row[9], deloBean.currentLang, deloBean.today)}"  />
+								</f:facet>
+								<f:facet name="input">
+									<p:selectOneMenu value="#{row[9]}"  id="razdelDocDelo">
+			                            <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DELO_SECTION, now, deloBean.currentLang)}" 
+			                               var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+									</p:selectOneMenu>
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column width="70" sortBy="#{row.a8}" rendered="#{deloBean.hasToms}">
+							<f:facet name="header">
+								 <h:outputText value="#{labels['delo.VTomBezNomer']}" />
+							</f:facet>
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText
+										value="#{row[8]}" />
+								</f:facet>
+								<f:facet name="input">
+									<h:inputText value="#{row[8]}" id="tomDocDelo" validator="#{deloBean.validateInputTomDoc}" validatorMessage=""/>
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						
+						<p:column style="text-align: center" width="65" exportable="false" rendered="#{isView ne 1}">
+							<p:rowEditor />
+						</p:column>
+						
+						<p:column  width="35" exportable="false" >
+							<p:commandButton    icon="fas fa-trash" update="docsInPrepTable"  
+												action="#{deloBean.actionRemoveDeloDoc(row)}" ajax="true" 
+												title="#{labels['delo.izvajdane']}"  
+					 				   			rendered="#{isView!=1}" styleClass="ui-button-danger" >
+				 				   	<p:confirm 	header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['docu.delDocDelo']}" icon="fas fa-exclamation-triangle" />
+					 		</p:commandButton>	
+						</p:column>
+					</p:dataTable>
+				      	 			
+			</h:panelGroup>
+			
+		</div>
+	</h:panelGroup>
+	<p:dialog appendTo="@form"  closeOnEscape="true"
+		    header="#{labels['docu.document']}" 
+		    fitViewport="true"		
+		    responsive="true"  
+		    resizable="true"
+		    position="top" style="margin-top:50px !important"
+			widgetVar="modalDocSearchM" dynamic="true" id="modalDocSearchIdM" 
+			modal="true">
+			 
+
+		 	<ibg:compDocSearch id="modalDeloSearchCompM" 
+				 selectedDocList="#{deloBean.selectedDocsMulty}"
+				 modal="true"
+				 multi="true"
+				 buttonConfirmLabel="#{ui_labels['general.save']}"
+				 idDelo="#{deloBean.delo.id}"
+				 update="deloForm:docsInPrepTable"
+				 onComplete = "PF('modalDocSearchM').hide();"/>						
+		</p:dialog>
+		
+		<h:panelGroup id="docTransfDeloSearch">	
+		<p:remoteCommand name="cmdHideModalDeloDocsT" 
+	 				process="@this"		
+	 				update="deloForm:moveInDeloDocsGroup"
+	  				actionListener="#{deloBean.actionHideModalDelo()}" />
+	
+		<p:dialog widgetVar="mDeloDocsTrans" appendTo="@form"  position="top"
+		    header="#{labels['docu.deloPrepiskaTitle']}" 
+		    responsive="true"	fitViewport="true"		  							 
+		    resizable="true" closeOnEscape="true"
+		    onHide="cmdHideModalDeloDocsT()"
+			 dynamic="true" id="mDeloDocsTr" 
+			modal="true">
+			
+		 	<ibg:compDeloSearch id="mDeloDocsT" 
+				 searchDeloS="#{deloBean.selectedDelo}"		
+				 dateClassif="#{deloBean.decodeDate}"
+				 multi="false"	notIncluded="true"
+				 idDeloDoc="#{deloBean.delo.id}"							
+				 onComplete = "PF('mDeloDocsTrans').hide();"/>			
+				 	
+		</p:dialog>	
+	</h:panelGroup>
+
+</html>

@@ -1,0 +1,113 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(40)}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>	
+	</ui:define>
+	
+	<ui:define name="title">#{navTexts['/pages/registraturiList.xhtml']}</ui:define>
+	
+	 <ui:define name="viewname">        
+        <li>#{navTexts['/pages/registraturiList.xhtml']}</li>
+    </ui:define>
+		
+	<ui:define name="content">
+	
+	<h:form id="formRegistraturiList">	
+	
+		<div class="container #{guestPreferences.containerPosition}">
+			
+			<h:panelGroup id="resultTable" layout="block" styleClass="margin-top">
+				
+				<h:panelGroup layout="block" styleClass="card">
+
+					<div class="table-toolbar">
+
+						<p:commandButton icon="fas fa-file" action="#{registraturiList.actionGotoNew}" ajax="false"
+							value="#{labels['regList.newReg']}" styleClass="ui-button-success" />
+
+						<span class="fas fa-ellipsis-v p-mx-2" />
+						
+						<h:outputText value="#{ui_labels['general.reportResult']} #{registraturiList.regsList.size()}" styleClass="form-label" />
+					
+					</div>
+
+					<p:dataTable id="tblRegList" var="row" value="#{registraturiList.regsList}" rowIndexVar="idx"
+					emptyMessage="#{ui_labels['general.norows']}" rows="15" sortMode="single" reflow="true"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+					rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+					<f:facet name="{Exporters}">
+						
+						<div style="float: left">
+							
+							<h:commandLink id="excel">
+								<h:graphicImage library="images" name="excel2.png" />
+								<p:dataExporter type="xls" target="tblRegList" fileName="registraturiXls" postProcessor="#{registraturiList.postProcessXLS}"/>
+							</h:commandLink>
+<ui:remove><!-- 
+							<h:commandLink id="pdf">
+								<h:graphicImage library="images" name="pdf.png" />
+						 		<p:dataExporter type="pdf"  target="tblRegList" fileName="registraturiPdf"	 encoding="windows-1251"
+			        					preProcessor="#{registraturiList.preProcessPDF}" options="#{registraturiList.pdfOptions()}"/>							
+							</h:commandLink>
+
+							<h:commandLink id="csv">
+								<h:graphicImage library="images" name="csv.png" />
+								<p:dataExporter type="csv" target="tblRegList" fileName="registraturiCsv" encoding="CP1251" />
+							</h:commandLink> --></ui:remove>
+						
+						</div>
+					
+					</f:facet>
+
+					<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" > 
+						<h:outputText value="#{idx + 1}" />
+					</p:column>
+
+					<p:column width="10" exportable="false">							
+						<p:commandButton icon="fas fa-edit" action="#{registraturiList.actionGoto(row.id)}" ajax="false" styleClass="btn-new"/>						
+					</p:column>
+					
+					<p:column width="10" sortBy="#{row.id}" headerText="#{ui_labels['general.id']}">						
+						<h:outputText value="#{row.id}" />					
+					</p:column>
+
+					<p:column width="110" sortBy="#{row.registratura}" headerText="#{labels['regList.naimReg']}"> 
+						<h:outputText value="#{row.registratura}" />
+					</p:column>
+
+					<p:column width="120" sortBy="#{row.orgName}" headerText="#{labels['regList.naimOrg']}">
+						<h:outputText value="#{row.orgName}"/>								
+					</p:column>
+
+					<p:column width="80" sortBy="#{row.orgEik}" headerText="#{labels['regList.eikOrg']}">
+						<h:outputText value="#{row.orgEik}" />
+					</p:column>
+
+					<p:column width="50" sortBy="#{row.valid}" headerText="#{labels['regList.valid']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row.valid, registraturiList.currentLang, now)}" />
+					</p:column>
+
+				</p:dataTable>
+				
+				</h:panelGroup>
+				
+			</h:panelGroup>
+	
+		</div>
+	
+	</h:form>
+			
+		</ui:define>
+
+</ui:composition>
+

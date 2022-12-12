@@ -1,0 +1,780 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+
+ <h:form id="formOpisiBez">
+		   
+
+	<!--    <div class="container #{guestPreferences.containerPosition}">     -->
+			          <div  class="p-grid" >
+							  <div class="p-col-5 p-sm-5 p-md-5 p-lg-5 p-xl-5  ui-fluid" >
+							         <span style="padding-left:10px"></span>
+							  </div>
+							  <div class="p-col-7 p-sm-7 p-md-7 p-lg-7 p-xl-7  ui-fluid" >
+							  
+							        <h:outputLabel value="#{labels['opis.raznBez']}" style="font-weight:bold;" rendered="#{opisBezZachList.tipOpis==1}" />
+							        <h:outputLabel value="#{labels['opis.curier']}" style="font-weight:bold;" rendered="#{opisBezZachList.tipOpis==2}" />
+							  </div>
+					  </div>	
+			
+				
+			       <!--  Главни 2 бутона - търсене (поредно търсене за нови предадени) и изчистване за целия екран - на филтри и всички намерени предадени документи  -->
+			  <!--  *******************************************************************************************************************`***************************** --> 
+				<h:panelGroup id="panelAllDocs"  style="width:95%">
+
+					<!-- <div class="card">   -->
+					   <div class="p-grid">
+					   
+						   						   
+							 <div class="p-col-6 p-sm-6 p-md-6 p-lg-6 p-xl-6  ui-fluid" style="text-align: right;">
+							        <h:outputLabel value="#{labels['opis.helpForIzb']}" style="color:blue"  />
+							 </div>
+						
+						
+						  <div class="p-col-3 p-sm-3 p-md-3 p-lg-3 p-xl-3 ui-fluid" style="text-align: right;">
+							  
+		                        <p:commandButton icon="fas fa-search" value="#{labels['opis.searchPredDoc']}" 
+												id="btnOpenSearchDoc" update="formOpisiBez" partialSubmit="true"
+												process="@this formOpisiBez" actionListener="#{opisBezZachList.actionSelDocs}"
+												style="width:88%;"  />   <!--  title="#{ui_labels['general.titleSearch']}" -->
+		
+								 
+		                       
+		                    </div>
+		                     <div class="p-col-3 p-sm-3 p-md-3 p-lg-3 p-xl-3 ui-fluid" style="text-align: left;">    
+								<p:commandButton icon="fas fa-eraser" value="#{labels['opis.clearAll']}" rendered="#{opisBezZachList.docsSelList != null and opisBezZachList.docsSelList.rowCount > 0}"
+												 id="btnClearAll"   partialSubmit="true" process="@this" update="formOpisiBez"
+												  actionListener="#{opisBezZachList.actionClearAll}"
+												 styleClass="ui-button-warning" style="width:80%;" />   <!--   -->
+		                      </div>
+	                     								
+						</div>
+	
+				<!--  	</div> -->
+				
+				</h:panelGroup>
+				 <!--  ******************************************************************************************************************* --> 
+        	 	
+        	 	<!--   Основна таблица със събрани  предадени документи - на основния екран -->
+        	 	 <!--  ******************************************************************************************************************* --> 		
+			  <h:panelGroup id="panelTable" layout="block"  styleClass="margin-top"   rendered="#{opisBezZachList.docsSelList != null}"   >   <!-- rendered="#{opisBezZachList.docsSelList != null}"  -->
+				   <h:panelGroup id="panelTableToolbar">
+				         <div  class="p-grid" >
+							  <div class="p-col-3 p-sm-3 p-md-3 p-lg-3 p-xl-3  ui-fluid" >
+							        <span style="padding-left:10px"></span>
+							  </div>
+							  <div class="p-col-8 p-sm-8 p-md-8 p-lg-8 p-xl-8  ui-fluid" >
+							        <h:outputLabel value="#{labels['opis.formOpis']}" style="font-weight:bold;" />
+							  </div>
+					  	</div>	
+					
+						<div  class="p-grid" >
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{ui_labels['general.reportResult']} #{opisBezZachList.docsSelList.rowCount}" styleClass="form-label" rendered="#{opisBezZachList.docsSelList != null}"/>
+								<h:outputText value="#{ui_labels['general.reportResult']} 0 " styleClass="form-label" rendered="#{opisBezZachList.docsSelList == null}"/>
+							</div>
+							
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+							   <h:panelGroup   rendered="#{opisBezZachList.docSelectedAllM.size() > 0}">
+									<span class="ui-separator" style="padding-right: 5px;" >
+										<span class="fas fa-ellipsis-v" />
+									</span>
+								
+									<h:outputText value="#{labels['opis.brIzbr']} #{opisBezZachList.docSelectedAllM.size()}"  styleClass="form-label" id="brSel"/>
+								</h:panelGroup>
+							</div>		
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+							 <h:panelGroup   rendered="#{opisBezZachList.docSelectedAllM.size() > 0}">
+							   <p:commandButton icon="fas fa-eraser" value="#{labels['opis.razmAll']}" 
+									 update="formOpisiBez " partialSubmit="true"   style="font-size:10pt;width:92%"
+									process="@this panelFilter panelTable" actionListener="#{opisBezZachList.actionRazm}"
+									styleClass="ui-button-warning"  />
+							  </h:panelGroup>		
+						    </div>	
+						   <div class="p-col-4 p-sm-4 p-md-4 p-lg-4 p-xl-4  ui-fluid" >
+						      <h:outputText value="" />
+						   </div>		  
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+							 <h:panelGroup   rendered="#{opisBezZachList.docSelectedAllM.size() > 0}" style="text-align: center;" >
+							   <p:commandButton icon="fas fa-search" value="#{labels['opis.bezZach']}" rendered="#{opisBezZachList.tipOpis!=2}"
+									 update="formOpisiBez " partialSubmit="true"   style="font-size:10pt;width:90%"
+									process="@this panelFilter panelTable" actionListener="#{opisBezZachList.actionIzbrForOpis}"
+									styleClass="ui-button-success"  />
+							 
+							   <p:commandButton icon="fas fa-search" value="#{labels['opis.cur']}"    rendered="#{opisBezZachList.tipOpis==2}"
+									 update="formOpisiBez " partialSubmit="true"  style="font-size:10pt;width:82%"
+									process="@this panelFilter panelTable" actionListener="#{opisBezZachList.actionIzbrForOpis}"
+									styleClass="ui-button-success"  />
+							  </h:panelGroup>		
+						    </div>			
+							
+							
+						</div>
+						</h:panelGroup>
+										                                                       <!-- #{ui_labels['general.norows']} --> 
+				       	<p:dataTable id="tblDocsOpisList" var="row" value="#{opisBezZachList.docsSelList}" lazy="true"  widgetVar="rowS"
+						rowIndexVar="idx" emptyMessage="#{labels['opis.noPredDok']}" rows="10" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						 paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true"
+                          rowsPerPageTemplate="5,10,15,20,25"    rowSelectMode="checkbox"   selection="#{opisBezZachList.docSelectedTmp}"  >
+
+						<p:ajax event="toggleSelect"	 	 listener="#{opisBezZachList.onRowSelectAll}" process="@this" update="@form:panelTableToolbar"/>
+												
+						<p:ajax event="rowSelectCheckbox"	 listener="#{opisBezZachList.onRowSelect}"   process="@this" update="@form:panelTableToolbar" />
+						<p:ajax event="rowUnselectCheckbox"  listener="#{opisBezZachList.onRowUnselect}" process="@this" update="@form:panelTableToolbar" />
+						<p:ajax event="page" listener="#{opisBezZachList.onPageUpdateSelected}"   />
+										    				   			
+						<f:facet name="{Exporters}">
+
+							<div style="float: left">
+
+								<h:commandLink id="excel">
+									<h:graphicImage library="images" name="excel2.png" />
+									
+								  <p:dataExporter type="xls" target="tblDocsOpisList" fileName="opisBezZachListXls"  postProcessor="#{opisBezZachList.postProcessXLS}" />  
+								</h:commandLink>   
+ <ui:remove><!-- 
+								<h:commandLink id="pdf">
+									<h:graphicImage library="images" name="pdf.png" />
+									<p:dataExporter type="pdf" target="tblDocsOpisList" fileName="opisBezZachListPdf" 	 encoding="windows-1251"
+					        			 preProcessor="#{opisBezZachList.preProcessPDF}"  options="#{opisBezZachList.pdfOptions()}"/>
+								</h:commandLink>    
+
+								<h:commandLink id="csv">
+									<h:graphicImage library="images" name="csv.png" />
+									<p:dataExporter type="csv" target="tblDocsOpisList" fileName="opisBezZachListCsv" encoding="CP1251" />
+								</h:commandLink>
+ --></ui:remove>
+							</div>
+
+						</f:facet>    
+			         	
+			         	<p:column selectionMode="multiple" exportable="false"  style="width:15px;text-align:center;"    rendered="#{!opisBezZachList.getVisCheck(row[0])}"/>				
+						<p:column  exportable="false"  style="width:15px;text-align:center;"   rendered="#{opisBezZachList.getVisCheck(row[0])}" >    <!-- Тази колона замества първата, когато е забранено маркирането -->
+							<h:outputText value=" "/>    
+						</p:column>
+						
+						<p:column width="25" exportable="false" headerText="#{ui_labels['general.No-symbol']}"  >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+                            <!--  Име получател -->
+						<p:column width="210" sortBy="#{row.A11}" headerText="#{labels['opis.polu']}"   >  
+														
+							<h:outputText value="#{row[11]}" />  
+						</p:column>
+						
+						    <!--  Дата на предаване -->
+						<p:column width="120" sortBy="#{row.A8}" headerText="#{labels['opis.datPred']}"  style="text-align:center;"  >  
+														
+							<h:outputText value="#{row[8]}" >       
+							
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{opisBezZachList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+						
+						     <!--  Рег. номер -->
+                        <p:column width="100" sortBy="#{row.A2}"  headerText="#{labels['opis.regN']}"  >   
+                                        				         
+							<h:outputText value="#{row[2]}" />
+						</p:column>
+						
+						   <!--  Тип документ -->
+						 <p:column width="100" sortBy="#{row.A6}" headerText="#{labels['opis.tipD']}"  >        
+														
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], opisBezZachList.currentLang, now)}" />
+						</p:column>
+						
+						   <!--  Вид документ -->
+						 <p:column width="180" sortBy="#{row.A7}" headerText="#{labels['opis.vidD']}"   >          
+														
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[7], opisBezZachList.currentLang, now)}" />
+						</p:column>
+						
+						      <!--  Номер екз. -->   <!-- row[1] - idDoc,  row[12] - ном. екз-->
+						 <p:column width="60" sortBy="#{row.A12}" headerText="#{labels['opis.nomEkz']}"  style="text-align:center;"   rendered="#{opisBezZachList.nastrWithEkz}" >   
+														
+							<h:outputText value="#{row[12]}" />  
+						</p:column>
+						
+						  <!--  Начин на предаване -->
+						 <p:column width="90" sortBy="#{row.A9}" headerText="#{labels['docDvijenie.nachin']}" exportable="false"   rendered="#{opisBezZachList.tipOpis==2}">          
+														
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row[9], opisBezZachList.currentLang, now)}" />
+						</p:column>
+						
+					    <p:column width="20" exportable="false">
+								<p:commandButton icon="fas fa-trash" action="#{opisBezZachList.actionDeleteDoc(row[0])}" style="font-size: 8pt;"
+									ajax="true" title="#{labels['opis.delFromSp']}" styleClass="ui-button-danger" update="@form" >
+									<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{labels['opis.messPotv']}" icon="fas fa-exclamation-triangle" />
+								</p:commandButton>  
+						</p:column>
+					</p:dataTable>
+                 
+				</h:panelGroup>	
+				
+          
+     <!--   </div>    -->
+           
+           <!--  ******************************************************************************************************************* --> 
+          
+          <!--  За избор на нови предадени документи -->
+          <!--  ******************************************************************************************************************* --> 
+          <p:dialog appendTo="@form"  closeOnEscape="true"
+		    header="#{opisBezZachList.zaglModal}" 
+		    fitViewport="true"		
+		    responsive="true"  
+		    resizable="true"
+		    
+		    position="top" width="95%"  style="font-size: 10pt; margin-top:50px !important" 
+			widgetVar="modalSelDocs" dynamic="true" id="modalSelDocsIdM" 
+			modal="true">
+			
+			  <p:ajax event="close" listener="#{opisBezZachList.handleCloseDialogSelDocs}" process="@this" update="formOpisiBez"  />
+			<p:outputPanel  id="panelSelDocs" >
+			     <p:messages>
+			        <p:autoUpdate />
+			     </p:messages>
+			     
+			      
+			     	<!-- FILTER -->	
+			 
+				<h:panelGroup id="panelFilter" >
+
+					<div class="card">
+		                <div class="p-grid p-align-end">	
+		                  <span style="padding-left:10px"></span>
+						 	  <!--Регистратура-->														
+								<div class="p-col-12">
+									  <h:outputText value="#{labels['users.registratura']}: #{opisBezZachList.nameRegistrPotreb}" styleClass="form-label"/>
+								</div>
+						 </div>     
+					   
+						<div class="p-grid">
+	                        <!--   Период за дата предаване  -->
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+								<h:outputText value="#{labels['opis.periodPred']}" styleClass="form-label req" />
+								<div class="ui-inputgroup">
+								     <p:focus id="focusPer" for="period" />	
+									<p:selectOneMenu id="period" value="#{opisBezZachList.period}" >
+										<f:selectItem value="#{null}" itemValue="#{null}" />
+										<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, opisBezZachList.currentLang)}"
+											var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+										<p:ajax event="change" update="period dateOt dateDo" listener="#{opisBezZachList.changePeriod}"/>  
+									</p:selectOneMenu>
+								 </div>	
+							</div>
+	                         
+	                         <span style="padding-left:24px"></span>
+							<div class="p-col-12 p-sm-6 p-md-3 p-lg-3 p-xl-3  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label" />
+								<p:datePicker id="dateOt" pattern="dd.MM.yyyy HH:mm" mask="true" showIcon="true" showTime="true"  locale="bg" 
+											value="#{opisBezZachList.dateFrom}" >
+									<p:ajax event="change" update="period" listener="#{opisBezZachList.changeDate}"/>
+									<p:ajax event="dateSelect" update="period" listener="#{opisBezZachList.changeDate}"/> 
+								</p:datePicker>  
+							</div>
+	                         
+	                         <span style="padding-left:23px"></span>
+							<div class="p-col-12 p-sm-3 p-md-3 p-lg-3  p-xl-3  ui-fluid">
+								<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+								<p:datePicker id="dateDo" pattern="dd.MM.yyyy HH:mm" mask="true" showIcon="true" showTime="true" locale="bg" 
+											value="#{opisBezZachList.dateTo}" >
+									<p:ajax event="change" update="period" listener="#{opisBezZachList.changeDate}"/>
+									<p:ajax event="dateSelect" update="period" listener="#{opisBezZachList.changeDate}"/>
+								</p:datePicker>
+							</div>
+	
+						</div>
+					
+						 
+						 <!--    Предаден на - код от Адм. стр. -->
+						<div class="p-grid"> 
+						<div class="p-col-11 p-sm-11 p-md-11 p-lg-11 p-xl-11  ui-fluid">	
+							<h:outputText value="#{labels['opis.predNa']}" styleClass="form-label"/>
+							 
+							<ibg:selectManyModalA id="listAdmStr" compType="2" maxResults="50"  
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}" 																
+								dateClassif="#{opisBezZachList.decodeDate}" filtered="false"
+								saveStateTree="false" showRadioBtn="true" 
+								selectedCodes="#{opisBezZachList.codesPredNaList}"
+								selectedClassifs="#{opisBezZachList.listPredNaClassif}"
+								styleAutoComp="width:92%;"
+								withBtnClear="true" /> 
+							 	
+						</div>
+						</div>
+					
+						 <!--    Предадени на  кореспондент . -->  
+						<!-- трябва да се добави и компонента за търсене на корепоснденти?  -->
+					<div class="p-grid  ui-fluid">
+						<div class="p-col-11 p-sm-11 p-md-11 p-lg-11 p-xl-11  ui-fluid ">
+						   <h:outputText value="#{labels['opis.predNaCoresp']}" styleClass="form-label"/>
+						
+						<!--  Множествен избор на кореспонденти     #{OmbConstants.CODE_CLASSIF_REFERENTS} -->
+						  <h:panelGroup id="panelCorresp">
+							
+								<div class="p-grid  ui-fluid">
+									<div class="p-col-12" >
+										<div class="select-modal-wrapper">     <!-- select-modal-wrapper   -->
+									
+											<ibg:selectManyModalA id="refCorrInpM" 
+													codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+													compType="3" 			
+													selectedCodes="#{opisBezZachList.codeRefCorrespList}"
+													selectedClassifs="#{opisBezZachList.scList}"										
+												    withBtnClear="true" minQueryLength="3"
+													styleAutoComp="width:92%;" 
+													dopInfoAutoComp="true" itemtipAtPosition="center bottom"/>
+												  
+											<!--  Разширено търсене на кореспондент -->
+											<p:commandButton id="btnCorrS"
+												onmousemove="document.getElementById('@form:btnCorrS').focus();"
+												icon="fas fa-list-ul" partialSubmit="true"
+												process="@form:dpCorrSearch @this"
+												update="@form:dpCorrSearch"
+												styleClass="select-modal-button"  style="margin-right:72px;"
+												oncomplete="PF('mCorrS').show();"
+												title="#{labels['search.extendRef']}" />
+									
+										</div>   
+												
+									</div>
+								</div>
+												
+					  <!-- 	При връщане от разширеното търсене трябва да се погрижим да се добави в списъка  !!!   -->
+					  <!--  Това става с функция opisBezZachList.actionAddSelectRef, която се задава в <p:remoteCommand  с actionListener  -->
+							</h:panelGroup>
+						
+						
+						  <!--  Избор за един кореспондент -->
+						<h:panelGroup id="cor"    rendered="false">												
+							<h:outputText value="#{labels['opis.predNaCoresp']}" styleClass="form-label"/>	
+							<div class="ui-inputgroup">
+											
+								<p:inputText value="#{opisBezZachList.txtCorresp}" id="coresp">	
+									<p:ajax event="keyup" update="coresp" listener="#{opisBezZachList.actionChangeTxtCorresp}"/>   
+								</p:inputText>
+								<p:commandButton id="btnDelCorresp1" value="x" style="font-weight: bold;font-size: 8pt; color:black; background-color: #0000;  " 
+								  title="Изтриване на въведен кореспондент" rendered="#{opisBezZachList.codeRefCorresp!=null or (opisBezZachList.txtCorresp!=null and opisBezZachList.txtCorresp!='') }" >
+								   <p:ajax event="click"  listener="#{opisBezZachList.actionClearCorresp}"  update="formOpisiBez:coresp formOpisiBez:cor @this" />
+								</p:commandButton>
+											
+								<!--  Разширено търсене на  кореспондент -->
+								<p:commandButton id="btnCorrS1" styleClass="inputgroup-button"  
+									onmousemove="document.getElementById('formOpisiBez:btnCorrS1').focus();"
+									icon="fas fa-list-ul" partialSubmit="true"
+									process="dpCorrSearch"							
+									update="formOpisiBez:coresp formOpisiBez:cor  @this"
+									oncomplete="PF('mCorrS').show();"
+									title="" />		<!-- onmousemove="document.getElementById('panelSelDocs:btnCorrS1').focus();"  -->																					
+							</div>
+							<p:remoteCommand name="cmdSelectCorresp" 
+											update="formOpisiBez:coresp formOpisiBez:cor"
+											process="formOpisiBez:coresp formOpisiBez:cor @this"
+											actionListener="#{opisBezZachList.actionSelectCorresp}" />	
+						  </h:panelGroup>																														    
+						</div>
+					</div>	
+					
+						<div class="title-group">
+							<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#srch-extended')">
+								<h:outputText value="#{ui_labels['search.extend']}"/>
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+					    </div>
+					
+					<div  id="srch-extended"  style="display: none;">
+					 
+						 <!--   Предаден на - с текст -->
+						<div class="p-grid">
+	
+							<div class="p-col-6 p-sm-6 p-md-6 p-lg-6 p-xl-6 ui-fluid">
+							     <h:outputText value="#{labels['docDvijenie.txtPredaden']}" styleClass="form-label"/>
+							   <div class="ui-inputgroup">
+							       <p:inputText id="txtPredaden" value="#{opisBezZachList.textPredNa}" onkeypress="if(event.keyCode == 13) {event.preventDefault(); $(':focus').blur()} " />
+							   </div>
+						 	</div>	
+							
+						</div>		
+						
+						
+					 	
+						<div class="p-grid">
+                            <!--Регистрирано движение от потребител-->						 
+							<div class="p-col-6 p-sm-6 p-md-6 p-lg-6 p-xl-6  ui-fluid">
+								<h:outputText value="#{labels['opis.userRegDvij']}" styleClass="form-label"/>
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_USERS}" 
+										id="user"  dateClassif="#{opisBezZachList.decodeDate}" filtered="false" 													
+										selectedCode="#{opisBezZachList.userRegDvij}" saveStateTree="true"
+										withBtnClear="true" compType="4" styleAutoComp="" />
+															
+							</div>
+							
+							<!--Вид на документа-->							
+							<div   class="p-col-5 p-sm-5 p-md-5 p-lg-5 p-xl-5  ui-fluid">	
+								<h:outputText value="#{labels['docVidSetting.typeDoc']}" styleClass="form-label"/>
+								<ibg:selectManyModalA id="lstDocsVid" compType="2" maxResults="50"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+									dateClassif="#{opisBezZachList.decodeDate}" filtered="false"
+									saveStateTree="false" showRadioBtn="true" 
+									selectedCodes="#{opisBezZachList.docVidList}"
+									selectedClassifs="#{opisBezZachList.docsVidClassif}"
+								    	styleAutoComp="width:82%;"
+									withBtnClear="true" /> 
+														
+							</div>   
+						 </div>	
+							                   
+	                   </div>
+	                   
+	                     <div   class="p-col-12 ui-fluid">
+	                     <h:outputText value=" " />
+	                     </div>
+	                     
+						<div class="filter-buttons">
+						 
+							<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+											id="btnSearchDoc" update="panelSelDocs" partialSubmit="true" style="font-size: 10pt;" 
+											process="@this formOpisiBez" actionListener="#{opisBezZachList.actionSearchInModal}"
+											 title="#{ui_labels['general.titleSearch']}" styleClass="p-mr-3" />
+	
+							
+	
+							<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+											 id="btnClear"   partialSubmit="true" process="@this" update="panelSelDocs"
+											  actionListener="#{opisBezZachList.actionClear}" style="font-size: 10pt;" 
+											 title="#{ui_labels['general.titleClear']}" styleClass="ui-button-warning" />
+							
+							
+						</div>
+	
+					</div> 
+				
+				</h:panelGroup>
+				
+				<h:panelGroup  layout="block"  styleClass="margin-top"  rendered="#{opisBezZachList.docsList == null}">
+				     <div  class="p-grid" >
+				   
+				   
+		                  	   
+		                       <div class="p-col-10 p-sm-10 p-md-10 p-lg-10 p-xl-10  ui-fluid" style="text-align: right;" >
+		                     		                        
+		                           <h:outputText value=" " />
+		                       </div> 
+		                       
+		                       <div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" style="text-align: left;">
+		                     	<h:panelGroup rendered="false">	  	                       		                            
+								<p:commandButton icon="fas fa-eraser" value="#{labels['opis.kamSpisak']}" 
+									   partialSubmit="true" process="@this" update="formOpisiBez"  styleClass="btn-normal" style="font-size: 10pt;width:85%" rendered="#{opisBezZachList.docsSelList != null and opisBezZachList.docsSelList.rowCount > 0}"
+									    >
+									   <p:ajax event="click" listener="#{opisBezZachList.handleCloseDialogSelDocs}" oncomplete="PF('modalSelDocs').hide();"  />    
+							     </p:commandButton>		   
+							  	
+							  								
+			         		     <p:commandButton icon="fas fa-eraser" value="#{labels['opis.close']}" 
+									   partialSubmit="true" process="@this" update="formOpisiBez"  styleClass="btn-normal" style="font-size: 10pt;width:60%" rendered="#{opisBezZachList.docsSelList == null or  opisBezZachList.docsSelList.rowCount == 0}"
+									   >
+									<p:ajax event="click" listener="#{opisBezZachList.handleCloseDialogSelDocs}" oncomplete="PF('modalSelDocs').hide();"  />  
+								 </p:commandButton>	   
+			         		    </h:panelGroup>
+			         		    
+			         		    </div> 
+			         		   		  						
+							 
+						</div>
+				</h:panelGroup>		
+        	 			
+			  <h:panelGroup id="panelTableModal" layout="block"  styleClass="margin-top"  rendered="#{opisBezZachList.docsList != null}">
+				   <h:panelGroup id="panelTblToolbar">
+					
+						<div  class="p-grid" >
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid">
+								<h:outputText value="#{labels['opis.brNovi']} #{opisBezZachList.docsList.rowCount}" styleClass="form-label" rendered="#{opisBezZachList.docsList != null}"/>
+							</div>
+							
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+							   <h:panelGroup   rendered="#{opisBezZachList.docSelectedAllModal.size() > 0}">
+									<span class="ui-separator" style="padding-right: 5px;" >
+										<span class="fas fa-ellipsis-v" />
+									</span>
+								
+									<h:outputText value="#{labels['opis.brIzbr']} #{opisBezZachList.docSelectedAllModal.size()}"  styleClass="form-label" id="brSelDocs"/>
+								</h:panelGroup>
+							</div>		
+							<div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+							 <h:panelGroup   rendered="#{opisBezZachList.docSelectedAllModal.size() > 0}">
+							   <p:commandButton icon="fas fa-eraser" value="#{labels['opis.razmAll']}" 
+									 update="panelSelDocs " partialSubmit="true"   
+									process="@this panelFilter panelTableModal" actionListener="#{opisBezZachList.actionRazmModal}"
+									styleClass="ui-button-warning" style="width:90%" />
+							  </h:panelGroup>
+							  	 
+						    </div>	
+						   <div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" >
+						      <h:outputText value="" />
+						   </div>
+						   
+						   		                       
+	                       
+	                          <div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" style="text-align: right;" >
+	                               
+		                           <p:commandButton icon="fas fa-plus" value="#{labels['opis.addSpisak']}"   rendered="#{opisBezZachList.docsList != null and opisBezZachList.docsList.rowCount > 0 and opisBezZachList.docSelectedAllModal.size()== 0}"
+									   partialSubmit="true" process="@this" update="formOpisiBez"  style="font-size: 10pt;width:78%"  styleClass="ui-button-success"
+									    >
+									   <p:confirm header="#{ui_labels['general.comfirmation']}" message="#{labels['opis.messPotvPredDocAllBack']}" icon="fas fa-exclamation-triangle" />
+									   <p:ajax event="click" listener="#{opisBezZachList.handleSelDocsOKAll}" oncomplete="PF('modalSelDocs').hide();"  />  
+									</p:commandButton>   
+		                            
+                                   <p:commandButton icon="fas fa-plus" value="#{labels['opis.addSpisak']}"  rendered="#{opisBezZachList.docSelectedAllModal.size()> 0}"
+									   partialSubmit="true" process="@this" update="formOpisiBez"  style="font-size: 10pt;width:78%"  styleClass="ui-button-success"
+									   >
+									   <p:ajax event="click" listener="#{opisBezZachList.handleSelDocsOK}" oncomplete="PF('modalSelDocs').hide();"  />  
+								    </p:commandButton>	   
+		                        
+		                       
+		                       </div> 
+		                       <div class="p-col-2 p-sm-2 p-md-2 p-lg-2 p-xl-2  ui-fluid" style="text-align: left;">
+		                        <h:panelGroup rendered="false">		                          	  
+								<p:commandButton icon="fas fa-eraser" value="#{labels['opis.kamSpisak']}" 
+									   partialSubmit="true" process="@this" update="formOpisiBez"  styleClass="btn-normal" style="font-size: 10pt;width:85%" rendered="#{opisBezZachList.docsSelList != null and opisBezZachList.docsSelList.rowCount > 0 }"
+									  >
+									   <p:ajax event="click" listener="#{opisBezZachList.handleCloseDialogSelDocs}" oncomplete="PF('modalSelDocs').hide();"  />  
+							  	</p:commandButton>
+							  								
+			         		      <p:commandButton icon="fas fa-eraser" value="#{labels['opis.close']}" 
+									   partialSubmit="true" process="@this" update="formOpisiBez"  styleClass="btn-normal" style="font-size: 10pt;width:60%" rendered="#{opisBezZachList.docsSelList == null or opisBezZachList.docsSelList.rowCount == 0}"
+									  >
+									 <p:ajax event="click" listener="#{opisBezZachList.handleCloseDialogSelDocs}" oncomplete="PF('modalSelDocs').hide();"  />  
+								  </p:commandButton>	   
+			         		     </h:panelGroup> 
+			         		    </div> 	
+			         						 						
+							
+						</div>
+					  </h:panelGroup>
+					  
+				       	<p:dataTable id="tblDocsOpis" var="row" value="#{opisBezZachList.docsList}" lazy="true"  widgetVar="rowS"
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']} (#{labels['opis.noAddDoc']})" rows="10" sortMode="single" reflow="true"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="false" paginator="true"
+                        rowSelectMode="checkbox"   selection="#{opisBezZachList.docSelectedTmpModal}" >
+
+						<p:ajax event="toggleSelect"	 	 listener="#{opisBezZachList.onRowSelectAllModal}" process="@this" update="@form:panelTblToolbar"/>
+												
+						<p:ajax event="rowSelectCheckbox"  	 listener="#{opisBezZachList.onRowSelectModal}"   process="@this" update="@form:panelTblToolbar" />
+						<p:ajax event="rowUnselectCheckbox"   listener="#{opisBezZachList.onRowUnselectModal}" process="@this" update="@form:panelTblToolbar" />
+						<p:ajax event="page" listener="#{opisBezZachList.onPageUpdateSelectedModal}"   />
+													
+						 <p:column selectionMode="multiple" exportable="false"  style="width:15px;text-align:center;"    />	  
+												
+						<p:column width="25" exportable="false" headerText="#{ui_labels['general.No-symbol']}"  >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="200" sortBy="#{row.A11}" headerText="#{labels['opis.polu']}"  >  <!--  Получател -->
+							<h:outputText value="#{row[11]}" />
+						</p:column>
+						<p:column width="70" sortBy="#{row.A8}" headerText="#{labels['opis.datPred']}" style="text-align:center;" >  <!-- Дата на предаване -->
+							<h:outputText value="#{row[8]}" >
+							
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{opisBezZachList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+                        <p:column width="100" sortBy="#{row.A2}" headerText="#{labels['opis.regN']}"  >            
+							<h:outputText value="#{row[2]}" />
+						</p:column>
+						 <p:column width="100" sortBy="#{row.A6}" headerText="#{labels['opis.tipD']}" >         <!--  Тип документ -->
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], opisBezZachList.currentLang, now)}" />
+						</p:column>
+						 <p:column width="150" sortBy="#{row.A7}" headerText="#{labels['opis.vidD']}" >           <!--  Вид документ -->
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[7], opisBezZachList.currentLang, now)}" />
+						</p:column>
+						 <p:column width="60" sortBy="#{row.A12}" headerText="#{labels['opis.nomEkz']}" style="text-align:center;"   rendered="#{opisBezZachList.nastrWithEkz}" >   <!--  Номер екз. -->
+							<h:outputText value="#{row[12]}" />
+						</p:column>
+									
+					</p:dataTable>
+                 
+				</h:panelGroup>	
+				 <!--  ******************************************************************************************************************* --> 
+				
+				<!--  Множествен избор на кореспонденти -->
+				
+				<h:panelGroup id="dpCorrSearch">	
+	              <p:remoteCommand name="cmdAddRef" 
+	 				process="@this"		
+	 				update="@form:panelCorresp"
+	 				actionListener="#{opisBezZachList.actionAddSelectRef}" />
+	  				
+						<p:dialog appendTo="@form"  closeOnEscape="true"
+						    header="#{labels['docu.titleExtSrchCoresp']}" 
+						    fitViewport="true"	
+						    responsive="true" 
+						    resizable="true"
+						    position="top"	  
+							widgetVar="mCorrS" dynamic="true" id="modalCorrS" 
+							modal="true">
+							<div class="container #{guestPreferences.containerPosition}">		
+								
+								 	<ibg:refCorrespSearch id="mCorrS" myId="cCorr1"
+										 codeRef="#{opisBezZachList.codeRefCorrSrch}"
+															
+										 modal="true"
+										 update="@form:panelCorresp"
+										 onComplete = "cmdAddRef()"/>
+								
+							</div>
+										
+						</p:dialog>	
+					</h:panelGroup>
+			         
+			         <!-- Избор на един кореспондент  -->  
+			        <h:panelGroup id="dpCorrSearch1"  rendered="false">
+						<p:dialog appendTo="@form"   position="top"
+						fitViewport="true"		
+					    responsive="true"  
+					    resizable="true"
+							header="Разширено търсене на кореспондент" minWidth="650" 
+							width="950" widgetVar="mCorrS" dynamic="true" id="modalCorrS1" modal="true">
+								<ibg:refCorrespSearch id="mCorrS1" myId="cCorr2"
+									codeRef="#{opisBezZachList.codeRefCorresp}"
+									searchTxt="#{opisBezZachList.txtCorresp}"
+									dateClassif="#{opisBezZachList.decodeDate}"
+									modal="true" update="formOpisiBez:coresp"
+									onComplete="PF('mCorrS1').hide();  cmdSelectCorresp()" />
+			
+						</p:dialog>
+					</h:panelGroup>           
+			                        
+			</p:outputPanel>
+			  
+	      </p:dialog>		  
+          
+          
+          <!--   Избрани предадени документи за формиране на опис -->
+           <!--  ******************************************************************************************************************* --> 
+          <p:dialog appendTo="@form"  closeOnEscape="true"
+		    header="#{opisBezZachList.zaglModal} " 
+		    fitViewport="true"		
+		    responsive="true"  
+		    resizable="true"
+		    
+		    position="top" style="font-size: 10pt; margin-top:50px !important" 
+			widgetVar="modalFormOpis" dynamic="true" id="modalFormOpisIdM" 
+			modal="true">
+			
+			  <p:ajax event="close" listener="#{opisBezZachList.handleCloseDialogFormOpis}" process="@this" update="formOpisiBez"  />
+			  <h:panelGroup rendered="#{opisBezZachList.tipOpis != 2}" >
+                              <h:outputText value="#{labels['opis.sort']}:"   style="font-weight: bold; " />
+			       				 <p:selectOneRadio  id="wh_data"  value="#{opisBezZachList.vidSort}"  style="font-weight: bold;color:blue;" >                                                                
+			                          <f:selectItem itemValue="0" itemLabel="#{labels['opis.sortPoluch']}"  />                 
+			                          <f:selectItem itemValue="1" itemLabel="#{labels['opis.sortTipDoc']}"  />
+			                          <f:selectItem itemValue="2" itemLabel="#{labels['opis.sortVidDoc']}"   />
+			                          <p:ajax event="click" listener="#{opisBezZachList.actionSort}"  process="@this" partialSubmit="true"  update="panelT tblDocs" />
+			                          
+			                     </p:selectOneRadio>
+			  </h:panelGroup> 
+			  
+			  <div class="filter-buttons">
+			      <h:outputText value="#{labels['opis.exportv']}: "  styleClass="p-mr-3"/>
+			          
+						<h:commandLink  actionListener="#{opisBezZachList.htmlExport}"  target="_blank" style="color:blue;vertical-align: middle;font-size:10pt;" styleClass="p-mr-3">
+						   <!--  <h:graphicImage library="images" name="html.png"  /> -->  <!--  style="font-size:10pt;"  -->
+						   <h:outputText value="Html" />
+						     <i class="fab fa-html5" />
+				             <!--  <i class="fas fa-print" />  -->
+						</h:commandLink>
+													
+						<h:commandLink  actionListener="#{opisBezZachList.wordExport}"  target="_blank" style="color:blue;vertical-align: middle;font-size:10pt;" styleClass="p-mr-3" >
+						   <!--   <h:graphicImage library="images" name="word.png"  /> -->  
+				       		<h:outputText value="Word" />
+				       		 <i class="fas fa-file-word" />
+				       		  
+						</h:commandLink>
+						
+						<h:commandLink  actionListener="#{opisBezZachList.excelExport}" target="_blank" style="color:blue;vertical-align: baseline; font-size:10pt;" styleClass="p-mr-3" >
+				       	  <!--   <h:graphicImage library="images" name="excel.png"  />   --> 
+					       <h:outputText value="Excel"  />
+					        <i class="fas fa-file-excel" />
+					  	</h:commandLink> 
+			  </div>
+			
+			  <h:panelGroup id="panelT" layout="block"  styleClass="margin-top"  >
+									  
+				       	<p:dataTable id="tblDocs" var="row" value="#{opisBezZachList.docSelectedAllMT}" lazy="true"  
+						rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="10" sortMode="single" reflow="true"
+						style="font-size: 10pt;"  
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true"
+                         >
+
+						
+						<p:column width="20" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+							<h:outputText value="#{idx + 1}" />
+						</p:column>
+
+						<p:column width="250" headerText="#{labels['opis.polu']}">    <!--  Получател -->
+							<h:outputText value="#{row[11]}" />
+						</p:column>
+						<p:column width="70"  headerText="#{labels['opis.datPred']}" style="text-align:center;">   <!-- Дата на предаване -->
+							<h:outputText value="#{row[8]}" >
+							
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{opisBezZachList.timeZone}"/>
+							</h:outputText>
+						</p:column>
+                         <p:column width="100"  headerText="#{labels['opis.regN']}">   <!-- Рег. номер  -->
+							<h:outputText value="#{row[2]}" />
+						</p:column>
+						<p:column width="80"  headerText="#{labels['docu.docDate']}" style="text-align:center;" >									  
+							<h:outputText value="#{row[5]}">	
+								<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{opisZachList.timeZone}"/>
+							</h:outputText>							    
+						</p:column>
+						
+						<p:column width="*" styleClass="col200"  headerText="#{labels['docu.otnosno']}">
+							<h:outputText value="#{row[17]}"  />								    
+						</p:column>
+						
+						 <p:column width="90"  headerText="#{labels['opis.tipD']}">           <!--  Тип документ -->
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[6], opisZachList.currentLang, now)}" />
+						</p:column>
+						 <p:column width="220"  headerText="#{labels['opis.vidD']}">           <!--  Вид документ -->
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[7], opisZachList.currentLang, now)}" />
+						</p:column>
+						
+						 <p:column width="50"  headerText="#{labels['opis.nomEkz']}" style="text-align:center;"   rendered="#{opisBezZachList.nastrWithEkz}">   <!-- Номер екз. -->
+							<h:outputText value="#{row[12]}" />
+						</p:column>
+					
+					</p:dataTable>
+                 
+				</h:panelGroup>	
+			 
+			 
+			 	<div class="p-grid"> 
+						
+							 <div   class="p-col-12 ui-fluid">
+	                           <h:outputText value=" " />
+	                         </div>
+	                     	<h:panelGroup rendered="false">
+							<p:commandButton icon="fas fa-eraser" value="#{labels['opis.close']}" 
+								   partialSubmit="true" process="@this" update="formOpisiBez"  
+								  >
+							   <p:ajax event="click" listener="#{opisBezZachList.handleCloseDialogFormOpis}" oncomplete="PF('modalFormOpis').hide();"  />  
+							 </p:commandButton>  	   
+							</h:panelGroup>	
+			    </div>               <!-- styleClass="ui-button-secondary"  styleClass="ui-button-success" -->
+					
+		</p:dialog>
+	      <!--  ******************************************************************************************************************* --> 
+	          
+		</h:form>
+
+</html>		

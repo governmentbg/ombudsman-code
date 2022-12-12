@@ -1,0 +1,632 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+	
+	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+	</f:metadata>
+	
+	<style type="text/css">
+		.ui-commandlink.lichni-danni-link {
+			color: unset;
+		}
+		
+		.ui-commandlink.lichni-danni-link.active {
+			font-weight: bold;
+		}
+	</style>
+               
+	<h:form id="jalbiListForm">
+	
+		<div class="container #{guestPreferences.containerPosition}">
+		
+			<!-- FILTER -->
+			<div jsf:id="panelFilter">
+				<div class="card">
+					
+					<div class="p-grid ui-fluid p-align-end">
+						
+						<!--Входящ номер-->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['complaint.vhNomer']}" styleClass="form-label"/>
+							<div class="ui-inputgroup">
+								<p:inputText value="#{jalbaList.jalbaSearch.rnDoc}" id="rnDoc"/>
+								<p:focus for="rnDoc" />
+								<p:selectBooleanButton id="rndEq" value="#{jalbaList.jalbaSearch.rnDocEQ}"
+										onLabel="#{ui_labels['general.yes']}"
+										offLabel="#{ui_labels['general.no']}"
+										title="#{labels['complaint.docSrchVhNom']}"
+										onIcon="fas fa-toggle-on"
+										offIcon="fas fa-toggle-off"
+										styleClass="inputgroup-button" >
+									<p:ajax update="@this rnDoc" partialSubmit="true" process="@this rnDoc"/>
+								</p:selectBooleanButton>
+							</div>
+						</div>
+						
+						<!--Период на регистрация-->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['complaint.periodReg']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodReg" value="#{jalbaList.periodReg}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, jalbaList.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodReg dateOtReg dateDoReg" listener="#{jalbaList.changePeriodReg}"/>
+						    </p:selectOneMenu>
+					   	</div>
+					   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtReg" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.docDateFrom}">
+								<p:ajax event="change" update="periodReg" listener="#{jalbaList.resetDateReg}"/>
+								<p:ajax event="dateSelect" update="periodReg" listener="#{jalbaList.resetDateReg}"/>
+							</p:datePicker>
+					  	</div>
+						
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoReg" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.docDateTo}">
+								<p:ajax event="change" update="periodReg" listener="#{jalbaList.resetDateReg}"/>
+								<p:ajax event="dateSelect" update="periodReg" listener="#{jalbaList.resetDateReg}"/>
+							</p:datePicker>
+					 	</div>
+						
+					 	<!-- Звено, към което е разпределена жалбата -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['jp.zvenoRazp']}" styleClass="form-label "/>
+							<ibg:selectOneModalA id="zveno"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_ZVENA}"
+								dateClassif="#{jalbaList.decodeDate}" filtered="false" minQueryLength="2"
+								selectedCode="#{jalbaList.jalbaSearch.codeZveno}"
+								styleAutoComp="" saveStateTree="false"
+								header="#{labels['dvijenie.admStruktura']}"
+								isSelectNode="true"	withBtnClear="true" compType="2" />
+						</div>
+					 
+					 	<!-- Период на срока за разглеждане -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['complaint.periodRazgl']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodRazgl" value="#{jalbaList.periodRazgl}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, jalbaList.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodRazgl dateOtRazgl dateDoRazgl" listener="#{jalbaList.changePeriodRazgl}"/>
+						    </p:selectOneMenu>
+					   	</div>
+				   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtRazgl" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.srokFrom}">
+								<p:ajax event="change" update="periodRazgl" listener="#{jalbaList.resetDateRazgl}"/>
+								<p:ajax event="dateSelect" update="periodRazgl" listener="#{jalbaList.resetDateRazgl}"/>
+							</p:datePicker>
+					  	</div>
+											
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoRazgl" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.srokTo}">
+								<p:ajax event="change" update="periodRazgl" listener="#{jalbaList.resetDateRazgl}"/>
+								<p:ajax event="dateSelect" update="periodRazgl" listener="#{jalbaList.resetDateRazgl}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Състояние на жалбата -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['jp.sast']}" styleClass="form-label"/>
+							<ibg:selectManyModalA id="selectManySastoianie" compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_JALBA_SAST}"
+								dateClassif="#{jalbaList.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{jalbaList.jalbaSearch.sastList}"
+								selectedClassifs="#{jalbaList.jalbaSastoiania}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+						
+						<!-- Водещ експерт -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['jp.vodeshExp']}" styleClass="form-label" />
+						    <ibg:selectOneModalA id="goliamEkspert"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}"
+								dateClassif="#{jalbaList.decodeDate}" filtered="false"
+								selectedCode="#{jalbaList.jalbaSearch.codeExpert}"
+								styleAutoComp="" saveStateTree="true"
+								header="#{labels['jp.vodeshExp']}"
+								isSelectNode="false" minQueryLength="2"
+								withBtnClear="true" compType="2" />
+						</div>
+						
+						<!-- Допълнителна информация -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['docu.dopInfo']}" styleClass="form-label" />
+							<p:inputText value="#{jalbaList.jalbaSearch.docInfo}" />
+						</div>						
+					 
+					 	<!-- Имена на жалбоподателя -->
+					 	<div class="p-col-12 p-sm-6 p-lg-3">
+							<h:outputText value="#{labels['jp.namesJp']}" styleClass="form-label "/>
+							<p:inputText id="ime" value="#{jalbaList.jalbaSearch.jbpName}"/>
+						</div>
+						
+						<!-- Запазена самоличност -->
+					 	<div class="p-col-12 p-sm-6 p-lg-3">
+							<p:selectBooleanCheckbox value="#{jalbaList.zapazenaSamol}" itemLabel="#{labels['jl.jbpHidden']}">
+								<p:ajax listener="#{jalbaList.checkZapazenaSamol}" partialSubmit="true" process="@this"/>
+							</p:selectBooleanCheckbox>
+						</div>
+						
+						<!-- ЕГН / ЛНЧ / ЕИК -->
+						<div jsf:id="lichniDanniVid" class="p-col-4 p-lg-2">
+							<p:commandLink update="lichniDanniVid" ajax="true" partialSubmit="@this" actionListener="#{jalbaList.changeLichniDanniType('egn')}"
+								styleClass="lichni-danni-link #{jalbaList.lichniDanniVid eq 'egn' ? 'active' : ''}">
+					            <h:outputText value="#{ui_labels['general.egn']}" />
+					        </p:commandLink> /
+					        <p:commandLink update="lichniDanniVid" ajax="true" partialSubmit="@this" actionListener="#{jalbaList.changeLichniDanniType('lnc')}"
+					        	styleClass="lichni-danni-link #{jalbaList.lichniDanniVid eq 'lnc' ? 'active' : ''}">
+					            <h:outputText value="#{ui_labels['general.lnch']}" />
+					        </p:commandLink> /
+					        <p:commandLink update="lichniDanniVid" ajax="true" partialSubmit="@this" actionListener="#{jalbaList.changeLichniDanniType('eik')}"
+					        	styleClass="lichni-danni-link #{jalbaList.lichniDanniVid eq 'eik' ? 'active' : ''}">
+					            <h:outputText value="#{ui_labels['general.eik']}" />
+					        </p:commandLink>
+					        
+							<p:inputText id="egn" value="#{jalbaList.jalbaSearch.jbpEgn}" rendered="#{jalbaList.lichniDanniVid eq 'egn'}"/>
+							<p:inputText id="lnc" value="#{jalbaList.jalbaSearch.jbpLnc}" rendered="#{jalbaList.lichniDanniVid eq 'lnc'}"/>
+							<p:inputText id="eik" value="#{jalbaList.jalbaSearch.jbpEik}" rendered="#{jalbaList.lichniDanniVid eq 'eik'}"/>
+							
+						</div>
+						
+						<!-- Имейл -->
+					 	<div class="p-col-4 p-lg-2">
+							<h:outputText value="#{ui_labels['general.email']}" styleClass="form-label "/>
+							<p:inputText id="email" value="#{jalbaList.jalbaSearch.jbpEmail}"/>
+						</div>
+						
+						<!-- Телефон -->
+					 	<div class="p-col-4 p-lg-2">
+							<h:outputText value="#{ui_labels['general.phone']}" styleClass="form-label "/>
+							<p:inputText id="phone" value="#{jalbaList.jalbaSearch.jbpPhone}"/>
+						</div>
+					 
+						<div class="p-col-12">
+							<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#event-extended')">
+								<h:outputText value="#{ui_labels['search.extend']}"/>
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+						</div>
+					</div>
+				
+					<!-- Разширено търсене -->
+					<div class="p-grid extended-search p-align-end ui-fluid" id="event-extended" style="display: none;">
+						
+						<!-- Гражданство  -->
+						<div class="p-col-6 p-sm-6 p-lg-3">
+							<h:outputText value="#{labels['jbp.nation']}"  styleClass="form-label"/>
+							<ibg:selectOneModalA  id="nation" compType="3" styleAutoComp=""
+								codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"
+								selectedCode="#{jalbaList.jalbaSearch.jbpGrj}" 
+								emptyMessage="#{labels['docu.countryEmptyMsg']}"
+								saveStateTree="false" withBtnClear="false" minQueryLength="2" />
+						</div>
+						
+						<!-- Населено място  -->
+						<div class="p-col-6 p-sm-6 p-lg-3" >
+							<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="form-label" />
+							<ibg:selectOneModalA  id="miasto"
+							    readonly="false"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"
+								selectedCode="#{jalbaList.jalbaSearch.jbpEkatte}"
+								emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+								saveStateTree="false" withBtnClear="false" compType="3" minQueryLength="3"	styleAutoComp=""
+								dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>
+						</div>
+						
+						<!-- Описание от жалбоподателя -->
+					 	<div class="p-col-12 p-sm-6 p-lg-3">
+							<h:outputText value="#{labels['jp.opisJlp']}" styleClass="form-label" />
+							<p:inputText id="opisanie" value="#{jalbaList.jalbaSearch.jalbaText}" />
+						</div>
+						
+						<!-- Конкретно искане -->
+						<div class="p-col-12 p-sm-6 p-lg-3">
+							<h:outputText value="#{labels['jp.iskane']}" styleClass="form-label" />
+							<p:inputText id="iskane" value="#{jalbaList.jalbaSearch.requestText}" />
+						</div>
+						
+						<!-- Нарушител -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['complaint.narushitel']}"  styleClass="form-label " />
+							<div class="ui-inputgroup">
+								
+								<p:inputText value="#{jalbaList.textNarush}" id="coresp">
+									<p:ajax event="keyup" listener="#{jalbaList.actionChangeTextNarush}"/>
+								</p:inputText>
+								<!--  Разширено търсене на кореспондент -->
+								<p:commandButton id="btnCorrS" styleClass="inputgroup-button"
+									onmousemove="document.getElementById('jalbiListForm:btnCorrS').focus();"
+									icon="fas fa-list-ul" partialSubmit="true"
+									process="jalbiListForm:dpCorrSearch"
+									update="jalbiListForm:dpCorrSearch @this"
+									oncomplete="PF('mCorrS').show();"
+									title="" />
+							</div>
+							<p:remoteCommand name="cmdSelectCorresp" update="coresp" process="coresp @this"	actionListener="#{jalbaList.actionSelectNarush}" />
+						</div>
+					 	
+					 	<!-- Период на датата на извършване на нарушението -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['complaint.periodNarushenie']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodNarush" value="#{jalbaList.periodNarush}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, jalbaList.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodNarush dateOtNarush dateDoNarush" listener="#{jalbaList.changePeriodNarush}"/>
+						    </p:selectOneMenu>
+					   	</div>
+				   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtNarush" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.dateNarFrom}">
+								<p:ajax event="change" update="periodNarush" listener="#{jalbaList.resetDateNarush}"/>
+								<p:ajax event="dateSelect" update="periodNarush" listener="#{jalbaList.resetDateNarush}"/>
+							</p:datePicker>
+					  	</div>
+					
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoNarush" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.dateNarTo}">
+								<p:ajax event="change" update="periodNarush" listener="#{jalbaList.resetDateNarush}"/>
+								<p:ajax event="dateSelect" update="periodNarush" listener="#{jalbaList.resetDateNarush}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Категория на нарушител -->
+						<div class="p-col-12 p-md-6">
+							<h:outputText value="#{labels['complaint.kategNarush']}" styleClass="form-label" />
+							<ibg:selectOneModalA
+								codeClassif="#{OmbConstants.CODE_CLASSIF_KAT_NAR}"
+								onComplete="#{jalbaList.actionChangeKateg()}"
+								onClear="#{jalbaList.actionChangeKateg()}"
+								selectedCode="#{jalbaList.jalbaSearch.katNar}"
+								saveStateTree="false" withBtnClear="true" 
+								compType="4" filtered="false"
+								styleAutoComp=""
+								itemtipAtPosition="center bottom"
+								update="@this jalbiListForm:vidNarush"/>
+						</div>
+						
+						<!-- Вид на нарушител -->
+						<div class="p-col-12 p-md-6" jsf:id="vidNarush">
+							<h:outputText value="#{labels['complaint.vidNarush']}" styleClass="form-label" />
+							<ibg:autoCompleteListVod
+								codeClassif="#{OmbConstants.CODE_CLASSIF_VID_NAR}"
+								minQueryLength="2"
+								listVod="#{jalbaList.vidNarushList}"
+								selectedCode="#{jalbaList.jalbaSearch.vidNar}"
+								styleAutoComp="" update="@this"
+								withBtnClear="true" compType="2"/>
+						</div>
+						
+						<!-- Засегнати права -->
+						<div class="p-col-12 p-md-6">
+							<h:outputText value="#{labels['jp.prava']}" styleClass="form-label" />
+							<ibg:selectOneModalA
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ZAS_PRAVA}"
+								onComplete="#{jalbaList.actionChangePrava()}"
+								onClear="#{jalbaList.actionChangePrava()}"
+								selectedCode="#{jalbaList.jalbaSearch.zasPrava}"
+								saveStateTree="false" withBtnClear="true"
+								compType="4" filtered="false"
+								styleAutoComp=""
+								itemtipAtPosition="center bottom"
+								update="@this jalbiListForm:vidOplak"/>
+						</div>
+						
+						<!-- Вид оплакване -->
+						<div class="p-col-12 p-md-6" jsf:id="vidOplak">
+							<h:outputText value="#{labels['jp.vidOpl']}" styleClass="form-label" />
+							<ibg:autoCompleteListVod
+								codeClassif="#{OmbConstants.CODE_CLASSIF_VID_OPL}"
+								minQueryLength="2"
+								listVod="#{jalbaList.vidOplList}"
+								selectedCode="#{jalbaList.jalbaSearch.vidOpl}"
+								styleAutoComp="" update="@this"
+								withBtnClear="true" compType="2"/>
+						</div>
+						
+						<!-- Начин на подаване  -->
+						<div class="p-col-12 p-lg-4">
+							<h:outputText value="#{labels['jp.podavane']}"  styleClass="form-label " />
+							<ibg:selectManyModalA compType="2" maxResults="50"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_SUBMIT_METHOD}"
+								dateClassif="#{jalbaList.decodeDate}"
+								filtered="false" saveStateTree="false" showRadioBtn="true"
+								selectedCodes="#{jalbaList.jalbaSearch.submitMethodList}"
+								selectedClassifs="#{jalbaList.nachinPredav}"
+								styleAutoComp="" withBtnClear="true" />
+						</div>
+					 	
+					 	<!-- Период на датата на подаване -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['complaint.periodPodav']}" styleClass="form-label"/>
+							<p:selectOneMenu id="periodPodav" value="#{jalbaList.periodPodav}" height="250">
+							     <f:selectItem value="#{null}" itemValue="#{null}"/>
+							     <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, jalbaList.currentLang)}"
+							         var="period" itemLabel="#{period.tekst}" itemValue="#{period.code}" />
+							     <p:ajax event="change" update="periodPodav dateOtPodav dateDoPodav" listener="#{jalbaList.changePeriodPodav}"/>
+						    </p:selectOneMenu>
+					   	</div>
+				   
+					   	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+							<p:datePicker id="dateOtPodav" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.submitDateFrom}">
+								<p:ajax event="change" update="periodPodav" listener="#{jalbaList.resetDatePodav}"/>
+								<p:ajax event="dateSelect" update="periodPodav" listener="#{jalbaList.resetDatePodav}"/>
+							</p:datePicker>
+					  	</div>
+											
+					  	<div class="p-col-6 p-md-3 p-lg-2">
+							<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+							<p:datePicker id="dateDoPodav" mask="true" showIcon="true" locale="bg" pattern="dd.MM.yyyy" value="#{jalbaList.jalbaSearch.submitDateTo}">
+								<p:ajax event="change" update="periodPodav" listener="#{jalbaList.resetDatePodav}"/>
+								<p:ajax event="dateSelect" update="periodPodav" listener="#{jalbaList.resetDatePodav}"/>
+							</p:datePicker>
+					 	</div>
+					 	
+					 	<!-- Допустимост -->
+						<div class="p-col-12 p-md-4">
+							<h:outputText value="#{labels['jp.dopust']}" styleClass="form-label" />
+							<ibg:selectOneModalA
+								codeClassif="#{OmbConstants.CODE_CLASSIF_DOPUST}"
+								onComplete="#{jalbaList.actionChangeDopust()}"
+								onClear="#{jalbaList.actionChangeDopust()}"
+								selectedCode="#{jalbaList.jalbaSearch.dopust}"
+								saveStateTree="false" withBtnClear="true" 
+								compType="4" filtered="false"
+								styleAutoComp=""
+								itemtipAtPosition="center bottom"
+								update="@this jalbiListForm:osnNedopust"/>
+						</div>
+						
+						<!-- Основание за недопустимост -->
+						<div class="p-col-12 p-md-4" jsf:id="osnNedopust">
+							<h:outputText value="#{labels['jp.osnNedopust']}" styleClass="form-label" />
+							<ibg:autoCompleteListVod
+								codeClassif="#{OmbConstants.CODE_CLASSIF_OSN_NEDOPUST}"
+								minQueryLength="2"
+								listVod="#{jalbaList.nedopustList}"
+								selectedCode="#{jalbaList.jalbaSearch.osnNedopust}"
+								styleAutoComp="" update="@this"
+								withBtnClear="true" compType="2"/>
+						</div>
+						
+						<div class="p-col-12 p-md-4">
+							<!-- Свързана с корупция -->
+							<p:selectBooleanCheckbox value="#{jalbaList.korupcia}" itemLabel="#{labels['jp.corruption']}">
+					            <p:ajax listener="#{jalbaList.checkKorupcia}" partialSubmit="true" process="@this"/>
+					        </p:selectBooleanCheckbox>
+					        
+					        <!-- Видима в публичния регистър -->
+							<p:selectBooleanCheckbox value="#{jalbaList.vidima}" itemLabel="#{labels['complaint.vidimaPubl']}" >
+				        	    <p:ajax listener="#{jalbaList.checkVidima}" partialSubmit="true" process="@this"/>
+				        	</p:selectBooleanCheckbox>
+						</div>
+						
+						<!-- Начин на финализиране -->
+						<div class="p-col-12 p-md-4">
+							<h:outputText value="#{labels['jp.final']}" styleClass="form-label" />
+							<ibg:selectOneModalA
+								codeClassif="#{OmbConstants.CODE_CLASSIF_JALBA_FIN}"
+								onComplete="#{jalbaList.actionChangeFinal()}"
+								onClear="#{jalbaList.actionChangeFinal()}"
+								selectedCode="#{jalbaList.jalbaSearch.finMethod}"
+								saveStateTree="false" withBtnClear="true"
+								compType="4" filtered="false"
+								styleAutoComp=""
+								itemtipAtPosition="center bottom"
+								update="@this jalbiListForm:vidRezult"/>
+						</div>
+						
+						<!-- Вид на резултата -->
+						<div class="p-col-12 p-md-4" jsf:id="vidRezult">
+							<h:outputText value="#{labels['complaint.vidRezultat']}" styleClass="form-label" />
+							<ibg:autoCompleteListVod
+								codeClassif="#{OmbConstants.CODE_CLASSIF_JALBA_RES}"
+								minQueryLength="2"
+								listVod="#{jalbaList.vidRezultList}"
+								selectedCode="#{jalbaList.jalbaSearch.vidResult}"
+								styleAutoComp="" update="@this"
+								withBtnClear="true" compType="2"/>
+						</div>
+						
+						<!-- Предоставен резултат на (имена) -->
+						<div class="p-col-12 p-md-4">
+							<h:outputText value="#{labels['complaint.imenaOrganLice']}" styleClass="form-label" />
+							<p:inputText value="#{jalbaList.jalbaSearch.textSubject}"/>
+						</div>
+						
+						<!-- Допълнителен експерт -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['complaint.dopEkspert']}" styleClass="form-label" />
+						    <ibg:selectOneModalA id="malakEkspert"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS}"
+								dateClassif="#{jalbaList.decodeDate}" filtered="false"
+								selectedCode="#{jalbaList.jalbaSearch.dopCodeExpert}"
+								styleAutoComp="" saveStateTree="true"
+								header="#{labels['complaint.dopEkspert']}"
+								isSelectNode="false" minQueryLength="2"
+								withBtnClear="true" compType="2" />
+						</div>
+						
+						<!-- Описание на жалбата от експерт -->
+						<div class="p-col-12 p-md-6 p-lg-4">
+							<h:outputText value="#{labels['jp.opisExp']}" styleClass="form-label" />
+							<p:inputText value="#{jalbaList.jalbaSearch.otnosno}" />
+						</div>
+						
+					</div>
+					
+					<!-- Бутони -->
+					<div class="filter-buttons">
+						<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}"
+							id="btnSearch" update="pResult" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{jalbaList.actionSearch}" styleClass="p-mr-3"/>
+						<p:defaultCommand target="btnSearch" scope="panelFilter"/>
+							
+						<p:commandButton icon="fas fa-eraser"  value="#{ui_labels['general.clear']}"
+							id="btnClear" update="pResult panelFilter" partialSubmit="true"
+							process="@this panelFilter" actionListener="#{jalbaList.actionClear}"
+							styleClass="ui-button-warning" />
+					</div>
+					
+				</div>
+			</div>
+		
+		</div>
+
+		<div jsf:id="pResult" class="margin-top">
+			<div jsf:id="pResult1" jsf:rendered="#{jalbaList.jalbiList != null}" class="card">
+			
+				<!--  Toolbar -->
+				<div jsf:id="panelTblToolbar">
+					<div class="table-toolbar">
+						
+						<p:splitButton id="btnAccess" value="#{labels['delo.group']}"   styleClass="p-mr-2"
+								rendered="#{jalbaList.docSelectedAllM.size() > 0}">
+				            <p:menuitem value="#{labels['general.delete']}"
+					            actionListener="#{jalbaList.actionDeleteSelected}"
+					            rendered="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_DELETE_DOC)}"
+					            partialSubmit="true" update="@this pResult" process="@this" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" 
+									message="#{beanMessages['docList.confGroupDelete']}" icon="fas fa-exclamation-triangle" />
+							</p:menuitem>
+				        </p:splitButton>
+				        			
+				        <span class="p-mr-2" style="#{jalbaList.docSelectedAllM.size() > 0 ? '' : 'display : none'}">
+							<span class="fas fa-ellipsis-v" />
+						</span>
+						
+						<h:outputText value="#{ui_labels['general.reportResult']} #{jalbaList.jalbiList.rowCount}" styleClass="form-label p-mr-2"/>
+						
+						<h:outputText value="#{labels['opis.brIzbr']}: #{jalbaList.docSelectedAllM.size()}" rendered="#{jalbaList.docSelectedAllM.size() > 0}" styleClass="form-label"/>
+						
+					</div>
+				</div>
+				
+				<!-- Table -->
+				<p:dataTable id="tblJalbaLst" var="row" value="#{jalbaList.jalbiList}" lazy="true"
+						rowIndexVar="index" sortMode="single" reflow="true" emptyMessage="#{labels['doc.listEmptyMsg']}"
+						paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						rows="15" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginator="true" paginatorAlwaysVisible="true"
+						rowSelectMode="checkbox" selection="#{jalbaList.docSelectedTmp}" sortBy="#{row.a2}">
+				
+					<p:ajax event="toggleSelect"	 	listener="#{jalbaList.onRowSelectAll}" process="@this" update="jalbiListForm:panelTblToolbar"/>
+					<p:ajax event="rowSelectCheckbox"	listener="#{jalbaList.onRowSelect}"    process="@this" update="jalbiListForm:panelTblToolbar"/>
+					<p:ajax event="rowUnselectCheckbox" listener="#{jalbaList.onRowUnselect}"  process="@this" update="jalbiListForm:panelTblToolbar"/>
+					<p:ajax event="page" listener="#{jalbaList.onPageUpdateSelected}" />
+				
+					<f:facet name="{Exporters}">
+			            <div style="float:left">
+				            <h:commandLink id="excel"  rendered="#{jalbaList.jalbiList.rowCount le OmbConstants.ROW_LIMITS_REPORTS}">
+			        			<h:graphicImage library="images" name="excel2.png" />
+			        			<p:dataExporter type="xls" target="tblJalbaLst" fileName="docComplaintList"	
+				        			postProcessor="#{jalbaList.postProcessXLS}" />
+				    		</h:commandLink>
+			            </div>
+			       	</f:facet>	
+					
+					<p:column selectionMode="multiple" style="width: 30px; text-align: center;" rendered="#{isView == null and userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_GROUP_DOC)}"/>
+					
+					<p:column width="30" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+						<h:outputText value="#{index + 1}" />
+					</p:column>	
+					
+					<p:column  width="40" exportable="false" >
+						<p:button icon="fas fa-eye" href="#{jalbaList.actionGoto(1, row)}" target="_blank"
+							title="#{ui_labels['general.view']}" rendered="#{isView eq 1}" />
+
+						<p:commandButton icon="fas fa-edit" action="#{jalbaList.actionGoto(0, row)}" ajax="false"
+							title="#{ui_labels['general.edit']}" rendered="#{isView == null and row[10] == null}"  />
+							
+						<p:commandButton type="button" icon="fas fa-lock" id="lockButton" ajax="false" 
+				 	    	alt="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], jalbaList.currentLang, now)}"
+						   	title="#{beanMessages['docList.lockedDoc']}#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], jalbaList.currentLang, now)}"   
+		 				   	rendered="#{isView == null and row[10] != null}" styleClass="ui-button-secondary"/>
+		 				   
+				 		<p:tooltip for="lockButton">
+				 			#{beanMessages['docList.lockedDoc']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row[10], jalbaList.currentLang, now)} на 
+				 			<h:outputText value="#{row[11]}" >
+				 				<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{jalbaList.timeZone}"/>
+				 			</h:outputText>
+				 		</p:tooltip>
+					</p:column>
+					
+					<p:column width="20" sortBy="#{row.a12}"  exportable="false" >
+						<i class="fas fa-paperclip" aria-hidden="true" title="#{labels['docList.files']}: #{row[12]}" jsf:rendered="#{row[12] gt 0}"></i>
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a1}" headerText="#{labels['complaint.vhNom']}">
+						<h:outputText value="#{row[1]}" />
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a2}" headerText="#{labels['docu.docDate']}" >
+						<h:outputText value="#{row[2]}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{jalbaList.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					
+					<p:column width="150" sortBy="#{row.a3}" headerText="#{labels['jl.jalbopodatel']}">
+						<h:outputText value="#{row[3]}" />
+					</p:column>
+					
+					<p:column width="100" sortBy="#{row.a4}" headerText="#{ui_labels['general.egn']}/#{ui_labels['general.lnch']}/#{ui_labels['general.eik']}">
+						<h:outputText value="#{row[4]}" />
+					</p:column>
+					
+					<p:column width="130" sortBy="#{row.a5}" headerText="#{ui_labels['general.ekatte']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EKATTE, row[5], jalbaList.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="180" sortBy="#{row.a6}" headerText="#{labels['complaint.narushitel']}">
+						<h:outputText value="#{row[6]}" />
+					</p:column>
+					
+					<p:column width="150" sortBy="#{row.a7}" headerText="#{labels['complaint.sastoianie']}">
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_JALBA_SAST, row[7], jalbaList.currentLang, now)}" />
+					</p:column>
+					
+					<p:column width="150" sortBy="#{row.a8}" headerText="#{labels['jp.sastDate']}">
+						<h:outputText value="#{row[8]}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{jalbaList.timeZone}"/>
+						</h:outputText>
+					</p:column>
+
+					<p:column width="120" sortBy="#{row.a9}" headerText="#{labels['jp.vodeshExp']}" >
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR_REPORTS, row[9], jalbaList.currentLang, now)}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</div>
+		</div>
+
+		<div jsf:id="dpCorrSearch">
+			<p:dialog appendTo="@form" header="#{labels['docu.titleExtSrchCoresp']}" widgetVar="mCorrS" dynamic="true" id="modalCorrS" resizable="true"
+				position="top" modal="true" closeOnEscape="true" fitViewport="true">
+			 
+					<ibg:refCorrespSearch id="mCorrS1"
+						codeRef="#{jalbaList.jalbaSearch.codeRefNar}"
+						searchTxt="#{jalbaList.jalbaSearch.nameNar}"
+						dateClassif="#{jalbaList.decodeDate}"
+						modal="true" update="jalbiListForm:coresp"
+						onComplete="PF('mCorrS').hide();  cmdSelectCorresp()" />
+				
+			</p:dialog>
+		</div>
+
+	</h:form>
+
+</ui:composition>

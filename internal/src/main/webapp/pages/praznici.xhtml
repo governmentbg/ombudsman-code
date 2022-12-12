@@ -1,0 +1,198 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	template="/template/template.xhtml">
+
+	<ui:param name="pageTitle" value="#{navTexts['/pages/praznici.xhtml']}" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+
+	<ui:define name="viewname">
+		<li><h:panelGroup id="pTitle">
+				<h:outputText value="#{navTexts['/pages/praznici.xhtml']}" />
+			</h:panelGroup></li>
+	</ui:define>
+
+	<ui:define name="content">
+		<script type="text/javascript">
+			/* <![CDATA[ */
+			//двуичен масив с битово представяне дали дадена дата е празник или не
+			var dates = [
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+			];
+			var year="#{prazniciBean.yearCalendar}";
+			var color="#{prazniciBean.colorDate}";
+			//вземаме данните за датите празници от бийна във вида месец, ден ...
+			var data="#{prazniciBean.holidaysDates}";
+		
+			function loadData(dataParam){
+				dates = [
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+					  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+					];
+				var datesString=dataParam.split(/,/) ;
+				//тук сетваме дали дадена дата е празник в двучния си масив
+				for(var i = 0; i < datesString.length; i+=2){
+					dates[parseInt(datesString[i])][parseInt(datesString[i+1])]=1;
+				}
+			}
+			loadData(data);
+			// функцията, която ни връща темплейт за всяка дата в календара
+			function dateTemplateFunc(date) {
+			    return '<span style="background-color:' + ((dates[date.month][date.day]==1 && parseInt(year)==date.year ) ? '#81C784' : 'inherit') + ';border-radius:50%;padding: .25em;width: 1.75em; height:1.75em; display:block;">' + date.day + '</span>';
+			}
+		
+			/* ]]>*/
+		</script>
+
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:viewAction action="#{userData.checkPageAccess(27)}"
+				onPostback="false" />
+			<f:viewAction action="#{userData.checkReloadPage}" onPostback="false" />
+		</f:metadata>
+
+
+
+		<h:form id="prazniciForm">
+			<p:remoteCommand name="loadCalendarHolidays" update="prazniciForm multiselect" oncomplete="dateTemplateFunc"
+				action="#{prazniciBean.refreshData}" autoRun="false" 
+				ignoreAutoUpdate="true" />
+
+
+			<div jsf:id="prazniciDiv">
+				<h:panelGroup id="prazniciPanel">
+					<p:toolbar id="tbtnPanel1t">
+						<f:facet name="left">
+							<p:commandButton icon="fas fa-save"
+								value="#{ui_labels['general.save']}"
+								actionListener="#{prazniciBean.actionSave}"
+								title="Запазва избраните дати като празници"
+								partialSubmit="true" process="prazniciPanel" oncomplete="loadCalendarHolidays()"
+								update="prazniciDiv">
+							</p:commandButton>
+
+							<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+
+							<p:commandButton value="Зареди празници"
+								actionListener="#{prazniciBean.loadOfficialholidays}" oncomplete="loadCalendarHolidays()"
+								styleClass="ui-button-success"
+								title="Зарежда официалните празници за годината"
+								partialSubmit="true" process="prazniciPanel"
+								update="prazniciDiv">
+							</p:commandButton>
+
+						</f:facet>
+						<f:facet name="right">
+
+							<h:panelGroup id="pRegInfo" >
+								<ibg:compObjAudit id="a2"
+									idObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_PRAZNIK}"
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_PRAZNIK}"
+									identInfo="Празници" />
+							</h:panelGroup>
+							
+							<p:commandButton update="prazniciForm:panelPraznici1"
+								styleClass="ui-button-success" value="Покажи празници"
+								action="#" onclick="PF('dlgPraznici').show();" />
+							
+							<span class="fas fa-ellipsis-v SoftGray  p-mx-2" />
+							
+							<p:commandButton icon="fas fa-times"
+								value="#{ui_labels['general.delete']}"
+								title="Изтриване на празник" styleClass="ui-button-danger" 
+								actionListener="#{prazniciBean.actionDelete}" oncomplete="loadCalendarHolidays()"
+								update="prazniciDiv" partialSubmit="true" process="prazniciPanel">
+								
+							</p:commandButton>
+							
+							<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+						</f:facet>
+
+					</p:toolbar>
+					<div class="card">
+
+						<p:datePicker id="multiselect" selectionMode="multiple"
+							inline="true" dateTemplate="dateTemplateFunc"
+							 pattern="dd.MM.yyyy"  locale="bg"  value="#{prazniciBean.multi}"
+							numberOfMonths="3" widgetVar="multiDates" showOtherMonths="true">
+						</p:datePicker>
+					</div>
+
+					<!-- Покажи празници -->
+
+					<p:dialog header="Празници" appendTo="@form" responsive="true"
+						resizable="true" widgetVar="dlgPraznici" modal="true" width="280"
+						height="450">
+						<div jsf:id="dialog-praznici-wrapper">
+							<h:panelGroup id="panelPraznici1" layout="block"
+								styleClass="p-grid ui-fluid">
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12  ui-fluid">
+									<h:outputText value="Въведете година" styleClass="form-label" />
+									<p:inputNumber id="year" title="Година"
+										value="#{prazniciBean.yearModal}"
+										style="display:inline-block;">
+									</p:inputNumber>
+								</div>
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12  ui-fluid">
+									<p:commandButton value="Зареди"
+										actionListener="#{prazniciBean.loadModalHolidays}"
+										title="Зарежда празниците за годината"
+										partialSubmit="true" update="panelPrazniciRes" ajax="true">
+									</p:commandButton>
+								</div>
+							</h:panelGroup>
+							<h:panelGroup id="panelPrazniciRes" layout="block">
+								<p:dataTable id="tblDates" var="row"
+									value="#{prazniciBean.datesModal}" lazy="true"
+									rowIndexVar="idx" sortMode="single" reflow="true"
+									emptyMessage="#{labels['doc.listEmptyMsg']}">
+									<p:column width="20" exportable="false"
+										headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+									<p:column width="110" headerText="Въведени празници">
+										<h:outputText value="#{row}">
+											<f:convertDateTime pattern="dd.MM.yyyy"
+												timeZone="#{docDvijeniaList.timeZone}" />
+										</h:outputText>
+									</p:column>
+								</p:dataTable>
+							</h:panelGroup>
+							<f:facet name="footer">
+
+							</f:facet>
+						</div>
+					</p:dialog>
+
+				</h:panelGroup>
+			</div>
+		
+
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,53 @@
+<ui:composition 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:h="http://java.sun.com/jsf/html" 
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" 
+    xmlns:pa="http://primefaces.org/mirage" 
+    xmlns:o="http://omnifaces.org/ui">
+    
+	<h:form>
+	    <div class="layout-topbar">
+	        <div class="layout-topbar-wrapper">
+	            <div class="layout-topbar-left">
+	                <div class="layout-topbar-logo-wrapper">
+	                    <div class="layout-topbar-logo">
+	                        <p:graphicImage name="images/logo-ombudsman.png" library="mirage-layout" />
+	                        <span class="app-name">#{labels['general.systemNameFull']}</span>
+	                    </div>
+	                </div>
+	
+	                <a href="#" class="sidebar-menu-button">
+	                    <i class="fas fa-bars"></i>
+	                </a>
+	
+	                <a href="#" class="topbar-menu-mobile-button">
+	                    <i class="fas fa-ellipsis-v"></i>
+	                </a>
+	            </div>
+	            <div class="layout-topbar-right">
+	                
+	                <ul class="layout-topbar-actions">
+	                	
+	                    <li class="topbar-item profile-item">
+	                        <a href="#">
+	                            <span class="profile-image-wrapper">
+	                               <i class="fas fa-user-circle" style="font-size:32px"></i>
+	                            </span>
+	                            <span class="profile-info-wrapper">
+	                                <h3>#{userData.liceNames}  <h:outputText value="( #{userData.otImetoNa} )" rendered="#{userData.otImetoNa!=null}"  /> </h3>
+	                                <ui:remove>
+	                                	<span>#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, userData.registratura, userData.getCurrentLang(), now)}</span>
+	                            	</ui:remove>
+	                            </span>
+	                        </a>
+	                    </li>
+	                </ul>
+	            </div>
+	        </div>
+	    </div>
+    </h:form>
+ 
+</ui:composition>

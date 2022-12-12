@@ -1,0 +1,70 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:pa="http://primefaces.org/mirage"  xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <div class="layout-rightpanel">
+        <div class="right-panel-header">
+            <div class="title" jsf:id="pnCount">
+                <h1>#{labels['userOption.youHave']}  #{pMessages.brNotif} #{labels['userOption.newNotiff']}</h1>
+            </div>
+            <a href="#" class="rightpanel-exit-button">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
+        <div class="right-panel-content"  jsf:id="pn1o">
+            <h:form>
+                <div class="right-panel-content-row">
+                    <div class="tasks">
+                        <div class="tasks-header">
+                            <div class="title">
+                                <h6>#{labels['userOptions.notifTitle']}</h6>
+                            </div>
+                            <div class="tasks-info">
+                               
+                            </div>
+                        </div>
+                        
+                        <div>
+                            
+							<p:repeat value="#{pMessages.listNotif}" var="notif">
+								
+								<p:panel id="basic" header="#{notif.title}" style="text-align:left; width:300px" widgetVar="panelN#{notif.id}">
+									
+										   	      
+									<f:facet name="actions">
+									      		
+										<p:commandLink action="#{pMessages.actionGoto(notif)}"  ajax="false" 
+											rendered="#{notif.codeObject == OmbConstants.CODE_ZNACHENIE_JOURNAL_PROC_EXE or (notif.taskStatus !=null and  (userContext.activeTaskStatus.contains(notif.taskStatus)?(notif.taskStatus==OmbConstants.CODE_ZNACHENIE_WAITING_INSTR?true:false):true) )}">
+											<i class="fas fa-edit"></i>
+										</p:commandLink>
+									      
+									      <p:commandLink action="#{pMessages.actionMarkAsRed(notif.id)}"   update="pnCount" onsuccess="downNumber(); PF('panelN#{notif.id}').close()"
+											rendered = "#{notif.messageType!= OmbConstants.CODE_ZNACHENIE_NOTIFF_EVENTS_DOC_ACCESS}">
+											<i class="fas fa-close"></i>
+										</p:commandLink>
+									      
+									</f:facet> 
+								        
+									<h:panelGrid columns="1" cellpadding="1" width="100%" >
+										<h:panelGroup>
+											<h:outputText value="#{labels['docu.dateDoc']}: " />
+											<h:outputText id="notifDate" value="#{notif.dateMessage}" >
+												<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{pMessages.timeZone}"/>
+											</h:outputText>
+										</h:panelGroup>
+										<h:outputText id="notifInfo" value="#{notif.details}" />	
+									</h:panelGrid>
+								   	 
+								</p:panel>
+								   	 
+							</p:repeat> 
+	
+						</div>
+					</div>
+				</div>
+
+			</h:form>
+		</div>
+	</div>
+
+</ui:composition>

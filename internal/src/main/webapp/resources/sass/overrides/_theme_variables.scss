@@ -1,0 +1,36 @@
+/* Add your variable customizations of theme here */
+/* Тук са подменените променливи, които се отразяват и на light и dark темите
+   За да се сложи променлива конкретно за тъмния или светлия режим, 
+   има отделни файлове _theme_variables_light/dark.scss
+*/
+
+$toggleButtonActiveBg: $primaryColor;
+$toggleButtonActiveBorderColor: $primaryDarkColor;
+$toggleButtonActiveHoverBg: $primaryDarkColor;
+$toggleButtonActiveHoverBorderColor: $primaryDarkerColor;
+
+
+// Buttons
+$successButtonBg: #5ec99b;
+$successButtonBorder:1px solid #5ec99b;
+$successButtonHoverBg:#40bf88;
+$successButtonHoverBorderColor:#3cb480;
+$successButtonActiveBg:#3cb480;
+$successButtonActiveBorderColor:#38a878;
+$successButtonFocusShadow:0 0 0 0.2rem rgba(64,191,136,.5);
+
+$warningButtonBg:#ffd042;
+$warningButtonBorder:1px solid #ffd042;
+$warningButtonHoverBg:#ffc414;
+$warningButtonHoverBorderColor:#fabb00;
+$warningButtonActiveBg:#fabb00;
+$warningButtonActiveBorderColor:#ebb000;
+$warningButtonFocusShadow:0 0 0 0.2rem rgba(255,196,20,.5);
+
+$dangerButtonBg:#d1616c;
+$dangerButtonBorder:1px solid #d1616c;
+$dangerButtonHoverBg:#cd515d;
+$dangerButtonHoverBorderColor:#c8414f;
+$dangerButtonActiveBg:#c8414f;
+$dangerButtonActiveBorderColor:#c23846;
+$dangerButtonFocusShadow:0 0 0 0.2rem rgba(205,81,93,.5);

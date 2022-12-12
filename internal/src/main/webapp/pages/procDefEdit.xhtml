@@ -1,0 +1,326 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+			<f:viewAction action="#{userData.checkPageAccess(45)}" onPostback="false" />			
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="title">#{navTexts['/pages/procDefEdit.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+		<li><p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>#{navTexts['/pages/procDefEdit.xhtml']}</li>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<h:form id="formProcDef">
+
+			<div class="#{guestPreferences.containerPosition}">
+
+				<div class="card">
+
+					<p:toolbar id="tlbButton">
+
+						<f:facet name="left">
+
+							<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}" id="btnSave"
+								update="formProcDef" partialSubmit="true" process="formProcDef @this" action="#{procDefEdit.actionSave}">
+							</p:commandButton>
+							<span class="p-mx-2" jsf:rendered="#{procDefEdit.procDef.id ne null}">
+			                   	<span class="fas fa-ellipsis-v SoftGray"/>
+		                   </span>
+		                   <p:commandButton icon="fas fa-check-double" value="#{labels['procDefEdit.btnValid']}" id="btnValid" update="formProcDef" partialSubmit="true"
+								process="formProcDef @this" rendered="#{procDefEdit.procDef.id ne null}" action="#{procDefEdit.actionValidate}">
+							</p:commandButton>
+
+						</f:facet>
+
+						<f:facet name="right">
+							<h:panelGroup id="pRegInfoProcDef" rendered="#{procDefEdit.procDef.id ne null}">
+								<ibg:compObjAudit idObj="#{procDefEdit.procDef.id}" 
+											 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_PROC_DEF}"
+											 	identInfo="#{procDefEdit.procDef.procName}"/>
+							</h:panelGroup>	
+							<p:commandButton icon="fas fa-times" id="btnDelete"
+								value="#{ui_labels['general.delete']}" update="formProcDef"
+								partialSubmit="true" process="formProcDef  @this" rendered="#{procDefEdit.procDef.id ne null}"
+								action="#{procDefEdit.actionDelete}" styleClass="ui-button-danger  p-ml-2">
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['procDefEdit.sureEraseDefProc']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+						</f:facet>
+
+					</p:toolbar>
+
+					<div class="title-group">
+						<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formProcDef:basicDataProc')">
+							<h:outputText value="#{labels['procDefEdit.basicData']}" />
+							<i class="fas fa-caret-right"></i>
+						</p:commandLink>
+					</div>
+
+					<div jsf:id="basicDataProc" class="p-grid p-nogutter">
+
+							<div jsf:id="dataProc" class="p-grid ui-fluid p-align-end">
+
+								<!-- Номер на процедура -->
+								<div class=" p-col-12 p-md-1">
+									<h:outputText value="#{labels['procDefList.nomProc']}" styleClass="form-label" />
+									<p:inputNumber value="#{procDefEdit.procDef.id}" decimalPlaces="0" thousandSeparator="" disabled="true" />
+								</div>
+								
+								<!-- Наименование на процедура -->
+								<div class=" p-col-12 p-md-5">
+									<h:outputText value="#{labels['procDefList.nameProc']}" styleClass="form-label req" />
+									<p:inputText value="#{procDefEdit.procDef.procName}" id="procName" maxlength="1020"/>
+								</div>
+
+								<!-- Регистратура -->
+								<div class="p-col-12 p-md-6">
+									<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label req" />
+									<p:selectOneMenu value="#{procDefEdit.procDef.registraturaId}" id="regId">
+										<f:selectItem value="#{null}" itemValue="#{null}" />
+										<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_REGISTRATURI, now, procDefEdit.currentLang)}"
+											var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+									</p:selectOneMenu>
+								</div>
+
+								<!-- Описание на процедура -->
+								<div class=" p-col-12 p-md-6">
+									<h:outputText value="#{labels['procDefList.opisProc']}" styleClass="form-label req" />
+									<p:inputTextarea value="#{procDefEdit.procDef.procInfo}" rows="3" autoResize="false"  id="procInfo" maxlength="4000"/>
+								</div>
+
+								<!--  Указания за изпълнение -->
+								<div class=" p-col-12 p-md-6">
+									<h:outputText value="#{labels['procDefEdit.instruction']}" styleClass="form-label" />
+									<p:inputTextarea value="#{procDefEdit.procDef.instructions}" rows="3" autoResize="false"  maxlength="4000"/>
+								</div>
+
+								<!-- Срок в дни -->
+								<div class=" p-col-12 p-md-1">
+									<h:outputText value="#{labels['procDefList.srokDni']}" styleClass="form-label req" />
+									<p:inputNumber id="srokDays" value="#{procDefEdit.procDef.srokDays}" decimalPlaces="0" thousandSeparator="" style="display:inline-block;" minValue="0"/>
+								</div>
+
+								<!-- Само в работни дни -->
+								<div class=" p-col-12 p-md-3" align="center">
+									<p:outputLabel for="workDaysOnly" value="#{labels['procDefEdit.workDaysOnly']}" styleClass="form-label req" />
+									<p:selectOneRadio id="workDaysOnly" value="#{procDefEdit.procDef.workDaysOnly}" unselectable="true">
+										<f:selectItem itemLabel="Да" itemValue="1" />
+										<f:selectItem itemLabel="Не" itemValue="2" />
+									</p:selectOneRadio>
+								</div>
+
+								<!-- Статус -->
+								<div class=" p-col-12 p-md-2">
+									<h:outputText value="#{labels['procDefList.status']}" styleClass="form-label req" />
+									<p:selectOneMenu value="#{procDefEdit.procDef.status}" id="status">
+										<f:selectItem value="#{null}" itemValue="#{null}" />
+										<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PROC_DEF_STAT, now, procDefEdit.currentLang)}"
+											var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+									</p:selectOneMenu>
+								</div>
+								
+								<!-- Тип иницииращ документ -->
+								<div class=" p-col-12 p-md-2">
+									<h:outputText value="#{labels['procDefEdit.typeInicDoc']}" styleClass="form-label" />
+									<p:selectOneMenu value="#{procDefEdit.procDef.docType}" id="typeInicDoc">
+										<f:selectItem value="#{null}" itemValue="#{null}" />
+										<f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_TYPE, now, procDefEdit.currentLang)}"
+											var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+									</p:selectOneMenu>									
+								</div>
+
+								<!-- УРИ -->
+								<div class=" p-col-12 p-md-4">
+									<h:outputText value="#{labels['procDefEdit.uri']}" styleClass="form-label" />
+									<p:inputText value="#{procDefEdit.procDef.uriProc}"/>
+								</div>
+
+								<div class="p-col-12 p-md-12" style="width: 99.9%;">
+
+									<p:fieldset styleClass="fieldset-compact">
+									
+    								<f:facet name="legend"><span class="form-label req">#{labels['procDefList.otgIzpal']} </span></f:facet>  
+
+										<div jsf:id="otgIzpal" class="p-grid ui-fluid">
+											<!-- Служител -->
+											<div class="p-col-3">
+												<h:outputText value="#{labels['procDefList.sluj']}" styleClass="form-label" />
+												<p:remoteCommand name="cmdSelectSluj" update="formProcDef" 
+												partialSubmit="true" process="formProcDef @this"
+													actionListener="#{procDefEdit.actionSelectSlujForProc}" />
+												<ibg:selectOneModalA id="selectSluj" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+													dateClassif="#{procDefEdit.decodeDate}" filtered="false"
+													isSelectNode="false" selectedCode="#{procDefEdit.procDef.codeRef}"
+													saveStateTree="true" header="#{labels['procDefList.sluj']}"
+													readonly="#{procDefEdit.procDef.zveno ne null or procDefEdit.procDef.businessRole ne null}"
+													withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+													onComplete="cmdSelectSluj()" onClear="cmdSelectSluj()" />
+											</div>
+
+											<!-- Звено -->
+											<div class="p-col-3">
+												<h:outputText value="#{labels['procDefList.zveno']}" styleClass="form-label" />
+												<p:remoteCommand name="cmdSelectZveno" update="formProcDef"
+													partialSubmit="true" process="formProcDef @this"
+													actionListener="#{procDefEdit.actionSelectZvenoForProc}" />
+												<ibg:selectOneModalA id="selectZveno" codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+													dateClassif="#{procDefEdit.decodeDate}" filtered="false"
+													isSelectNode="true" selectedCode="#{procDefEdit.procDef.zveno}"
+													saveStateTree="true" header="#{labels['procDefList.zveno']}"
+													readonly="#{procDefEdit.procDef.codeRef ne null}"
+													withBtnClear="true" compType="2" styleAutoComp="width:99%;" minQueryLength="3" 
+													onComplete="cmdSelectZveno()" onClear="cmdSelectZveno()" />
+											</div>
+
+											<!-- Длъжност -->
+											<div class="p-col-12 p-md-3">
+												<h:outputText value="#{labels['procDefList.dlajnost']}" styleClass="form-label" />
+												<p:selectOneMenu value="#{procDefEdit.procDef.emplPosition}" id="emplPosition"
+													disabled="#{procDefEdit.procDef.codeRef ne null or procDefEdit.procDef.businessRole ne null}">
+													<f:selectItem value="#{null}" itemValue="#{null}" />
+													<f:selectItems value="#{procDefEdit.emplPositionList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+													<p:ajax event="change" update="otgIzpal" />
+												</p:selectOneMenu>
+											</div>
+
+											<!-- Бизнес роля -->
+											<div class="p-col-12 p-md-3">
+												<h:outputText value="#{labels['procDefList.businessRole']}" styleClass="form-label" />
+												<p:selectOneMenu value="#{procDefEdit.procDef.businessRole}" id="businessRole"
+													disabled="#{procDefEdit.procDef.codeRef ne null or (procDefEdit.procDef.zveno ne null and procDefEdit.procDef.emplPosition ne null)}">
+													<f:selectItem value="#{null}" itemValue="#{null}" />
+													<f:selectItems value="#{procDefEdit.businessRoleList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}" />
+													<p:ajax event="change" update="otgIzpal" />
+												</p:selectOneMenu>
+											</div>
+
+										</div>
+
+									</p:fieldset>
+
+								</div>
+
+							</div>
+
+							<div class="p-grid p-nogutter">
+
+								<!-- Файлове saveFirst="#{procDefEdit.procDef.id eq null}"-->
+								<div class="p-col-12 p-lg-12">
+									<ibg:compFileUpload listObj="#{procDefEdit.filesList}"
+										codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_PROC_DEF}"
+										header="false" idObj="#{procDefEdit.procDef.id}"
+										autoSave="true" saveFirst="#{procDefEdit.procDef.id eq null}"
+										id="filesListForProc" display="list" />
+								</div>
+
+							</div>
+
+					</div>
+
+					<div jsf:rendered="#{procDefEdit.procDef.id ne null}">
+
+						<div class="title-group">
+							
+							<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#formProcDef:etapsList')">
+								<h:outputText value="#{labels['procDefEdit.defEtaps']}" />
+								<i class="fas fa-caret-right"></i>
+							</p:commandLink>
+							
+							<p:commandButton icon="fas fa-edit" action="#{procDefEdit.actionGotoNewEtap}" ajax="false" value="#{labels['procDefEdit.newEtap']}" styleClass="ui-button-success" rendered="#{procDefEdit.procDef.status eq OmbConstants.CODE_ZNACHENIE_PROC_DEF_STAT_DEV}"/>									
+						
+						</div>
+
+						<div jsf:id="etapsList" class="p-grid ui-fluid">
+						
+						<div class="p-col-12 p-md-12">
+
+							<p:dataTable id="tblEtapsList" var="row" value="#{procDefEdit.defEtapsList}" rowIndexVar="idx"
+								emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+
+								<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+									<h:outputText value="#{idx + 1}" />
+								</p:column>
+
+								<p:column width="10" exportable="false">
+									<p:commandButton icon="fas fa-edit" action="#{procDefEdit.actionGotoEtap(row.id)}" styleClass="btn-new" ajax="false" />
+								</p:column>
+
+								<p:column width="30" sortBy="#{row.nomer}" headerText="#{labels['procDefList.nomProc']}">
+									<h:outputText value="#{row.nomer}" />
+								</p:column>
+
+								<p:column width="130" sortBy="#{row.etapName}" headerText="#{labels['procDefList.nameProc']}">
+									<h:outputText value="#{row.etapName}" />
+								</p:column>
+
+								<p:column width="20" headerText="#{labels['procDefEdit.srok']}">
+									<h:outputText value="#{row.srokDays}д" rendered="#{row.srokDays ne null and row.srokHours eq null}" />
+									<h:outputText value="#{row.srokHours}ч" rendered="#{row.srokDays eq null and row.srokHours ne null}" />
+									<h:outputText value="#{row.srokDays}д #{row.srokHours}ч" rendered="#{row.srokDays ne null and row.srokHours ne null}" />
+								</p:column>
+
+								<p:column width="60" sortBy="#{row.nextOk}" headerText="#{labels['procDefEdit.nextOk']}">
+									<h:outputText value="#{row.nextOk}" />
+								</p:column>
+
+								<p:column width="60" sortBy="#{row.nextNot}" headerText="#{labels['procDefEdit.nextNot']}">
+									<h:outputText value="#{row.nextNot}" />
+								</p:column>
+								
+								<p:column width="60" sortBy="#{row.nextOptional}" headerText="#{labels['procDefEdit.nextOpt']}">
+									<h:outputText value="#{row.nextOptional}" />
+								</p:column>
+
+								<p:column width="20" sortBy="#{row.isMerge}" headerText="#{labels['procDefEdit.etapMerge']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row.isMerge, procDefEdit.currentLang, now)}" />
+								</p:column>
+
+								<p:column width="200"  headerText="#{labels['procDefEdit.controlEtap']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row.codeRef, procDefList.currentLang, now)}" 
+										rendered="#{row.codeRef ne null}" />
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row.zveno, procDefList.currentLang, now)}, #{labels['procDefList.dlajnost']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row.emplPosition, procDefList.currentLang, now)}"
+										rendered="#{row.codeRef eq null and row.businessRole eq null and row.zveno ne null and row.emplPosition ne null}" />
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ADMIN_STR, row.zveno, procDefList.currentLang, now)}, #{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, row.businessRole, procDefList.currentLang, now)}"
+										rendered="#{row.codeRef eq null and row.emplPosition eq null and row.zveno ne null and row.businessRole ne null}" />
+									<h:outputText value="#{labels['procDefList.businessRole']}: #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_PROC_BUSINESS_ROLE, row.businessRole, procDefList.currentLang, now)}"
+										rendered="#{row.codeRef eq null and row.zveno eq null and row.emplPosition eq null and row.businessRole ne null}" />
+								</p:column>
+								
+								<p:column width="70" sortBy="#{row.etapDocMode}" headerText="#{labels['procDefEtapEdit.etapDocMode']}">
+									<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_ETAP_DOC_MODE, row.etapDocMode, procDefEdit.currentLang, now)}" />								
+								</p:column>
+
+							</p:dataTable>
+							
+							</div>
+
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

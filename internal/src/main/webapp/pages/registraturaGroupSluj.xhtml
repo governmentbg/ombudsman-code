@@ -1,0 +1,317 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	template="/template/template.xhtml">
+	
+	<ui:define name="title">#{navTexts['/pages/registraturaGroupSluj.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+        <li>#{navTexts['/pages/registraturaGroupSluj.xhtml']}</li>        
+    </ui:define>
+    
+    <ui:define name="head">
+	    <script type="text/javascript">
+		    function doOnClick() {
+		    	document.getElementById("idLink").click();
+		    }
+		</script>
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<f:viewAction action="#{userData.checkPageAccess(35)}" onPostback="false" />
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="formRegGroupRef">
+			
+			<h:panelGroup id="panelGrRef" layout="block">
+
+					<div class="container #{guestPreferences.containerPosition}">
+					
+						<!-- FILTER -->	
+						<h:panelGroup id="panelFilter">
+		
+							<div class="card">
+			
+								<div class="p-grid ui-fluid p-align-end">
+								
+									<!-- Наименование на група -->
+									<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4" >								
+										<h:outputText value="#{labels['regGrSluj.naimGr']}" styleClass="form-label"/>
+										<p:inputText value="#{registraturaGroupSluj.name}" />						
+									</div>		
+									
+									<!-- Описание на група -->
+									<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4" >								
+										<h:outputText value="#{labels['regGrSluj.opisGr']}" styleClass="form-label"/>
+										<p:inputText value="#{registraturaGroupSluj.info}" />						
+									</div>
+									
+									<!-- Регистратура -->								
+									<ui:remove> <div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-6" >	
+										<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label" />	
+										<p:selectOneMenu value="#{registraturaGroupSluj.idReg}" id="idReg">
+											<f:selectItem value="#{null}" itemValue="#{null}"/>					 				
+					                        <f:selectItems value="#{registraturaGroupSluj.registraturiList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/> 
+				                      	</p:selectOneMenu>															
+									</div> </ui:remove>
+									
+									<!-- Служител -->						
+									<div class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4" >
+										<h:outputText value="#{labels['refDeleg.employee']}" styleClass="form-label"/>
+										<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+											id="coresp" dateClassif="#{now}" filtered="false" 														
+											selectedCode="#{registraturaGroupSluj.codeRef}" saveStateTree="true"
+											withBtnClear="true" compType="2" styleAutoComp=""/>	
+									</div>
+									
+								</div>
+			
+								<div class="filter-buttons">
+									
+									<p:commandButton icon="fas fa-search" value="#{ui_labels['general.search']}" 
+													id="btnSearch" update="pRegGrSlujData panelFilter" partialSubmit="true"
+													process="@this panelFilter pRegGrSlujData" actionListener="#{registraturaGroupSluj.actionSearch}" styleClass="p-mr-3"/>
+									<p:defaultCommand target="btnSearch" />
+			
+									<p:commandButton icon="fas fa-eraser" value="#{ui_labels['general.clear']}" 
+													 id="btnClear" update="pRegGrSlujData panelFilter pRegGrRefBasicData" partialSubmit="true"
+													 process="@this panelFilter pRegGrSlujData pRegGrRefBasicData" actionListener="#{registraturaGroupSluj.actionClear}"
+													 styleClass="ui-button-warning" />	
+								</div>
+			
+							</div>
+						
+						</h:panelGroup>
+						
+						<h:panelGroup id="pRegGrSlujData" layout="block" styleClass="margin-top">
+
+						<h:panelGroup layout="block" styleClass="card">
+                   				
+							<div class="p-grid p-col-12 p-nogutter">
+							
+								<div class="table-toolbar">
+
+									<p:commandButton icon="fas fa-file" action="#{registraturaGroupSluj.actionNew}" 
+											update="formRegGroupRef:panelGrRef" value="#{labels['regGrSluj.newGr']}" styleClass="ui-button-success" oncomplete="doOnClick();"/>	
+									
+									<a id="idLink" href="#refBasicData" style="display:none"></a>									
+					
+									<span class=" p-mx-2" jsf:rendered="#{registraturaGroupSluj.regGrSlujList.size() > 0}"> 
+										<span class="fas fa-ellipsis-v" />
+									</span>
+			
+									<h:outputText value="#{ui_labels['general.reportResult']} #{registraturaGroupSluj.regGrSlujList.size()} " styleClass="form-label" rendered="#{registraturaGroupSluj.regGrSlujList.size() > 0}"/>
+			
+								</div>		
+
+								<p:dataTable id="tblRegGrSlujList" var="row" value="#{registraturaGroupSluj.regGrSlujList}" 
+									rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+									paginatorAlwaysVisible="true" paginator="true">
+
+									<f:facet name="{Exporters}">
+										
+										<div style="float: left">
+											<h:commandLink id="excel">
+												<h:graphicImage library="images" name="excel2.png" />
+												<p:dataExporter type="xls" target="tblRegGrSlujList" fileName="regGrSlujXls" postProcessor="#{registraturaGroupSluj.postProcessXLS}"/>
+											</h:commandLink>
+<ui:remove><!-- 
+											<h:commandLink id="pdf">
+												<h:graphicImage library="images" name="pdf.png" />
+												 <p:dataExporter type="pdf"  target="tblRegGrSlujList" fileName="regGrSlujPdf"	 encoding="windows-1251"
+					        						 preProcessor="#{registraturaGroupSluj.preProcessPDF}" options="#{registraturaGroupSluj.pdfOptions()}"/>
+																						 											
+											</h:commandLink>
+
+											<h:commandLink id="csv">
+												<h:graphicImage library="images" name="csv.png" />
+												<p:dataExporter type="csv" target="tblRegGrSlujList" fileName="regGrSlujCsv" encoding="CP1251" />
+											</h:commandLink>
+											 --></ui:remove>
+										</div>
+									</f:facet>
+
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+
+									<p:column width="30" exportable="false">
+										<p:commandButton icon="fas fa-edit" action="#{registraturaGroupSluj.actionEdit(row.id)}"
+											ajax="true" title="#{ui_labels['general.edit']}" styleClass="btn-new" update="formRegGroupRef:pRegGrRefBasicData" oncomplete="doOnClick();"/>
+									</p:column>
+
+									<p:column width="250" sortBy="#{row.groupName}" headerText="#{labels['regGrSluj.naimGr']}">
+										<h:outputText value="#{row.groupName}" />
+									</p:column>
+
+									<p:column width="250" headerText="#{labels['regGrSluj.opisGr']}">
+										<h:outputText value="#{row.groupInfo}" />
+									</p:column>
+									
+									<ui:remove> <p:column width="250" headerText="#{labels['regData.registratura']}">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row.registraturaId, registraturaGroupSluj.currentLang, now)}" />
+									</p:column> </ui:remove>
+								</p:dataTable>
+
+							</div>
+
+						</h:panelGroup>
+						
+						</h:panelGroup>
+						
+						<a id="refBasicData"/> 
+						
+						<h:panelGroup id="pRegGrRefBasicData" layout="block" styleClass="margin-top">
+						
+						<h:panelGroup layout="block" styleClass="card" rendered="#{registraturaGroupSluj.groupSluj != null}">
+						
+							<p:toolbar id="tbtnPanel1t">
+								<f:facet name="left">									
+									<p:commandButton icon="fas fa-save" action="#{registraturaGroupSluj.actionSave}"
+											update="formRegGroupRef:pRegGrSlujData formRegGroupRef:pRegGrRefBasicData" value="#{ui_labels['general.save']}"  />
+									
+								</f:facet>
+								<f:facet name="right">
+								
+									<h:panelGroup id="pRegInfo" rendered="#{registraturaGroupSluj.groupSluj.id != null}">
+		
+									 		<ibg:compObjAudit id="a2" idObj="#{registraturaGroupSluj.groupSluj.id}" 
+												 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_REISTRATURA_GROUP}"
+												 	identInfo="#{registraturaGroupSluj.groupSluj.groupName}" 	/>
+									</h:panelGroup>								
+									
+									<p:commandButton icon="fas fa-times" action="#{registraturaGroupSluj.actionDelete}" rendered="#{registraturaGroupSluj.groupSluj.id != null}" styleClass="ui-button-danger"	
+											update="formRegGroupRef:panelGrRef" value="#{ui_labels['general.delete']}"  onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/>
+								
+								</f:facet>
+							</p:toolbar>
+								
+							<br />
+							
+							<!-- Наименование на групата -->
+							<div  class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid" >
+								<h:outputText value="#{labels['regGrSluj.naimGr']}" styleClass="form-label req" />
+								<p:inputText id="naimGr" value="#{registraturaGroupSluj.groupSluj.groupName}"/>
+								<p:message for="naimGr" display="tooltip" >
+									<p:autoUpdate/>
+								</p:message>
+							</div>
+							
+							<!-- Регистратура -->								
+							<ui:remove> <div  class="p-col-12 p-sm-12 p-md-4 p-lg-4 p-xl-4 p-grid ui-fluid" >	
+								<h:outputText value="#{labels['regData.registratura']}" styleClass="form-label req" />	
+								<p:selectOneMenu value="#{registraturaGroupSluj.groupSluj.registraturaId}" id="idRegGr">
+									<f:selectItem value="#{null}" itemValue="#{null}"/>					 				
+			                        <f:selectItems value="#{registraturaGroupSluj.registraturiList}" var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/> 
+		                      	</p:selectOneMenu>															
+							</div> </ui:remove>
+
+							<!-- Описание на групата -->
+							<div  class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid" >
+								<h:outputText value="#{labels['regGrSluj.opisGr']}" styleClass="form-label"/>
+								<p:inputText id="opisanieGr" value="#{registraturaGroupSluj.groupSluj.groupInfo}" />
+							</div>
+							
+							<div id="regGrSl" style="margin-top:8px" jsf:rendered="#{registraturaGroupSluj.groupSluj.id != null}">
+
+								<!-- Включени служители -->
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid"  jsf:rendered="#{registraturaGroupSluj.groupSluj.id != null}">
+									<div class="p-grid p-col-12 p-nogutter">
+										<h:outputText value="#{labels['regGrSluj.inclSluj']}" styleClass="form-label p-mr-3" />
+										
+										<p:remoteCommand name="cmdSelectSluj" 
+												update="pRegGrRefBasicData"
+												process="pRegGrRefBasicData @this"
+												actionListener="#{registraturaGroupSluj.actionSelectSluj}" />
+										
+										<!-- избират се само служители, но ще се оправи като се промени навсякъде, където се избират служители -->
+										<ibg:selectManyModalA id="refList" compType="1" maxResults="50"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+											dateClassif="#{now}"
+											filtered="false" saveStateTree="false" showRadioBtn="true"
+											styleAutoComp="width:100%;" valueLoadBtn="#{labels['regGrSluj.choiceSluj']}"
+											selectedCodes="#{registraturaGroupSluj.groupSluj.referentIds}"
+											selectedClassifs="#{registraturaGroupSluj.scReferentsList}"
+											withBtnClear="false" onComplete="cmdSelectSluj()"
+											update="formRegGroupRef:tblSlujList" isSelectNode="false"/>
+									</div>
+								</div>
+								
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 p-grid ui-fluid" jsf:rendered="#{registraturaGroupSluj.groupSluj.id != null}">		
+								<p:dataTable id="tblSlujList" var="row" value="#{registraturaGroupSluj.slujList}" lazy="true"
+									rowIndexVar="idx" emptyMessage="#{ui_labels['general.norows']}" rows="5" sortMode="single" reflow="true"
+									paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+									rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+									paginatorAlwaysVisible="true" paginator="true">
+									
+									<f:facet name="{Exporters}">
+										
+										<div style="float: left">
+											<h:commandLink id="excel">
+												<h:graphicImage library="images" name="excel2.png" />
+												<p:dataExporter type="xls" target="tblSlujList" fileName="slujListXls" postProcessor="#{registraturaGroupSluj.postProcessXLSInclSluj}"/>
+											</h:commandLink>
+<ui:remove><!-- 
+											<h:commandLink id="pdf">
+												<h:graphicImage library="images" name="pdf.png" />
+												 <p:dataExporter type="pdf"  target="tblSlujList" fileName="slujListPdf" encoding="windows-1251"
+					        						preProcessor="#{registraturaGroupSluj.preProcessPDFInclSluj}" options="#{registraturaGroupSluj.pdfOptions()}"/>
+										
+											</h:commandLink>
+
+											<h:commandLink id="csv">
+												<h:graphicImage library="images" name="csv.png" />
+												<p:dataExporter type="csv" target="tblSlujList" fileName="slujListCsv" encoding="CP1251" />
+											</h:commandLink>
+											 --></ui:remove>
+										</div>
+									</f:facet>
+									
+									<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+										<h:outputText value="#{idx + 1}" />
+									</p:column>
+
+									<p:column width="200" sortBy="#{row.a2}" headerText="#{labels['refDeleg.employee']}">											
+										<h:outputText value=" #{row[2]}" />
+									</p:column>
+									
+									<p:column width="150" sortBy="#{row.a3}" headerText="#{labels['regGrSluj.position']}">
+										<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_POSITION, row[3], registraturaGroupSluj.currentLang, now)}" />
+									</p:column>									
+									
+									<p:column width="150" sortBy="#{row.a4}" headerText="#{labels['users.zveno']}">
+										<h:outputText value="#{row[4]}" />
+									</p:column>
+									
+									<p:column width="20" exportable="false">
+										<p:commandButton icon="fas fa-trash" action="#{registraturaGroupSluj.actionDeleteSluj(row[1])}" onclick="if(!confirm('#{beanMessages['regGrSluj.msgDelete']}'))return false;"
+											ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" update="formRegGroupRef:tblSlujList" />
+									</p:column>
+									
+								</p:dataTable>
+								</div>
+
+							</div>
+
+						</h:panelGroup>
+						
+						</h:panelGroup>
+						
+					</div>
+
+			</h:panelGroup>
+
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>

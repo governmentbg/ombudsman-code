@@ -1,0 +1,447 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:c="http://java.sun.com/jstl/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components" > 	  
+	  
+
+<cc:interface componentType="refCorrespData">
+   		 
+   <cc:attribute name="codeRef"	         	 type="java.lang.Integer" shortDescription="code на кореспондент" deafult="null" />
+   <cc:attribute name="searchTxt"	         type="java.lang.String"  shortDescription="Предварително подаден текст за търсене по име на кореспондент" deafult="null"/>
+   <cc:attribute name="dateClassif"   		 type="java.util.Date"    shortDescription="Дата, към която да се заредят класификации и за разкодиране. По подразбиране - днешна дата." />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="Полета, които трябва да се обновят" />
+   <cc:attribute name="readonly"       		 type="java.lang.Boolean" shortDescription="Само за разглеждане" default="false" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+   
+   <cc:attribute name="modal"       		 type="java.lang.Boolean" shortDescription="Обработката е в модален диалог(true) или не(false)." default="true" />
+   <cc:attribute name="admin"       		 type="java.lang.Boolean" shortDescription="Администриране на всички данни - да(true); не(false)."  default="false" />
+   
+   <cc:attribute name="showDocs"       	 	 type="java.lang.Boolean" shortDescription="Да се покаже ли панела с документи, в които участва кореспондента - да(true); не(false)."  default="false" />
+   <cc:attribute name="correspForget"        type="java.lang.Boolean" shortDescription="За опцията за заличаване на кореспондента - да(true); не(false)." default="false" />
+   <cc:attribute name="selectedDocList"	 	 type="java.util.List"	  shortDescription="Списък от избраните значения като обект DocSearch - само, ако correspForget=true" />
+   <cc:attribute name="npm"	 	 			 type="java.lang.Boolean" shortDescription="Извикан е от екрана за НПМ"    default="false" />
+   <cc:attribute name="jalba" 	 			 type="java.lang.Boolean" shortDescription="Извикан е от екрана за Жалби"  default="false" />
+</cc:interface>
+
+<cc:implementation>
+
+ <f:event type="preRenderComponent" listener="#{cc.initRefCorresp()}" /> <!--  За да се инициализира компонентата-->
+		
+		<div class="card" jsf:id="dpDataC" jsf:rendered="#{cc.showMe}">		
+
+			<p:toolbar rendered="#{!cc.attrs.readonly and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)}" >
+				
+				<f:facet name="left">
+					
+					<p:commandButton icon="fas fa-save"
+						value="#{ui_labels['general.save']}"
+						rendered="#{!cc.attrs.readonly}" id="btnSaveCorr"
+						update="#{cc.attrs.update} #{cc.clientId}:dpDataC"
+						partialSubmit="true" process="#{cc.attrs.update} #{cc.clientId}:dpDataC @this"
+						actionListener="#{cc.actionSave}" title="#{labels['refCorr.saveReturnTitle']}">
+					</p:commandButton>
+					
+					<p:commandButton id="btnNewCorr" value="#{labels['docu.refCorrNew']}"
+								action="#{cc.clearRefCorresp(null)}" partialSubmit="true" styleClass="ui-button-success  p-mx-2"
+								process="#{cc.attrs.update} #{cc.clientId}:dpDataC @this" update="#{cc.attrs.update} #{cc.clientId}:dpDataC"
+								icon="fas fa-file" rendered="#{!cc.attrs.modal and !cc.attrs.correspForget}"/>
+								
+					<h:outputText value="#{cc.errMsg}" styleClass="form-label" style="color:red" id="errMsg" rendered="#{cc.attrs.modal}"/>
+					
+				</f:facet>
+				<f:facet name="right">
+					<h:panelGroup id="pRegInfoCor" rendered="#{!cc.attrs.modal and cc.ref.code ne null}">
+				 		<ibg:compObjAudit id="refHistory" idObj="#{cc.ref.code}" 
+							 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_REFERENT}"
+							 	identInfo="#{cc.ref.refName}" />		
+					</h:panelGroup>		
+					<p:commandButton icon="fas fa-times" value="#{ui_labels['general.delete']}"
+						rendered="#{!cc.attrs.readonly and cc.ref.id ne null and !cc.attrs.correspForget}"
+						id="btnDelCorr" update="#{cc.attrs.update} #{cc.clientId}:dpDataC"
+						partialSubmit="true" process="#{cc.attrs.update} #{cc.clientId}:dpDataC @this"
+						styleClass="ui-button-danger"
+						actionListener="#{cc.actionDelete}" title="#{labels['reffCorr.deleteCorr']}">
+						<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['refCorr.msgDelete']}" icon="fas fa-exclamation-triangle" />
+					</p:commandButton>
+				</f:facet>
+			
+			</p:toolbar>
+			
+			<h:outputText value="#{labels['correspForget.txtForDeleteData']}"
+						  style="color: #ff7f00; font-size: 0.9rem; font-style: italic; margin-right: 10px;" rendered="#{cc.attrs.correspForget}" />
+			
+			<div class="p-col-12">
+				<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#cd1-mainData')">
+					<h:outputText value="#{labels['refCorr.mainData']}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			
+			 <div class="p-grid ui-fluid" id="cd1-mainData" >
+				
+				<div class="p-col-12 p-md-8 p-lg-4" > 
+					<p:selectOneRadio id="vLice" value="#{cc.ref.refType}" layout="responsive"  columns="2" 
+						 disabled="#{cc.attrs.readonly or cc.attrs.correspForget or !cc.seePersonalData or cc.attrs.npm}">
+					 	 <f:selectItem itemLabel="#{labels['coresp.uLice']}" 	itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" />
+		           		 <f:selectItem itemLabel="#{labels['coresp.fizLice']}"  itemValue="#{OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}" />
+					     <p:ajax event="change"  
+					             update="#{cc.clientId}:dpDataC" 
+					 	         process="@this #{cc.clientId}:pglice #{cc.clientId}:adrNM #{cc.clientId}:contactRef #{cc.clientId}:pgName  #{cc.clientId}:dopInfo" 
+					 	         listener="#{cc.actionChTypRef}"/>
+					</p:selectOneRadio>	
+				</div> 
+		
+				<h:panelGroup layout="block" styleClass="p-grid p-col-12"  id="pglice">
+					<div class="p-col-8 p-md-8 p-lg-8" jsf:id="pgName">
+						<div class="form-label">
+							<h:outputText value="#{labels['refCorr.nameUL']}" styleClass="form-label req" id="lablUL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+							<h:outputText value="#{labels['refCorr.nameFL']}" styleClass="form-label req" id="lablFL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+						</div>
+						<p:inputText id="nameCorr"	value="#{cc.ref.refName}"  readonly="#{cc.attrs.readonly}" />
+						
+					</div>
+			      		
+					<div class="p-col-4 p-md-4 p-lg-2" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" jsf:id="pgEik" >
+						<div class="form-label">
+							<h:outputText value="#{ui_labels['general.eik']}"  />
+						</div> 
+						<p:inputText id="eik" value="#{cc.ref.nflEik}" style="width:99%" onkeyup="onlyNumbersNoRestr('#{cc.clientId}:eik')" 
+						 	readonly="#{cc.attrs.readonly}" maxlength="13">
+							<p:ajax event="change" update="#{cc.clientId}:dpDataC" partialSubmit="true"  process="@this #{cc.clientId}:dpDataC" listener="#{cc.actionLoadByEIK}"	/>
+						</p:inputText> 
+					
+					</div>
+					
+					<div class="p-col-2" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}" jsf:id="pgEgn">
+						<div class="form-label">
+							<h:outputText value="#{ui_labels['general.egn']}" />
+						</div>
+						<p:inputText id="egn" value="#{cc.ref.fzlEgn}"  style="width:99%" onkeyup="onlyNumbersNoRestr('#{cc.clientId}:egn')"
+							readonly="#{cc.attrs.readonly}" maxlength="10">
+							<p:ajax event="change" update="#{cc.clientId}:dpDataC" partialSubmit="true" process="@this #{cc.clientId}:dpDataC" listener="#{cc.actionLoadByEGN}"	/>
+						</p:inputText>
+					
+					</div>		
+				
+					<div class="p-col-2" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}" jsf:id="pgLnch">
+						<div class="form-label">
+							<h:outputText value="#{ui_labels['general.lnch']}" />
+						</div>
+						<p:inputText id="lnch" value="#{cc.ref.fzlLnc}"  style="width:99%" readonly="#{cc.attrs.readonly}"  maxlength="10"> 
+							<p:ajax event="change" update="#{cc.clientId}:dpDataC" partialSubmit="true" process="@this #{cc.clientId}:dpDataC" listener="#{cc.actionLoadByLNCH}"	/>
+						</p:inputText>						
+					</div>				
+				
+					<div class="p-col-12 p-md-12 p-lg-12 p-xl-12" >
+					 	<h:outputText value="#{labels['refCorr.Categoria']}" styleClass="form-label " />
+				    	<p:selectOneMenu id="sKatNar" value="#{cc.ref.katNar}"   filter="false"  disabled="#{cc.attrs.readonly}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_KAT_NAR, now, cc.lang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						     <p:ajax event="change" partialSubmit="true" process="@this" update="@this #{cc.clientId}:dVidNar #{cc.clientId}:dTipOrgan" 
+					      		 listener="#{cc.actionChangeKatNar}"/>      
+					    </p:selectOneMenu>	
+					</div>				
+				
+					<div class="p-col-12 p-md-12 p-lg-8 p-xl-8" jsf:id="dVidNar">
+					 	<h:outputText value="#{labels['refCorr.vidNpm']}" styleClass="form-label " />
+				    	<p:selectOneMenu id="sVidNar" value="#{cc.ref.vidNar}"   filter="false"  disabled="#{cc.attrs.readonly}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{cc.vidNarList}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+						        
+					    </p:selectOneMenu>	
+					</div>
+				
+					<div class="p-col-12 p-md-12 p-lg-4 p-xl-4" jsf:id="dTipOrgan" >
+					 	<h:outputText value="#{labels['refCorr.typeNpm']}" styleClass="#{cc.attrs.npm ? 'form-label req' : 'form-label'}" />
+				   		<p:selectOneMenu id="sTipOrgan" value="#{cc.ref.tipOrgan}"   filter="false"  disabled="#{cc.attrs.readonly or cc.ref.refType ne OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}">
+						     <f:selectItem value="#{null}" itemValue="#{null}" />
+						     <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_TIP_ORGAN, now, cc.lang)}" 
+						         var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+					    </p:selectOneMenu>	
+					</div>
+				</h:panelGroup>
+			</div>
+			
+			<div class="p-col-12">
+				<p:commandLink class="extended-search-toggle expanded"  onclick="toggleSection(this, '#cd2-contacts')">
+					<h:outputText value="#{labels['refCorr.contacts']}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+
+				<p:commandButton ajax="true" partialSubmit="true"  immediate="true" 
+				     styleClass="ui-button-text-only ui-button-info ui-button-flat" 
+					 onclick="copyAdrRef('#{cc.clientId}:nameCorr', '#{cc.clientId}:pk', '#{cc.clientId}:mestoC:аutoCompl_input', '#{cc.clientId}:cOblObsh2', '#{cc.clientId}:adrTxt')"
+					 icon="fas fa-copy" title="Копира в clipboard имена/наименование и адрес"/>
+			</div>
+			
+			<div class="p-grid ui-fluid" id="cd2-contacts" >
+			
+				<h:panelGroup layout="block" class="p-grid p-col-12" id="adrNM" >
+					
+					<div class="p-col-6 p-md-6 p-lg-2 p-xl-2">
+						<h:outputText value="#{ui_labels['general.country']}" styleClass="form-label" />
+						<ibg:selectOneModalA  id="cntryC" readonly="#{cc.attrs.readonly}"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+							selectedCode="#{cc.ref.address.addrCountry}" 
+							emptyMessage="#{labels['docu.countryEmptyMsg']}"
+							saveStateTree="false" withBtnClear="false" compType="4" minQueryLength="2"
+							styleAutoComp=""  update="#{cc.clientId}:adrNM"
+							onComplete="cmdChCountry()"/>	
+							<p:remoteCommand name="cmdChCountry" update="#{cc.clientId}:adrNM"
+							  	partialSubmit="true" process="#{cc.clientId}:adrNM  @this" 
+							 	actionListener="#{cc.actionChangeCountry}"/>
+							   
+					</div>	
+					<div class="p-col-2 p-md-2 p-lg-2 p-xl-1" jsf:id="cpC" jsf:rendered="#{cc.ref.address.addrCountry eq cc.countryBG}">
+						<h:outputText value="#{ui_labels['general.adrPostCode']}" styleClass="form-label" />
+						<p:inputText readonly="#{cc.attrs.readonly}" value="#{cc.ref.address.postCode}" id="pk"/>
+					</div>
+					
+					<div class="p-col-6 p-md-6 p-lg-4 p-xl-2" jsf:id="pmestoC" jsf:rendered="#{cc.ref.address.addrCountry eq cc.countryBG}">
+						<h:outputText value="#{ui_labels['general.ekatte']}" styleClass="#{cc.ref.address.addrCountry ne null ? 'form-label req' :'form-label'}" />
+						<ibg:selectOneModalA  id="mestoC"
+						    readonly="#{cc.attrs.readonly}"
+							update="#{cc.clientId}:cOblObsh"
+							codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"			
+							specifics="#{cc.specificsEKATTE}"					
+							selectedCode="#{cc.ref.address.ekatte}"
+							emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+							saveStateTree="false" withBtnClear="false" compType="3" minQueryLength="3"
+							styleAutoComp="" 
+							dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>	
+						
+					</div>
+												
+					<div class="p-col-6 p-md-6 p-lg-4 p-xl-7" jsf:id="cOblObsh" jsf:rendered="#{cc.ref.address.addrCountry eq cc.countryBG}">
+						<div style="height: 1.75em;" ></div> 	
+						<div jsf:id="cOblObsh2">#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, cc.ref.address.ekatte, cc.lang, now)}</div>
+					</div>
+					
+					<div class="p-col-8 p-md-8 p-lg-6 p-xl-6" jsf:id="cAdrTxt" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL or (cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData)}">
+						<h:outputText value="#{ui_labels['general.adres']}" 
+									  styleClass="form-label" />
+						<p:inputText readonly="#{cc.attrs.readonly}" value="#{cc.ref.address.addrText}" id="adrTxt"/>
+					
+					</div>
+					
+					<div class="p-col-4 p-md-4 p-lg-2 p-xl-2" jsf:id="cpB" jsf:rendered="#{cc.ref.address.addrCountry eq cc.countryBG}">
+						<h:outputText value="#{ui_labels['general.adrPostBox']}" styleClass="form-label" />
+						<p:inputText readonly="#{cc.attrs.readonly}" value="#{cc.ref.address.postBox}"  />
+					</div>
+				</h:panelGroup>
+				
+				<div class="p-grid p-col-12" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL or (cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData)}" jsf:id="contactRef">
+					<div class="p-col-4" > 
+						<h:outputText value="#{ui_labels['general.email']}" styleClass="form-label" />
+						<p:inputText readonly="#{cc.attrs.readonly}" value="#{cc.ref.contactEmail}"  id="contactEmail"/>
+					</div>
+					<div class="p-col-4" > 
+						<h:outputText value="#{ui_labels['general.phone']}" styleClass="form-label" />
+						<p:inputText readonly="#{cc.attrs.readonly}" value="#{cc.ref.contactPhone}"  />
+					</div>
+					<ui:remove><div class="p-col-4" jsf:rendered="false"> 
+						<h:outputText value="#{labels['reffCorr.maxSizeMB']}" styleClass="form-label" />
+						<p:inputText id="maxUploadSize" value="#{cc.ref.maxUploadSize}" onkeyup="onlyNumbersNoRestr('#{cc.clientId}:maxUploadSize')"/>
+					</div></ui:remove>
+				
+				</div>
+			</div>
+			
+			<div class="p-col-12">
+				<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd3-dopInfo')">
+					<h:outputText value="#{labels['docu.dopInfo']}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			
+			<div class="p-grid ui-fluid" id="cd3-dopInfo" style="display: none;">
+				
+				<h:panelGroup layout="block" styleClass="p-grid p-col-12" id="dopInfo">				
+					
+					<div class="p-grid p-col-12">
+						<div class="p-col-4">
+							<h:outputText value="#{labels['refCorr.regCountry']}" styleClass="form-label" id="countryUL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+							<h:outputText value="#{labels['refCorr.citizenship']}" styleClass="form-label" id="grjFL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+							
+							<ibg:selectOneModalA id="refGrj" readonly="#{cc.attrs.readonly}"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}"								
+								selectedCode="#{cc.ref.refGrj}" 
+								emptyMessage="#{labels['docu.countryEmptyMsg']}"
+								saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="2"
+								styleAutoComp=""  />						
+						</div>
+						
+						<div class="p-col-2" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}">
+							<h:outputText value="Дата на раждане" styleClass="form-label" />
+						 	<p:datePicker id="birthDay" mask="true" showIcon="true" pattern="dd.MM.yyyy"  locale="bg" value="#{cc.ref.fzlBirthDate}"/>
+						 </div>
+					</div>
+					
+					<div class="p-col-8">
+						<div class="form-label">
+							<h:outputText value="#{labels['refCorr.nameLatinUL']}" styleClass="form-label" id="latinUL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}"/>
+							<h:outputText value="#{labels['refCorr.nameLatinFL']}" styleClass="form-label" id="latinFL" rendered="#{cc.ref.refType==OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL}"/>
+						</div>
+						<p:inputText id="nameLatinCorr"	value="#{cc.ref.refLatin}" readonly="#{cc.attrs.readonly}" onkeyup="onlyLatWithNumbers('#{cc.clientId}:nameLatinCorr','#{beanMessages['general.onlyLat']}')"/>						
+					</div>
+					
+					<ui:remove> <div class="p-col-3" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_NFL}" jsf:id="taxOfficeN">
+						<div class="form-label">
+							<h:outputText value="#{labels['refCorr.taxOfficeNum']}"  />
+						</div> 
+						<p:inputText id="taxOffice" value="#{cc.ref.taxOfficeNo}" style="width:99%" readonly="#{cc.attrs.readonly}"/>						
+					</div> </ui:remove>
+					
+					<ui:remove> <div class="p-col-3" jsf:rendered="#{cc.ref.refType eq OmbConstants.CODE_ZNACHENIE_REF_TYPE_FZL and cc.seePersonalData}" jsf:id="fzlLnEs">
+						<div class="form-label">
+							<h:outputText value="#{labels['refCorr.fzlLnEs']}"  />
+						</div> 
+						<p:inputText id="fzlLn" value="#{cc.ref.fzlLnEs}" style="width:99%" readonly="#{cc.attrs.readonly}"/>						
+					</div> </ui:remove>
+					
+					<div class="p-col-12"> 
+						<div class="form-label">
+							<h:outputText value="#{labels['docu.note']}"  />
+						</div> 
+						<p:inputText id="refInfo" value="#{cc.ref.refInfo}" style="width:99%" readonly="#{cc.attrs.readonly}"/>						
+					</div>
+					
+				</h:panelGroup>			
+			</div>	
+		
+		
+		<ui:remove><!-- 
+		
+			<div class="p-col-12" jsf:rendered="#{cc.attrs.showDocs}">
+				<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '#cd4-docsList')" 
+							actionListener="#{cc.actionLoadDocsList}" update="#{cc.clientId}:resultTable" partialSubmit="true" process="#{cc.clientId}:resultTable @this">
+					<h:outputText value="#{labels['refCorr.titlePanelDocs']}"/>
+					<i class="fas fa-caret-right"></i>
+				</p:commandLink>
+			</div>
+			
+			<div class="p-grid ui-fluid" id="cd4-docsList" style="display: none;" >
+			
+				<div class="card" jsf:id="resultTable">
+				
+					<h:outputText value="#{labels['correspForget.txtForDocs']}"
+						  style="color: #ff7f00; font-size: 0.9rem; font-style: italic; margin-right: 10px;" rendered="#{cc.attrs.correspForget}" />
+				
+					<h:panelGroup id="panelTblDoc" layout="block" styleClass="margin-top">
+						
+						<div class="table-toolbar" jsf:id="tbTbl" jsf:rendered="#{cc.attrs.correspForget and userData.hasAccess(OmbConstants.CODE_CLASSIF_MENU, OmbConstants.CODE_ZNACHENIE_MENU_CORESP)}">
+							
+							<div class="ui-inputgroup"> 	
+								<ui:remove>
+								<p:commandButton value="#{labels['coresspForget.btnDeleteDocs']}" id="btnRemoveDocs" update="panelTblDoc" partialSubmit="true" onclick="if(!confirm('#{beanMessages['coresspForget.msgDeleteDocs']}'))return false;"
+									rendered="#{cc.docSelectedAllM.size()>0}" process="@this panelTblDoc" actionListener="#{cc.actionDeleteDocs}" styleClass="p-mr-2"/>
+								
+								</ui:remove>						
+								<p:commandButton value="#{labels['coresspForget.btnDeleteFiles']}" id="btnRemoveFiles" update="panelTblDoc" partialSubmit="true" onclick="if(!confirm('#{beanMessages['coresspForget.msgDeleteFiles']}'))return false;"
+									rendered="#{cc.docSelectedAllM.size()>0}" process="@this panelTblDoc" actionListener="#{cc.actionDeleteFiles}" styleClass="p-mr-2"/>							
+								
+								<span style="#{cc.docSelectedAllM.size()>0?'padding-right: 5px;':'display:none'}">
+									<span class="fas fa-ellipsis-v" />
+								</span>
+								
+								<h:outputText value="#{ui_labels['general.reportResult']} #{cc.docsList.rowCount}" styleClass="form-label p-mr-2"/>
+																				
+								<span style="#{cc.docSelectedAllM.size()>0?'padding-right: 5px;':'display:none'}" >
+									<span class="fas fa-ellipsis-v" />
+								</span>
+								
+								<h:outputText value="#{labels['opis.brIzbr']}: #{cc.docSelectedAllM.size()}" rendered="#{cc.docSelectedAllM.size()>0}" styleClass="form-label" id="brSel"/>
+							</div>	
+						</div>
+					
+						<p:dataTable id="tblDocs" var="row" value="#{cc.docsList}" lazy="true" rowKey="#{row[0]}"	 
+							rowIndexVar="idx" sortMode="single" reflow="true" emptyMessage="#{labels['refCorr.docsEmptyMsg']}" 
+							paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							rows="5" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom"
+							paginatorAlwaysVisible="true" paginator="true" rowSelectMode="checkbox" selection="#{cc.docSelectedTmp}">
+							
+							<p:ajax event="toggleSelect"	 	 listener="#{cc.onRowSelectAll}" process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+							<p:ajax event="rowSelectCheckbox"	 listener="#{cc.onRowSelect}"    process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+							<p:ajax event="rowUnselectCheckbox"  listener="#{cc.onRowUnselect}"  process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+							<p:ajax event="page"                 listener="#{cc.onPageUpdateSelected}" />
+							
+							<p:column selectionMode="multiple" style="width:30px;text-align:center;" rendered="#{cc.attrs.correspForget}"/>	
+												
+						  	<p:column width="10" exportable="false" headerText="#{ui_labels['general.No-symbol']}" >
+								<h:outputText value="#{idx + 1}" />
+							</p:column>	
+							
+							<p:column  width="40" exportable="false">
+								<p:commandButton icon="fas fa-edit" action="#{cc.actionGotoEditDoc(row[0])}" ajax="false" title="#{ui_labels['general.edit']}" rendered="#{cc.attrs.correspForget}" />
+								<p:button icon="fas fa-eye" href="#{cc.actionGotoViewDoc(row[0])}" target="_blank"  style="width:30px" rendered="#{!cc.attrs.correspForget}" />					  		
+							</p:column>
+							
+							<p:column width="20" sortBy="#{row.a8}"  exportable="false" >
+								<h:panelGroup rendered="#{row[8]>0}">
+									<i class="fas fa-paperclip" aria-hidden="true" title="#{labels['docList.files']}: #{row[8]}"></i>
+								</h:panelGroup>
+							</p:column>
+							
+							<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+								<h:outputText value="#{row[1]}"  />								    
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+								<h:outputText value="#{row[4]}">	
+									<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+								</h:outputText>							    
+							</p:column>
+							
+							<p:column sortBy="#{row.a7}" headerText="#{labels['docu.otnosno']}">
+								<h:outputText value="#{row[7]}"  />								    
+							</p:column>
+							
+							<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], cc.lang, now)}"/>					    
+							</p:column>
+							
+							<p:column width="150" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], cc.lang, now)}"/>					    
+							</p:column>
+							
+							<ui:remove> <p:column width="200" sortBy="#{row.a6}" headerText="#{labels['regData.registratura']}">
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, row[6], cc.lang, now)}"/>					    
+							</p:column> </ui:remove>
+						
+						</p:dataTable>
+					
+					</h:panelGroup>
+				
+				</div>
+			
+			</div>
+		 --></ui:remove>
+		</div>
+
+
+	<script>
+	 
+		function copyAdrRef(idName, idPk, idNs, idOo, idAdr) {
+		  var name = document.getElementById(idName);
+		  var pk = document.getElementById(idPk);
+		  var ns = document.getElementById(idNs);
+		  var oo= document.getElementById(idOo);
+		  var oblobsh = oo.innerText || oo.textContent;
+		  var adr = document.getElementById(idAdr);
+		  var copytxt = name.value + " ПК:" + pk.value +" "+ns.value + ", "+ oblobsh+" "+adr.value;
+		 
+		  navigator.clipboard.writeText(copytxt);
+		  
+		 // alert(copytxt);
+		}
+	</script>
+</cc:implementation>
+
+</ui:composition>

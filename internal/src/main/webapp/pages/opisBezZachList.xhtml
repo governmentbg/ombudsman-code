@@ -1,0 +1,29 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+            	 xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                template="/template/template.xhtml">
+                
+        <ui:define name="metadata">
+			<f:metadata>
+			   <f:importConstants type="com.ib.omb.system.OmbConstants" />
+			</f:metadata>
+		</ui:define> 
+		
+	<ui:define name="title">#{navTexts['/pages/opisBezZachList.xhtml']}</ui:define>
+
+	<ui:define name="viewname">
+	    
+		<li>#{navTexts['/pages/opisBezZachList.xhtml']}</li>
+	</ui:define>
+		
+	
+    <ui:define name="content">
+          <ui:include src="/pages/opisiBezInc.xhtml" />
+        
+    </ui:define>
+
+</ui:composition>

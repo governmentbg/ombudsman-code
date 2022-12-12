@@ -1,0 +1,82 @@
+<ui:composition 
+ 		xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui" 
+		xmlns:ibg="http://java.sun.com/jsf/composite/components"
+		template="/template/template.xhtml">
+		
+		<style type="text/css">
+		.dataList .ui-datalist-data{
+			border: none;
+			background: transparent;
+			background-image: none;
+		}
+		</style>
+		
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:importConstants type="com.ib.omb.system.OmbConstants" />
+				
+			</f:metadata>		
+		</ui:define>
+		
+		<ui:define name="title">#{navTexts['/pages/specReports.xhtml']}</ui:define>
+		
+		<ui:define name="viewname">  
+			     
+	        <li>#{navTexts['/pages/specReports.xhtml']}</li>
+	    </ui:define> 
+    
+		<ui:define name="content">	
+			<style type="text/css">
+				.ui-datalist.noborder .ui-widget-content {
+					border: none;
+				}
+			</style>
+		
+			<h:form id="reportsForm">	
+ 			
+					
+						<div class="card">
+							<div class="p-grid ui-fluid">	
+						
+								<div class="p-col-12 p-sm-12 p-md-12 p-lg-12 p-xl-12 ">			
+							
+									<p:dataView id="tblDates"  var="row" value="#{specReports.sprList}" rowIndexVar="idx" 							
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"  
+										gridIcon="pi pi-th-large" listIcon="pi pi-bars" gridRowStyleClass="p-p-3"
+										rows="50"  rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="false" paginator="true" emptyMessage="#{ui_labels['general.norows']}">
+			  							
+											<f:facet name="header">
+									           <h:outputText value="#{labels['specReports.reqSpecSpr']}" class="extended-search-toggle expanded"/>
+									        </f:facet>
+									        
+											<p:dataViewGridItem>
+									        	<p:commandLink value="#{row.tekst}" action="#{specReports.actionGoTo(row.code)}" ajax="false" styleClass="p-m-2">
+													<i class="fas fa-eye" aria-hidden="true"  title="#{labels['specReports.request']}"></i>						
+												</p:commandLink>
+									        </p:dataViewGridItem> 
+										  	<p:dataViewListItem >
+										  		
+											  		<p:commandLink value="#{row.tekst}" action="#{specReports.actionGoTo(row.code)}" ajax="false" styleClass="p-m-3">
+														<i class="fas fa-eye" aria-hidden="true"  title="#{labels['specReports.request']}"></i>						
+													</p:commandLink>
+													
+											</p:dataViewListItem>																		
+									</p:dataView>	
+						
+															
+							</div>	
+							</div>
+							
+							
+						</div>	
+
+
+																						
+							
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,311 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:c="http://java.sun.com/jstl/core"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:cc="http://java.sun.com/jsf/composite"
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"	> 
+	  
+	  
+
+<cc:interface componentType="compDocSearch">
+   		  
+   <cc:attribute name="searchDocS"	       	 type="java.lang.Object"  shortDescription="връща документ (DocSearch)" deafult="null" />
+   <cc:attribute name="searchRnDoc"	     	 type="java.lang.Object"  shortDescription="номер на документ за търсене" deafult="null" />
+   <cc:attribute name="searchTehNomDoc"    	 type="java.lang.Object"  shortDescription="техен номер на документ за търсене" deafult="null" />
+   <cc:attribute name="idRegistratura"	     type="java.lang.Integer" shortDescription="id на регистратура" deafult="null" />
+   <cc:attribute name="dateClassif"   		 type="java.util.Date"    shortDescription="Дата, към която да се заредят класификации и за разкодиране. По подразбиране - днешна дата." />
+   <cc:attribute name="update" 		  		 type="java.lang.String"  shortDescription="Полета, които трябва да се обновят" />
+   <cc:attribute name="readonly"       		 type="java.lang.Boolean" shortDescription="Само за разглеждане" default="false" />
+   <cc:attribute name="onComplete"     		 type="java.lang.String"  shortDescription="Изпълнява функция при връщане на резултата - подава се името на функцията" />
+   <cc:attribute name="selectedDocList"	 	 type="java.util.List"	  shortDescription="Списък от избраните значения като обект DocSearch - само, ако multi=true" />
+   <cc:attribute name="multi"       		 type="java.lang.Boolean" shortDescription="Позволява множествен избор" default="false" />
+   <cc:attribute name="idDoc"	     		 type="java.lang.Integer" shortDescription="id на текущ документ, към който е връзката. Ако има връзка между докумените те да се изключат от списъка " />
+   <cc:attribute name="markRelDocId"       	 type="java.lang.Integer" shortDescription="id на текущ документ. Ако има връзка между докумените те да останат и да се маркират. Праметрите idDoc и markRelDocId взаимно се изключват! Само единия от тях трябва да се подаде!."  />
+   <cc:attribute name="idDelo"	    	 	 type="java.lang.Integer" shortDescription="id на текущата преписка, в която се влага" deafult="null" />
+   <cc:attribute name="idProtocol"	    	 type="java.lang.Integer" shortDescription="id на текущат протокол, към който е връзката" deafult="null" />
+   <cc:attribute name="isWorkOff"       	 type="java.lang.Boolean" shortDescription="Дали има връзка между работен и собствен док. " default="false" />
+   <cc:attribute name="buttonConfirmLabel"   type="java.lang.String"  shortDescription="Лабел - на бутона за потвърждение. Default=Потвърждение" default="Потвърждение" />
+   <cc:attribute name="buttonConfirmTitle"   type="java.lang.String"  shortDescription="Подсказка - на бутона за потвърждение. Default=Потвърждаване на избраните документи" default="Потвърждаване на избраните документи" />
+   <cc:attribute name="docTypeArr"	       	 type="java.lang.Object"  shortDescription="Списък от допустими типове документи" deafult="null" />
+</cc:interface>
+
+<cc:implementation>
+
+ <f:event type="preRenderComponent"  listener="#{cc.initDocSearch(true)}" /> 
+		
+	<div jsf:id="panelFilterDoc" class="container #{guestPreferences.containerPosition}" jsf:rendered="#{cc.showMe}"
+	  onkeypress="if(event.keyCode == 13) {event.preventDefault();  document.getElementById('#{cc.clientId}:btnSearchC1').click();}">										
+  	
+
+	 <div class="card" jsf:rendered="#{!cc.attrs.readonly}"> 
+		<div  class="p-grid   p-align-end " >
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ui-fluid">
+				 <h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label"/>
+				 <div class="ui-inputgroup"> 	
+					<p:inputText value="#{cc.docSearch.rnDoc}" id="rnDoc"/>
+				    <p:focus id="focusRnDoc" for="#{cc.clientId}:rnDoc" />
+					 												 
+					 <p:selectBooleanButton id="rndEq" value="#{cc.docSearch.rnDocEQ}" 
+				      	    onLabel="#{ui_labels['general.yes']}"
+				    	    offLabel="#{ui_labels['general.no']}"
+							title="#{labels['docu.docSrchRegNom']}" 
+						    onIcon="fas fa-toggle-on"  
+							offIcon="fas fa-toggle-off" 
+						    styleClass="inputgroup-button">
+								<p:ajax update="@this #{cc.clientId}:rnDoc" partialSubmit="true"
+										process="@this #{cc.clientId}:rnDoc"/>			
+					</p:selectBooleanButton>				    	
+				</div>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ui-fluid">	
+				<h:outputText value="#{labels['docList.theirNum']}" styleClass="form-label"/>
+				<div class="ui-inputgroup">
+					<p:inputText value="#{cc.docSearch.tehNomer}" id="tehNom" disabled="#{cc.attrs.searchTehNomDoc ne null }"/>
+																 													 
+						<p:selectBooleanButton id="tehNomEq" value="#{cc.docSearch.tehNomerEQ}" 
+									      	    onLabel="#{ui_labels['general.yes']}"
+				    	   						offLabel="#{ui_labels['general.no']}"
+												title="#{labels['docu.docSrchTehNom']}" 
+											    onIcon="fas fa-toggle-on"  
+												offIcon="fas fa-toggle-off" 
+												styleClass="inputgroup-button">
+												<p:ajax update="@this tehNom" partialSubmit="true" process="@this tehNom"/>			
+						</p:selectBooleanButton>	
+				</div>									    	
+			</div>
+			<!--Относно-->		
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ui-fluid">	
+				<h:outputText value="#{labels['docu.otnosno']}" styleClass="form-label"/>
+				<p:inputText value="#{cc.docSearch.otnosno}" id="otnosno"/>
+									  
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ui-fluid">
+				<h:outputText value="#{labels['doc.lstPeriod']}" styleClass="form-label"/>
+				 <p:selectOneMenu id="idPerR" value="#{cc.periodR}" height="250">
+                        <f:selectItem value="#{null}" itemValue="#{null}" itemLabel=" "/>
+                        <f:selectItems  value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, cc.lang)}" 
+                          var="clPer" itemLabel="#{clPer.tekst}" itemValue="#{clPer.code}" />
+                        <p:ajax event="change" partialSubmit="true"
+                        update="@this #{cc.clientId}:dateOtReg #{cc.clientId}:dateDoReg" listener="#{cc.changePeriodR}"/>   
+                 </p:selectOneMenu>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2 ui-fluid">
+				<h:outputText value="#{ui_labels['general.dataOt']}" styleClass="form-label"/>
+				 <p:datePicker id="dateOtReg" mask="true" showIcon="true"  locale="bg"  pattern="dd.MM.yyyy"
+		         	value="#{cc.docSearch.docDateFrom}" >
+		         	<p:ajax event="change" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>
+		         	<p:ajax event="dateSelect" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>      
+		         </p:datePicker>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-2 ui-fluid">
+				<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label"/>
+				<p:datePicker id="dateDoReg" mask="true" showIcon="true"  locale="bg" pattern="dd.MM.yyyy"
+         			    value="#{cc.docSearch.docDateTo}" >
+         			 	<p:ajax event="change" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>   
+         			 	<p:ajax event="dateSelect" update="#{cc.clientId}:idPerR" listener="#{cc.changeDate}"/>   
+	         	</p:datePicker>
+			</div>
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-6 p-xl-4 ui-fluid">				
+				<p:selectManyCheckbox value="#{cc.docSearch.docTypeArr}" id="typeDoc"	immediate="true">
+					<f:selectItems value="#{cc.typeDocList}" />
+				</p:selectManyCheckbox>
+			</div>
+		</div>	
+		
+				
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle" onclick="toggleSection(this, '##{cc.clientId}:srch-extended')">
+				<h:outputText value="#{ui_labels['search.extend']}"/>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+		<div class="p-grid" jsf:id="srch-extended"  style="display: none;">		
+					 
+			<!--Вид на документа-->							
+			<div   class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">	
+				<h:outputText value="#{labels['docu.vid']}" styleClass="form-label"/>
+				<ibg:selectManyModalA id="lstDocsVid" compType="2" maxResults="50"
+					codeClassif="#{OmbConstants.CODE_CLASSIF_DOC_VID}" 																
+					dateClassif="#{cc.attrs.dateClassif}" filtered="false"
+					saveStateTree="false" showRadioBtn="true" 
+					selectedCodes="#{cc.docSearch.docVidList}"
+					selectedClassifs="#{cc.docsVidClassif}"
+					styleAutoComp="width:100%;"
+					withBtnClear="true" /> 
+										
+			</div>
+			
+			<!--Регистър-->								
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">	
+				<h:outputText value="#{labels['docu.register']}" styleClass="form-label"/>
+				<ibg:selectManyModalA compType="2" maxResults="50"
+					codeClassif="#{OmbConstants.CODE_CLASSIF_REGISTRI}"
+					dateClassif="#{cc.attrs.dateClassif}" filtered="false"
+					selectedCode="#{cc.docSearch.registerIdList}"
+					selectedClassifs="#{cc.docsRegistriClassif}"
+					saveStateTree="true" withBtnClear="true" showRadioBtn="true" 
+					styleAutoComp="width:100%;" />
+			</div>			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+				<h:outputText value="#{labels['docu.valid']}" styleClass="form-label"/>
+				 <p:selectCheckboxMenu id="validnost" value="#{cc.docSearch.validArr}" multiple="true">
+					 <f:selectItems var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"
+					 value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VALID, deloList.decodeDate, deloList.currentLang)}"/> 
+				 </p:selectCheckboxMenu>												
+			</div>
+			
+			 <div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+				 <h:outputText value="#{labels['delo.regnom']}" styleClass="form-label"/>
+				 <div class="ui-inputgroup"> 	
+					<p:inputText value="#{cc.docSearch.rnDelo}" id="rnDelo"/>
+				</div>
+			</div>
+			
+			<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">
+				<h:outputText value="#{labels['delo.yearSearch']}" styleClass="form-label"/>
+				<p:inputMask value="#{cc.docSearch.deloYear}" id="yearDelo" mask="9999"/>
+			</div>
+			
+	
+		</div>
+		<div class="filter-buttons">
+			<p:commandButton id="btnSearchC1" 						
+			    actionListener="#{cc.actionSearchDoc}"
+				partialSubmit="true" 
+				process="@this  #{cc.clientId}:panelFilterDoc" 
+				update="#{cc.clientId}:panelTblDoc" 
+				icon="fas fa-search"  
+				value="#{ui_labels['general.search']}" styleClass="p-mr-2"/>
+			
+			
+				 
+			<p:commandButton 					    
+				id="btnClearC1" 
+				actionListener="#{cc.actionClearDoc}"
+				partialSubmit="true"
+				process="@this  #{cc.clientId}:panelFilterDoc" 
+				update="#{cc.clientId}:panelFilterDoc"
+				icon="fas fa-eraser"  	styleClass="ui-button-warning"
+			    value="#{ui_labels['general.clear']}"	title="#{ui_labels['general.titleClear']}"  /> 	    
+			
+		</div>
+   
+	</div>
+    	
+    <h:panelGroup id="panelTblDoc" >
+			
+		  <div class="table-toolbar"  jsf:id="tbTbl" jsf:rendered="#{cc.attrs.multi and !cc.attrs.readonly and cc.docList!=null}" >
+				<p:commandButton icon="fas fa-check"  value="#{cc.attrs.buttonConfirmLabel}"
+					id="btnSelConfirm"  disabled="#{cc.docSelectedAllM.size() eq 0}"
+					process="#{cc.attrs.update} @this"
+					actionListener="#{cc.actionConfirmSelected}"
+					update="#{cc.attrs.update} #{cc.clientId}:panelFilterDoc"							
+					title="#{cc.attrs.buttonConfirmTitle}" >
+						<p:confirm header="#{ui_labels['general.comfirmation']}" disabled="true" 
+						message="#{ui_labels['general.comfirmation']}" icon="fas fa-exclamation-triangle" />
+				</p:commandButton>	
+				
+				<span class="fas fa-ellipsis-v  p-mx-2" />
+				
+				<h:outputText value="#{ui_labels['general.brSelected']}: #{cc.docSelectedAllM.size()}"  styleClass="form-label" id="brSel"/>
+				
+		  </div>
+		
+		  <p:dataTable id="tblDocList" var="row" value="#{cc.docList}" lazy="true" 	rendered="#{cc.docList!=null}"
+				rowIndexVar="idx" sortMode="single"  rowKey="#{row[0]}" scrollable="true" reflow="true"
+				emptyMessage="#{cc.docList eq null ? '' : labels['docu.docSrchEmptyMsg']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rows="5" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom"
+				paginatorAlwaysVisible="false" paginator="true"
+				rowSelectMode="checkbox"
+				selection="#{cc.docSelectedTmp}" sortBy="#{row.a4}" >
+				
+			<p:ajax event="toggleSelect"	 	 listener="#{cc.onRowSelectAll}" process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="rowSelectCheckbox"	 listener="#{cc.onRowSelect}"    process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="rowUnselectCheckbox"  listener="#{cc.onRowUnselect}"  process="@this"  update=" #{cc.clientId}:brSel #{cc.clientId}:tbTbl"/>
+			<p:ajax event="page"                 listener="#{cc.onPageUpdateSelected}" />
+
+
+					
+			<p:column selectionMode="multiple" style="width:30px;text-align:center;" 
+				      rendered="#{cc.attrs.multi  and row[11] ne 1  and !cc.attrs.readonly}" />
+			<p:column style="width:30px" 
+					  rendered="#{cc.attrs.multi  and row[11] ne 1  and cc.attrs.readonly}" />	
+			<p:column style="width:30px;text-align:center;" 
+				      rendered="#{cc.attrs.multi  and row[11] eq 1}" >					
+				  <i class="fas fa-link" title="#{labels['docu.compDocVrazMsg']}"></i>
+			</p:column>
+				  					
+		  	<p:column  style="text-align: center" width="30" rendered="false">
+				<f:facet name="header">
+		               #{labels['general.No-symbol']}  
+		         </f:facet>
+				<h:outputText value="#{idx + 1}" />
+			</p:column>	
+			
+			<p:column style="text-align: center" width="50" exportable="false" rendered="#{!cc.attrs.multi and !cc.attrs.readonly}" >
+			
+				<p:commandButton id="btnChDoc" 
+				    title="#{ui_labels['general.choise']}"									
+				    action="#{cc.actionModalSelectDoc(row)}"					
+				    partialSubmit="true" 
+				    process="#{cc.attrs.update}  #{cc.clientId}:panelFilterDoc @this"
+					update="#{cc.attrs.update}  #{cc.clientId}:panelFilterDoc"
+					icon="fas fa-hand-point-down" styleClass="btn-normal"/>	
+															
+			</p:column>
+			
+			<p:column width="110" sortBy="#{row.a1}" headerText="#{labels['repDoc.regnom']}">
+				<h:outputText value="#{row[1]}"  />								    
+			</p:column>
+			
+			<p:column width="110" sortBy="#{row.a4}" headerText="#{labels['docu.docDate']}" >									  
+				<h:outputText value="#{row[4]}">	
+					<f:convertDateTime pattern="dd.MM.yyyy" timeZone="#{cc.timeZone}"/>
+				</h:outputText>							    
+			</p:column>
+			<p:column width="20" headerText="">
+			 	<h:panelGroup rendered="#{row[7] ne null}">			
+					<i 	 class="fas fa-paperclip"  id="tehN"
+					   title="#{cc.titleTehenNomer(row[7], row[8])}"></i>
+				</h:panelGroup>
+			 </p:column>
+			<p:column width="*" sortBy="#{row.a5}" headerText="#{labels['docu.otnosno']}" >
+				<h:outputText value="#{row[5]}"  />								    
+			</p:column>
+			
+			 <p:column width="20" headerText="">
+			 	<h:panelGroup rendered="#{row[10] ne null}">			
+					<i 	 class="fas fa-user"  id="btnRef"
+					   title="#{labels['docu.corespondent']}:  #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REFERENTS, row[10], cc.lang, now)} "></i>
+				</h:panelGroup>
+			 </p:column>
+			 
+			<p:column width="80" sortBy="#{row.a2}" headerText="#{labels['docu.type']}">
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row[2], cc.lang, now)}"/>					    
+			</p:column>
+			
+			<p:column width="*" sortBy="#{row.a3}" headerText="#{labels['docu.vid']}">
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row[3], cc.lang, now)}"/>					    
+			</p:column>
+			
+			<p:column width="100" sortBy="#{row.a6}" headerText="#{labels['docu.valid']}" rendered="#{cc.attrs.searchTehNomDoc eq null}">
+				<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VALID, row[6], cc.lang, now)}"/>					    
+			</p:column>
+			
+		</p:dataTable>
+			
+		
+	</h:panelGroup>	
+
+	</div>
+
+</cc:implementation>
+	
+</ui:composition>

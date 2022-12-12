@@ -1,0 +1,338 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:jsf="http://xmlns.jcp.org/jsf"	  
+	  xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	  template="#{(isView eq 1) ? '/template/templateView.xhtml' : '/template/template.xhtml'}"> 
+                
+	<ui:param name="pageTitle" value="#{isView == null ? navTexts['/pages/eventEdit.xhtml'] : navTexts['/pages/eventView.xhtml'] }" />
+	<ui:define name="title">#{pageTitle}</ui:define>
+    	
+   	<f:metadata>
+		<f:viewAction action="#{userData.checkPageAccess(null)}" onPostback="false" />
+	</f:metadata>
+
+	<ui:define name="viewname">		
+		<li>
+	       	<p:commandLink title="#{ui_labels['general.back']}" action="#{navigation.goBack()}" 
+	       				   rendered="#{navigation.navPath.size()>1}">
+				<i class="fas fa-caret-left" />
+			</p:commandLink>
+		</li>
+		<li>
+			
+			<h:outputText value="#{navTexts['/pages/eventEdit.xhtml']}" rendered="#{isView == null}"/> 
+			<h:outputText value="#{navTexts['/pages/eventView.xhtml']}" rendered="#{isView eq 1}"/> 
+		</li>
+	
+    </ui:define>
+    <ui:define name="content">
+        <h:form id="eventForm">
+            		
+            	<p:toolbar id="panelButtons" rendered="#{isView==null}">
+					<f:facet name="left">									
+						<p:commandButton icon="fas fa-save" value="#{ui_labels['general.save']}"
+							action="#{eventsEdit.actionSave}" id="btnSave" update="eventForm"  process="@this eventForm" partialSubmit="true"/>
+								
+						
+						<span class="fas fa-ellipsis-v SoftGray p-mx-2" />
+                        
+                              
+                        <p:commandButton icon="fas fa-plus" id="btnNew" value="#{labels['events.new']}" update="eventForm" process="@this" partialSubmit="true"
+							actionListener="#{eventsEdit.actionNew}" styleClass="ui-button-success">
+						</p:commandButton>
+										
+					</f:facet>
+					<f:facet name="right">
+																								
+						<h:panelGroup id="pNotifBtn" styleClass=" p-mr-2">			
+							<p:commandButton id="btnNotif" icon="fas fa-bell" value="#{labels['events.notif']}" rendered="#{eventsEdit.showBtnNotif}"
+					            actionListener="#{eventsEdit.sendNotif}" title="#{labels['events.notifTooltip']}" update="eventForm" process="@this eventForm" partialSubmit="true" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['events.confSendNotif']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+						</h:panelGroup>
+						
+						<h:panelGroup styleClass=" p-mr-2">	
+							<p:commandButton id="btnDelete" icon="fas fa-times" value="#{ui_labels['general.delete']}" rendered="#{eventsEdit.event.id ne null}"
+					           	styleClass="ui-button-danger" actionListener="#{eventsEdit.actionDelete}" update="eventForm" process="@this" partialSubmit="true" >
+								<p:confirm header="#{ui_labels['general.comfirmation']}" message="#{beanMessages['general.confirmDeleteMsg']}" icon="fas fa-exclamation-triangle" />
+							</p:commandButton>
+						</h:panelGroup>
+						<h:panelGroup id="pRegInfoEvent" rendered="#{eventsEdit.event.id ne null}" >
+							<ibg:compObjAudit idObj="#{eventsEdit.event.id}" id="history"
+										 	codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_EVENT}"
+										 	identInfo="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_VID_EVENT, eventsEdit.event.eventCode, eventsEdit.currentLang, now)}"/>
+						</h:panelGroup>		
+					</f:facet>
+				</p:toolbar>
+                <div class="card">
+                
+                    <div class="p-grid ui-fluid ">
+	                    <div class="p-grid p-col-12 p-md-12 p-lg-6 p-xl-7">
+	                    	<!--Вид организирано събитие-->							
+							<div   class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">	
+									<h:outputText value="#{labels['events.vid']}" styleClass="form-label req"/>
+									
+									<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_VID_EVENT}" 
+										id="vid" dateClassif="#{eventsEdit.decodeDate}" filtered="false" readonly="#{isView eq 1}"												
+										selectedCode="#{eventsEdit.event.eventCode}" saveStateTree="true"
+										compType="4" styleAutoComp="width:100%" />
+									
+							</div>
+						
+							<!--Начало-->	
+	                    	<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2 ">	
+								<h:outputText value="#{labels['procList.begin']}" styleClass="form-label req"/>
+								<p:datePicker id="dateOtValid" pattern="dd.MM.yyyy HH:mm" mask="true"  locale="bg" showIcon="#{isView eq 1 ? '' :'true'}"  showTime="true" showSeconds="true"
+									value="#{eventsEdit.event.dateOt}" styleClass="form-control" readonly="#{isView eq 1}"   >							     
+								</p:datePicker>
+							</div>
+							
+							<!--Край-->	
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-2 p-xl-2">	
+								<h:outputText value="#{labels['procList.end']}" styleClass="form-label req"/>
+								<p:datePicker id="dateToValid" pattern="dd.MM.yyyy HH:mm" mask="true"  showIcon="#{isView eq 1 ? '' :'true'}"  showTime="true" showSeconds="true" locale="bg"  
+									value="#{eventsEdit.event.dateDo}" styleClass="form-control" readonly="#{isView eq 1}" >							     
+								</p:datePicker>
+							</div>
+																		          					
+							 <!--Организатор-->						
+							<div  class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4 ">
+								<h:outputText value="#{labels['events.organizator']}" styleClass="form-label req"/>
+									
+								<ibg:selectOneModalA codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" readonly="#{isView eq 1}"
+									id="organizator" dateClassif="#{eventsEdit.decodeDate}" filtered="false" showRadioBtn="false"												
+									selectedCode="#{eventsEdit.event.organizator}" saveStateTree="true" isSelectNode="false" sortByName="false"
+									compType="2" styleAutoComp="width:100%" />
+							</div>	
+							
+							<!--Държава-->							 
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">	
+							<h:outputText value="#{labels['global.country']}" styleClass="form-label"/>
+							<ibg:selectOneModalA  codeClassif="#{OmbConstants.CODE_CLASSIF_COUNTRIES}" readonly="#{isView eq 1}"			
+													id="countries"  dateClassif="#{eventsEdit.decodeDate}" filtered="false" 						
+													selectedCode="#{eventsEdit.event.addrCountry}" saveStateTree="true"
+													withBtnClear="true" compType="4" styleAutoComp="" sortByName="false" />	
+																				   
+							</div>
+							
+							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid">	
+									
+									<h:outputText value="#{ui_labels['general.ekatte']}"  styleClass="form-label"/>
+										
+									<ibg:selectOneModalA  id="mestoC"
+											update="eventForm:oblObsh"							
+											codeClassif="#{OmbConstants.CODE_CLASSIF_EKATTE}"			
+											styleAutoComp="" readonly="#{isView eq 1}"		
+											selectedCode="#{eventsEdit.event.ekatte}"
+											emptyMessage="#{labels['docu.mestoEmptyMsg']}"
+											saveStateTree="false" withBtnClear="true" compType="3" minQueryLength="3"							
+											dopInfoAutoComp="true" dopInfoTitleAutoComp="#{ui_labels['general.ekatteObshObl']}"/>	
+											
+								</div>
+																
+								<div  jsf:id="oblObsh" class="p-col-12 p-sm-12 p-md-6 p-lg-4 p-xl-4  ui-fluid ">							
+									<h:outputText value="#{ui_labels['general.ekatteObshObl']}" styleClass="form-label" />								
+										<p:inputText id="obl" readonly="true" value="#{systemData.decodeItemDopInfo(OmbConstants.CODE_CLASSIF_EKATTE, eventsEdit.event.ekatte,eventsEdit.currentLang, now)}" />									
+								</div>
+								
+								<!--Адрес-->		
+						    	<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12  ui-fluid" >
+										<h:outputText value="#{ui_labels['general.adres']}" styleClass="form-label"/>
+										<p:inputText  value="#{eventsEdit.event.addrText}" id="adrTxt" readonly="#{isView eq 1}"/>
+										
+								</div>
+													
+									   			                   	                  	      					           		
+	                  </div>  
+	                  <div class="p-grid p-col-12 p-md-12 p-lg-6 p-xl-5">
+	                 		<!--Описание-->	
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12">						
+								    <h:outputText  value="#{labels['delo.opisanie']}"  styleClass="form-label req" />
+							        <p:inputTextarea value="#{eventsEdit.event.eventInfo}" autoResize="false" id ="info" rows="9" readonly="#{isView eq 1}"/> 				
+							</div>
+					   </div>
+					   
+					    <div class="p-grid p-col-12 p-md-12 p-lg-6 p-xl-7">
+					    	
+								
+					    	<!--Ресурси-->							 
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12  ui-fluid">	
+								<h:outputText value="#{labels['events.resourses']}" styleClass="form-label"/>	
+								<p:commandLink id="resLink" action="#{eventsEdit.searchResourses}" update="eventForm:panelResourses" onclick="PF('resourses').show();">	
+									<i class="fas fa-info-circle" aria-hidden="true" title="#{labels['events.commResourses']}"></i>	
+								</p:commandLink>				
+									<ibg:selectManyModalA compType="2" maxResults="50" isSelectNode="false" id="resourses"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_EVENT_RESOURCES}" readonly="#{isView eq 1}"
+										dateClassif="#{eventsEdit.decodeDate}" filtered="false"
+										selectedCodes="#{eventsEdit.event.resourcesList}"
+										selectedClassifs="#{eventsEdit.resoursesClassif}" sortByName="false"
+										saveStateTree="true" withBtnClear="true" showRadioBtn="false" styleAutoComp="" />														   
+							</div>	
+							
+							<!--Участници-->							 
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12  ui-fluid">	
+								<h:outputText value="#{labels['procDefEdit.referentsTask']}" styleClass="form-label"/>						
+									<ibg:selectManyAdmStr compType="2" maxResults="50" id="ref" readonly="#{isView eq 1}"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}"
+										dateClassif="#{eventsEdit.decodeDate}" filtered="false"
+										selectedCodes="#{eventsEdit.event.codeRefList}" isSelectNode="false"
+										selectedClassifs="#{eventsEdit.codeRefClassif}" sortByName="false"
+										withBtnClear="true" showRadioBtn="false" styleAutoComp="" />														   
+							</div>
+							
+							<!--Файлове от документ-->
+							 <div class="p-col-12 p-sm-12 p-md-6 p-lg-3 p-xl-3 ">
+       
+				                  <p:commandButton id="btnIn" value="#{labels['eventsEdit.filesFromDoc']}" icon="fas fa-search"						
+											oncomplete="PF('mDocSPD').show();"
+											partialSubmit="true" rendered="#{isView==null and eventsEdit.event.id != null}"
+											title="#{labels['docDestruction.docSearch']}">
+											
+								</p:commandButton>
+							</div>
+					    </div>
+					    
+					    <div class="p-grid p-col-12 p-md-12 p-lg-6 p-xl-5">
+					    
+					      	<!--Забележка-->       							
+							<div class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12">
+							    <h:outputText  value="#{labels['docu.note']}"  styleClass="form-label"/>
+						        <p:inputTextarea value="#{eventsEdit.event.eventNote}" id="note" rows="10" autoResize="false" readonly="#{isView eq 1}"/> 
+							</div>	
+					    </div>
+					    
+					  
+	                </div>
+	                 <!-- Файлове -->
+	               
+					<div jsf:id="files" class="p-col-12 p-sm-12 p-md-6 p-lg-12 p-xl-12">		
+						<p:remoteCommand id="cmdFile" name="cmdAddFile" ignoreAutoUpdate="true" partialSubmit="true" process="@this" update="pNotifBtn"
+											actionListener="#{eventsEdit.addFile}" />
+						<ibg:compFileUpload listObj="#{eventsEdit.filesList}" headerLabel="#{ui_labels['general.files']}" 
+									codeObj="#{OmbConstants.CODE_ZNACHENIE_JOURNAL_EVENT}" header="false" view="#{isView eq 1}"
+									idObj="#{eventsEdit.event.id}"	btnLabel="#{ui_labels['files.new']}"		
+									autoSave="true" saveFirst="#{eventsEdit.event.id == null}" onComplete="cmdAddFile()"
+									id="filesEvent" display="list" />	
+								
+	               </div>
+                </div>
+                
+         
+                <!-- Ангажираност на ресурси -->
+				 
+				<p:dialog id="modalRes" header="#{labels['events.commResourses']}" appendTo="@form"  responsive="true" resizable="true" closeOnEscape="true" widgetVar="resourses" modal="true">
+				   	    
+				    <div class="container #{guestPreferences.containerPosition}">
+					    <h:panelGroup id="panelResourses">											
+				
+							
+																	
+								<div  class="card" layout="block" styleClass="margin-top">
+					
+									<p:dataTable id="tblResourses" var="row" value="#{eventsEdit.eventList}" lazy="true" rowIndexVar="idx" sortMode="single" reflow="true"
+										emptyMessage="#{ui_labels['general.norows']}" 
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="10" rowsPerPageTemplate="5,15,20,25" paginatorPosition="bottom" paginatorAlwaysVisible="true" paginator="true">
+		
+										<p:column width="15" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+											<h:outputText value="#{idx + 1}" />
+										</p:column>
+											
+										<p:column width="70" sortBy="#{row.a8}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['events.resourses']}" />									  
+											</f:facet>										
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_EVENT_RESOURCES, row[8], eventsEdit.currentLang, eventsEdit.decodeDate)}" /> 											
+										</p:column>		
+																		
+										<p:column width="100" sortBy="#{row.a1}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['events.orgEvent']}"  />										  
+											</f:facet>  
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_VID_EVENT, row[1], eventsEdit.currentLang, now)}"/> 
+										</p:column>
+										
+										<p:column width="60" sortBy="#{row.a2}">
+											<f:facet name="header"> 
+												 <h:outputText  value="#{labels['delo.opisanie']}"/>										  
+											</f:facet>
+											<h:outputText value="#{row[2]}" />
+										</p:column>
+										
+										<p:column width="70" sortBy="#{row.a3}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['procList.begin']}"  />									  
+											</f:facet>
+											<h:outputText value="#{row[3]}">	
+												<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{eventsEdit.timeZone}"/>
+											</h:outputText>									    
+										</p:column>
+										
+										<p:column width="70" sortBy="#{row.a4}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['procList.end']}"  />									  
+											</f:facet>
+											<h:outputText value="#{row[4]}">	
+												<f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{eventsEdit.timeZone}"/>
+											</h:outputText>									    
+										</p:column>
+																		
+										<p:column width="80" sortBy="#{row.a5}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['events.organizator']}"/>									  
+											</f:facet>
+											
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_USERS,row[5], eventsEdit.currentLang, eventsEdit.decodeDate)}"/>	
+					
+										</p:column>
+										
+										<p:column width="100" sortBy="#{row.a6}">
+											<f:facet name="header">
+												 <h:outputText value="#{labels['events.regFrom']}" />									  
+											</f:facet>
+											
+											<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_USERS, row[6], eventsEdit.currentLang, eventsEdit.decodeDate)}" />
+										</p:column>
+										
+										<p:column width="80" sortBy="#{row.a9}">
+											<f:facet name="header"> 
+												 <h:outputText  value="#{labels['docu.note']}"/>										  
+											</f:facet>
+											<h:outputText value="#{row[9]}" />
+										</p:column>
+																																															
+									</p:dataTable>					
+								</div>																		
+						</h:panelGroup> 
+					</div>
+				</p:dialog>   
+				
+				<h:panelGroup id="docPG">
+
+					<p:remoteCommand name="hideModal" process="@this"
+						update="eventForm:files eventForm:pNotifBtn"
+						actionListener="#{eventsEdit.actionHideModalDoc}" />
+			
+					<p:dialog appendTo="@form" position="top" header="#{labels['eventsEdit.izborDoc']}"
+						fitViewport="true" responsive="true" resizable="true"
+						closeOnEscape="true" widgetVar="mDocSPD" onHide="hideModal()"
+						dynamic="true" id="modalDocSPD" modal="true">
+			
+						<ibg:compDocSearch id="cmpDocSearch" 
+							buttonConfirmLabel="#{ui_labels['general.save']}"
+							multi="true"
+							selectedDocList="#{eventsEdit.selectedDocs}"
+							idRegistratura="#{eventsEdit.registratura}"
+							onComplete="PF('mDocSPD').hide(); " />
+					</p:dialog>
+			
+				</h:panelGroup>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

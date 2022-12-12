@@ -1,0 +1,417 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:ibg="http://java.sun.com/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	template="/template/template.xhtml">
+
+	<ui:define name="title">#{navTexts['/pages/unLockObjects.xhtml']}</ui:define>
+	<ui:define name="viewname">
+		
+		<li>#{navTexts['/pages/unLockObjects.xhtml']}</li>
+
+
+	</ui:define>
+
+	<ui:define name="content">
+
+		<f:metadata>
+			<!-- 	<f:viewAction action="#{userData.checkPageAccess(1053)}" onPostback="false" /> -->
+			<f:importConstants type="com.ib.omb.system.OmbConstants" />
+		</f:metadata>
+
+		<h:form id="unLockObjectsForm">
+			<p:tooltip />
+		
+			<div class="container #{guestPreferences.containerPosition}" styleClass="margin-top">
+				<div class="card">
+				
+					<!-- FILTER -->
+					<div jsf:id="panelFilter">
+						<div class="p-grid ui-fluid">
+							<div class="p-col-12">
+								<div class="p-grid">
+									
+									<!-- Вид обект -->
+									<div class="p-col-12 p-sm-6">
+										<h:outputText value="#{labels['unlockObjects.vidObekt']}" styleClass="form-label" />
+										<p:selectOneMenu value="#{unLockObjects.refType}">
+											<f:selectItems
+												value="#{unLockObjects.obectList}"
+												var="obj" itemLabel="#{obj.tekst}"
+												itemValue="#{obj.code}" />
+										</p:selectOneMenu>
+									</div>							
+									
+									<!--Регистрационен номер-->
+									<div class="p-col-12 p-sm-6">
+										<h:outputText value="#{labels['repDoc.regnom']}" styleClass="form-label" />
+										<p:inputText value="#{unLockObjects.rnDoc}" id="rnDoc"
+											readonly="#{unLockObjects.refType==unLockObjects.codeAdmStructura}" />
+										<p:focus id="focusRnDoc" for="rnDoc" />
+									</div>
+
+									<!--Период на регистрация-->
+									<div class="p-col-12 p-sm-6">
+										<h:outputText value="#{labels['unLockObjects.period']}"
+											styleClass="form-label" />
+										<p:selectOneMenu id="idPerR" value="#{unLockObjects.period}">
+											<f:selectItem value="#{null}" itemValue="#{null}" />
+											<f:selectItems
+												value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_PERIOD_NOFUTURE, now, unLockObjects.currentLang)}"
+												var="clPer" itemLabel="#{clPer.tekst}"
+												itemValue="#{clPer.code}" />
+											<p:ajax event="change" update="idPerR dateOtReg dateDoReg"
+												listener="#{unLockObjects.changePeriod}" />
+										</p:selectOneMenu>
+									</div>
+			
+									<div class="p-col-6 p-sm-3">
+										<h:outputText value="#{ui_labels['general.dataOt']}"
+											styleClass="form-label" />
+										<p:datePicker id="dateOtReg"  mask="true"  pattern="dd.MM.yyyy" 
+											showIcon = "true" locale="bg" value="#{unLockObjects.dateFrom}">
+											<p:ajax event="change" update="idPerR"
+												listener="#{unLockObjects.changeDate}" />
+											<p:ajax event="dateSelect" update="idPerR"
+												listener="#{unLockObjects.changeDate}" />
+										</p:datePicker>
+									</div>
+			
+									<div class="p-col-6 p-sm-3">
+										<h:outputText value="#{ui_labels['general.dataDo']}" styleClass="form-label" />
+										<p:datePicker id="dateDoReg"  mask="true" pattern="dd.MM.yyyy"
+											showIcon = "true" locale="bg" value="#{unLockObjects.dateTo}">
+											<p:ajax event="change" update="idPerR"
+												listener="#{unLockObjects.changeDate}" />
+											<p:ajax event="dateSelect" update="idPerR"
+												listener="#{unLockObjects.changeDate}" />
+										</p:datePicker>
+									</div>
+		
+									<div class="p-col-12">
+										<h:outputText value="#{labels['unLockObjects.locked']}" styleClass="form-label" />
+										<div class="selectModalA">
+											<ibg:selectManyModalA 
+												codeClassif="#{unLockObjects.codeClassifUser}"
+												selectedCodes="#{unLockObjects.usersList}"
+												selectedClassifs="#{unLockObjects.usersListClassifs}"
+												compType="2" styleAutoComp="" withBtnClear="true" />
+										</div>
+									</div>
+								</div>
+							
+							</div>
+						</div>
+	
+						<div class="p-grid">
+							<div class="p-col-12 filter-buttons">
+								<p:commandButton icon="fas fa-search"
+									value="#{ui_labels['general.search']}" id="btnSearchDoc"
+									update="panelData mailNo yesNo tblEvnP" partialSubmit="true"
+									process="@this panelFilter"
+									actionListener="#{unLockObjects.actionSearch}"
+									title="#{ui_labels['general.titleSearch']}" styleClass="p-mr-3"/>
+								<p:defaultCommand target="btnSearchDoc" />
+								
+								<p:commandButton icon="fas fa-eraser"
+									value="#{ui_labels['general.clear']}" id="btnClear"
+									update="panelData unLockObjectsForm:pResult1 panelFilter"
+									partialSubmit="true" process="@this panelFilter"
+									actionListener="#{unLockObjects.actionClear}"
+									title="#{ui_labels['general.titleClear']}"
+									styleClass="ui-button-warning" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<p:outputPanel id="panelData" styleClass="margin-top">
+				<div class="card" jsf:rendered="#{unLockObjects.lockObjectsList != null}">
+					<div class="p-grid">
+						<div class="p-col-12">
+	
+							<h:panelGroup id="pResult" layout="block" >
+								<h:panelGroup id="pResult1" layout="block" rendered="#{unLockObjects.refType!=OmbConstants.CODE_ZNACHENIE_JOURNAL_MAILBOX}">
+									<div class="table-toolbar">
+										<h:panelGroup id="panelTblToolbar">
+											<ui:remove>
+												<p:commandButton value="Modal" type="button"
+													onclick="PF('dlg2').show();" />
+											</ui:remove>
+											<p:commandButton rendered="#{unLockObjects.lockObjectsListAll.size() > 0}"
+												icon="fas fa-lock-open" 
+												value="#{labels['unLockObjects.unlock']}"
+												id="btnUnlock" update="pResult mailNo yesNo"
+												partialSubmit="true"
+												process="@this panelFilter yesNo panelData"
+												actionListener="#{unLockObjects.actionUnlock()}"
+												title="#{labels['unLockObjects.unlock']}" />
+	
+											<span class="p-mx-2" jsf:rendered="#{unLockObjects.lockObjectsListAll.size() > 0}">
+												<span class="fas fa-ellipsis-v" />
+											</span>
+											<h:outputText
+												value="#{ui_labels['general.reportResult']} #{unLockObjects.lockObjectsList.size()}"
+												styleClass="form-label" />
+	
+										</h:panelGroup>
+	
+									</div>
+	
+									<p:dataTable id="tblEvnP" var="row"
+										value="#{unLockObjects.lockObjectsList}" rowKey="#{row}"
+										rendered="#{unLockObjects.refType!=OmbConstants.CODE_ZNACHENIE_MENU_ADM_STRUCT}"
+										emptyMessage="#{labels['unLockObjects.noLocked']} "
+										selection="#{unLockObjects.rowSelectedN}" rowIndexVar="idx"
+										sortMode="single" reflow="true" style="margin-bottom:0"
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="15" rowsPerPageTemplate="5,15,20,25"
+										paginatorPosition="bottom" rowSelectMode="checkbox"
+										paginator="true">
+	
+										<p:ajax event="toggleSelect"
+											listener="#{unLockObjects.onRowSelectAll}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowSelect"
+											listener="#{unLockObjects.onRowSelect}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowSelectCheckbox"
+											listener="#{unLockObjects.rowSelectCheckbox}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowUnselectCheckbox"
+											listener="#{unLockObjects.rowUnselectCheckbox}"
+											process="@this" update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowUnselect"
+											listener="#{unLockObjects.onRowUnselect}" process="@this"
+											update="unLockObjectsForm:pResult" />
+	
+										<p:column selectionMode="multiple"
+											style="width:16px;text-align:center" exportable="false"
+											id="ww">
+											<f:facet name="header">
+												<p:tooltip value="#{labels['unLockObjects.selectAll']}" for="ww" />
+											</f:facet>
+											<p:tooltip id="toolTipGrow" value="#{labels['regSettings.choice']}" shared="true"
+												for="ww" />
+										</p:column>
+										<p:column width="10" exportable="false"
+											headerText="#{ui_labels['general.No-symbol']}">
+											<h:outputText value="#{idx + 1}" />
+										</p:column>
+										
+										<p:column width="90" sortBy="#{row.rnDoc}"
+											headerText="#{labels['docu.regNom']}" 
+											rendered="#{unLockObjects.refType!=unLockObjects.codeEgovMsg and unLockObjects.refType!=unLockObjects.codeProcExe}">
+											<h:outputText value="#{row.rnDoc}" />
+										</p:column>
+										<p:column width="80" sortBy="#{row.rnDoc}"
+											headerText="#{labels['procDefList.nomProc']}" 
+											rendered="#{unLockObjects.refType==unLockObjects.codeProcExe}">
+											<h:outputText value="#{row.rnDoc}" />
+										</p:column>
+										
+										
+										<p:column width="110" sortBy="#{row.rnDoc}"
+											headerText="MSG_GUID"
+											rendered="#{unLockObjects.refType==unLockObjects.codeEgovMsg}">
+											<h:outputText value="#{row.rnDoc}" />
+										</p:column>
+										<p:column width="110" sortBy="#{row.senderName}"
+											headerText="SENDER_NAME"
+											rendered="#{unLockObjects.refType==unLockObjects.codeEgovMsg}">
+											<h:outputText value="#{row.senderName}" />
+										</p:column>
+	
+	
+										<p:column width="130" sortBy="#{row.dateVazl}"
+											headerText="#{labels['unLockObjects.dataVazl']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeZadacha}">
+											<h:outputText value="#{row.dateVazl}">
+												<f:convertDateTime pattern="dd.MM.yyyy"
+													timeZone="#{unLockObjects.timeZone}" />
+											</h:outputText>
+										</p:column>
+										<p:column width="130" sortBy="#{row.dateVazl}"
+											headerText="#{labels['docDoc.dateDoc']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeDocument}">
+											<h:outputText value="#{row.dateVazl}">
+												<f:convertDateTime pattern="dd.MM.yyyy"
+													timeZone="#{unLockObjects.timeZone}" />
+											</h:outputText>
+										</p:column>
+										<p:column width="110" sortBy="#{row.dateVazl}"
+											headerText="#{labels['docu.dateDelo']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codePrepiska}">
+											<h:outputText value="#{row.dateVazl}">
+												<f:convertDateTime pattern="dd.MM.yyyy"
+													timeZone="#{unLockObjects.timeZone}" />
+											</h:outputText>
+										</p:column>
+	
+										<p:column width="130" sortBy="#{row.lockInfo}"
+											headerText="#{labels['task.dopInfo']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeZadacha}">
+											<h:outputText value="#{row.lockInfo}" />
+										</p:column>
+										<p:column width="110" sortBy="#{row.lockInfo}"
+											headerText="#{labels['docDoc.otnosno']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeDocument}">
+											<h:outputText value="#{row.lockInfo}" />
+										</p:column>
+										<p:column width="110" sortBy="#{row.lockInfo}"
+											headerText="#{labels['task.dopInfo']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeEgovMsg}">
+											<h:outputText value="#{row.lockInfo}" />
+										</p:column>
+										<p:column width="140" sortBy="#{row.lockInfo}"
+											headerText="#{labels['unLockObjects.naimProcedura']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeProcExe}">
+											<h:outputText value="#{row.lockInfo}" />
+										</p:column>
+	
+		
+	
+										<p:column width="80" sortBy="#{row.zadTip}" headerText="#{labels['docu.vid']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeZadacha}">
+											<h:outputText
+												value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_TASK_VID, row.zadTip, unLockObjects.currentLang, now)}" />
+										</p:column>
+										<p:column width="80" sortBy="#{row.zadTip}" headerText="#{labels['docu.vid']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeDocument}">
+											<h:outputText
+												value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row.zadTip, unLockObjects.currentLang, now)}" />
+										</p:column>
+										<p:column width="110" sortBy="#{row.zadTip}" headerText="#{labels['docu.vid']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codePrepiska}">
+											<h:outputText
+												value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DELO_TYPE, row.zadTip, unLockObjects.currentLang, now)}" />
+										</p:column>
+
+										<p:column width="140" sortBy="#{row.zadTip}"
+											headerText="#{labels['users.registratura']}"
+											rendered="#{unLockObjects.refType==unLockObjects.codeProcExe}">
+											<h:outputText value="#{row.senderName}" />
+						
+										</p:column>
+	
+	
+										<p:column width="110" sortBy="#{row.lockDate}"
+											headerText="#{labels['unLockObjects.dataZakl']}">
+											<h:outputText value="#{row.lockDate}">
+												<f:convertDateTime pattern="dd.MM.yyyy HH:mm"
+													timeZone="#{unLockObjects.timeZone}" />
+											</h:outputText>
+										</p:column>
+										<p:column width="110" sortBy="#{row.userId}"
+											headerText="#{labels['unLockObjects.zaklOt']}">
+											<h:outputText
+												value="#{systemData.decodeItem(16, row.userId, unLockObjects.currentLang, now)}" />
+										</p:column>
+	
+									</p:dataTable>
+	
+	
+									<p:dataTable id="tblEvnP1" var="row"
+										value="#{unLockObjects.lockObjectsList}" rowKey="#{row}"
+										rendered="#{unLockObjects.refType==OmbConstants.CODE_ZNACHENIE_MENU_ADM_STRUCT}"
+										emptyMessage="#{labels['unLockObjects.noLocked']} "
+										selection="#{unLockObjects.rowSelectedN}" rowIndexVar="idx"
+										sortMode="single" reflow="true" style="margin-bottom:0"
+										paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+										rows="15" rowsPerPageTemplate="5,15,20,25"
+										paginatorPosition="bottom" rowSelectMode="checkbox"
+										paginator="true">
+	
+										<p:ajax event="toggleSelect"
+											listener="#{unLockObjects.onRowSelectAll}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowSelect"
+											listener="#{unLockObjects.onRowSelect}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowSelectCheckbox"
+											listener="#{unLockObjects.rowSelectCheckbox}" process="@this"
+											update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowUnselectCheckbox"
+											listener="#{unLockObjects.rowUnselectCheckbox}"
+											process="@this" update="unLockObjectsForm:pResult" />
+										<p:ajax event="rowUnselect"
+											listener="#{unLockObjects.onRowUnselect}" process="@this"
+											update="unLockObjectsForm:pResult" />
+	
+										<p:column selectionMode="multiple"
+											style="width:16px;text-align:center" exportable="false"
+											id="ww">
+											<f:facet name="header">
+												<p:tooltip value="#{labels['unLockObjects.selectAll']}" for="ww" />
+											</f:facet>
+										</p:column>
+	
+										<p:column width="10" exportable="false"
+											headerText="#{ui_labels['general.No-symbol']}">
+											<h:outputText value="#{idx + 1}" />
+										</p:column>
+	
+	
+										<p:column width="110" sortBy="#{row.lockDate}"
+											headerText="#{labels['unLockObjects.dataZakl']}">
+											<h:outputText value="#{row.lockDate}">
+												<f:convertDateTime pattern="dd.MM.yyyy"
+													timeZone="#{unLockObjects.timeZone}" />
+											</h:outputText>
+										</p:column>
+										<p:column width="110" sortBy="#{row.userId}"
+											headerText="#{labels['unLockObjects.zaklOt']}">
+											<h:outputText
+												value="#{systemData.decodeItem(16, row.userId, unLockObjects.currentLang, now)}" />
+										</p:column>
+	
+									</p:dataTable>
+	
+								</h:panelGroup>
+							</h:panelGroup>
+						</div>
+					</div>
+				</div>
+			</p:outputPanel>
+			<p:dialog header="#{labels['unLockObjects.system']}" widgetVar="dlg2"
+				modal="true" height="50" id="mailNo" closeOnEscape="true" style="margin-top:50px !important"
+				appendTo="@form">
+				<h:outputText value="#{unLockObjects.msgBox}" />
+			</p:dialog>
+
+
+			<p:dialog header="#{labels['unLockObjects.inputMail']}" widgetVar="dlg3" id="yesNo"
+				modal="true" height="100" closeOnEscape="true" appendTo="@form" style="margin-top:50px !important">
+				<h:outputText value="#{unLockObjects.msgBox}" />
+				<br />
+				<h:outputText value="#{unLockObjects.msgBox1}" />
+
+				<div class="ui-g-12">
+					<div class="ui-g-12 ui-md-6">
+						<p:commandButton value="Не" type="button"
+							styleClass="ui-confirmdialog-no" icon="fas fa-times"
+							onclick="PF('dlg3').hide();$('#form').trigger('reset');" />
+					</div>
+					<div class="ui-g-12 ui-md-6" align="right">
+						<p:commandButton icon="fas fa-check" value="Дa"
+							styleClass="ui-confirmdialog-yes" id="btnDa"
+							update="pResult mailNo yesNo" partialSubmit="true"
+							process="@this panelFilter yesNo panelData"
+							actionListener="#{unLockObjects.actionUnlock()}"
+							title="#{labels['unLockObjects.unlockAll']}" />
+
+					</div>
+
+
+				</div>
+			</p:dialog>
+
+
+		</h:form>
+	</ui:define>
+
+</ui:composition>

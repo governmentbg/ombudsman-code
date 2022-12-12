@@ -1,0 +1,941 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ibg="http://java.sun.com/jsf/composite/components"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+	<style type="text/css">
+   		.table-icon {
+   			font-size: 1.25em;
+		}
+    </style>
+           
+	<f:event type="preRenderComponent" listener="#{deloDvijenia.initTab}" />
+	<p:tooltip/>
+	
+	<div style="display: flex;align-items:center;padding-bottom:10px;">
+		<div class="title-group" style="flex-grow:1;pading-bottom:0;">
+			<p:commandLink id="table-expander" onclick="toggleSection(this, '#deloForm:deloDvij-table')"
+				styleClass="extended-search-toggle #{deloDvijenia.viewNewPanel ? '' : 'expanded'}" >
+				<h:outputText value="#{labels['deloDvij.dvijeniaNa']} #{deloDvijenia.rnFullDelo}"/>
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+		<p:commandButton actionListener="#{deloDvijenia.loadDvijenia()}" 
+			partialSubmit="true" process="@this" update="deloDvij-table"
+			icon="fas fa-redo-alt" title="#{labels['dvijenie.obnoviavaneInfo']}" styleClass="ui-button-icon-only ui-button-success"/>
+	</div>
+
+	<!-- Таблица с движения -->
+	<div jsf:id="deloDvij-table" class="margin-bottom">
+		<div class="p-grid" jsf:id="table-wrapper">
+			<div class="p-col-12" jsf:rendered="#{deloDvijenia.dvijenia.size() > 0}">
+				<p:dataTable id="table-dvij" value="#{deloDvijenia.dvijenia}"
+					rowIndexVar="index" var="row" rows="10" scrollable="true"
+					paginator="true" paginatorPosition="bottom" rowsPerPageTemplate="5, 10, 15" sortBy="#{row.dvijDate}"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}">
+					
+					<p:column width="16" headerText="#{ui_labels['general.No-symbol']}" style="text-align: center;">
+						<h:outputText value="#{index + 1}" />
+					</p:column>
+					
+					<p:column style="width:16px">
+			            <p:rowToggler rendered="#{row.returnDate != null}" />
+			        </p:column>
+        
+					<p:column width="80" rendered="#{isView == null}">
+			        	<!-- Връщане -->
+			        	<div style="display: inline-block; width: 47%" jsf:rendered="#{row.fromDvijId == null}">
+			        		<p:commandButton rendered="#{row.returnDate == null 
+			        			and row.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL 
+			        			and row.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_DRUGA_REGISTRATURA}"
+			        			icon="fa fa-reply" title="#{labels['dvijenie.vrashtane']}" actionListener="#{deloDvijenia.actionBeginReturn(index)}"
+			        			update="deloForm:btnNewDvij deloForm:panelEditDvij deloForm:panelReturn deloForm:panelNewDvij" 
+			        			partialSubmit="true" process="@this"/>
+			        	</div>
+			        	<!-- Актуализация -->
+			        	<div style="display: inline-block; width: 47%" jsf:rendered="#{row.fromDvijId == null}">
+			        		<p:commandButton icon="fas fa-edit" title="#{labels['dvijenie.aktualizacia']}" actionListener="#{deloDvijenia.actionBeginEdit(index)}"
+			        			update="deloForm:btnNewDvij deloForm:panelEditDvij deloForm:panelReturn deloForm:panelNewDvij" 
+			        			partialSubmit="true" process="@this" 
+			        			rendered="#{!(row.dvijMethod == OmbConstants.CODE_ZNACHENIE_PREDAVANE_DRUGA_REGISTRATURA and row.returnDate != null)}" />
+			        	</div>
+			        	
+			        	<p:commandLink rendered="#{row.fromDvijId != null}" oncomplete="PF('dialog-from-dvij-id').show();" partialSubmit="true" process="@none">
+							<i class="fas fa-info-circle table-icon"></i>
+						</p:commandLink>
+			        </p:column>
+					
+					<!-- Дата на предаване -->
+					<p:column sortBy="#{row.dvijDate}" headerText="#{labels['dvijenie.predaden']}" width="150" style="text-align: center;">
+						<h:outputText value="#{row.dvijDate}"> 
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+						</h:outputText>
+						<p:commandLink id="returnDateInfo" rendered="#{row.returnToDate != null}">
+							<i class="fas fa-info-circle table-icon"></i>
+						</p:commandLink>
+						<p:overlayPanel for="returnDateInfo">
+							<span class="form-label">#{labels['dvijenie.daSeVarneDo']}: </span>
+							<h:outputText value="#{row.returnToDate}">
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+							</h:outputText>
+						</p:overlayPanel>
+					</p:column>
+					
+					<!-- Дата на връщане -->
+					<p:column sortBy="#{row.returnDate}" headerText="#{labels['dvijenie.varnat']}" width="130" style="text-align: center;">
+						<h:outputText value="#{row.returnDate}"> 
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+						</h:outputText>
+					</p:column>
+					
+					<!-- Референт -->
+					<p:column sortBy="#{row.codeRef}" headerText="#{labels['dvijenie.predadenNa']}">
+					
+					 	<ui:remove><!-- Разглеждане на данни на кореспондент	 --></ui:remove>				    	
+	    				<p:commandLink id="btnCorrDvij"  style="font-size:1.2em" 
+	    				    rendered="#{row.dbCodeRef ne null and deloDvijenia.viewRefModal(row.dbCodeRef)}"
+							partialSubmit="true"
+							actionListener="#{deloDvijenia.setIdRefModal(row.dbCodeRef)}"
+							update="deloForm:dpCorrDvij"
+							oncomplete="PF('mCorrDvij').show();"
+							title="#{labels['docu.correspView']}" styleClass="p-mr-2">
+							<i class="fas fa-info-circle"></i>
+						</p:commandLink>
+									    	
+					
+						<h:outputText value="#{row.dvijText}" />
+					</p:column>
+					
+					<!-- Начин на предаване -->
+					<p:column headerText="#{labels['dvijenie.nachinNaPredavane']}" width="180"
+						sortBy="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row.dvijMethod, deloDvijenia.currentLang, now)}">
+						<span class="p-mr-3">
+				    		<i class="#{deloDvijenia.getMethodIcon(row.dvijMethod)}"></i>
+				    	</span>	    	
+				    	
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row.dvijMethod, deloBean.currentLang, now)}" />
+					</p:column>
+					
+					<!-- Номер на том -->
+					<p:column headerText="#{labels['deloDvij.tom']}" width="20" rendered="#{deloDvijenia.delo.withTom == OmbConstants.CODE_ZNACHENIE_DA and deloDvijenia.useTomove()}">
+						#{row.tomNomer}
+					</p:column>
+					
+					<!-- Статус -->
+					<p:column headerText="#{labels['dvijenie.status']}" width="200"
+						sortBy="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_PREDAVANE_STATUS, row.status, deloDvijenia.currentLang, now)}" >
+						
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_PREDAVANE_STATUS, row.status, deloBean.currentLang, now)}" />
+						<br/>
+						<h:outputText value="#{row.statusDate}">
+							<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+						</h:outputText>
+						<p:commandLink rendered="#{row.statusText != null}" title="#{deloDvijenia.getShortInfo(row.statusText, 30)}"
+							actionListener="#{deloDvijenia.setInformationText(labels['dvijenie.infoStatus'], row.statusText)}" 
+							partialSubmit="true" process="@this" update="deloForm:dialog-details-wrapper deloForm:dialog-details-header" oncomplete="PF('dialog-details').show()">
+							<i class="fas fa-info-circle table-icon"></i>
+						</p:commandLink>
+						
+					</p:column>
+					
+					<!-- Информация -->
+					<p:column width="40" style="text-align:center;">
+						<p:commandLink rendered="#{row.dvijInfo != null}" title="#{deloDvijenia.getShortInfo(row.dvijInfo, 30)}"
+							actionListener="#{deloDvijenia.setInformationText(labels['dvijenie.dvijStatus'], row.dvijInfo)}" 
+							partialSubmit="true" process="@this" update="deloForm:dialog-details-wrapper deloForm:dialog-details-header" oncomplete="PF('dialog-details').show()">
+							<i class="fas fa-info-circle table-icon"></i>
+						</p:commandLink>
+					</p:column>
+					
+					<!-- Изтриване -->
+					<p:column width="36" rendered="#{isView == null}" style="text-align:center;">
+						<p:commandButton rendered="#{row.fromDvijId == null}"
+							icon="fas fa-trash" action="#{deloDvijenia.actionDeleteDvij(index)}" 
+							ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" 
+							update="deloForm:table-wrapper deloForm:btnNewDvij deloForm:panelEditDvij deloForm:panelReturn">
+							<p:confirm message="#{labels['dvijenie.iztrivane']}?" icon="fas fa-exclamation-triangle" />
+						</p:commandButton>
+					</p:column>
+					
+					<!-- Expansion -->
+					<p:rowExpansion>
+						<div jsf:rendered="#{row.returnDate != null}">
+							<span class="form-label">#{labels['dvijenie.dataVrashtane']}: </span>
+							<h:outputText value="#{row.returnDate}"> 
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+							</h:outputText>
+						</div>
+						<div>
+							<span class="form-label">#{labels['dvijenie.varnatOt']}: </span>
+							<h:outputText value="#{row.returnTextRef}" />
+						</div>
+						<div jsf:rendered="#{row.returnMethod != null}">
+							<span class="form-label">#{labels['dvijenie.nachinNaVrashtane']}: </span>
+							<span class="p-mr-4">
+					    		<i class="#{deloDvijenia.getMethodIcon(row.returnMethod)}"></i>
+					    	</span>	    	
+					    	
+							<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row.returnMethod, deloBean.currentLang, now)}" />
+						</div>
+						<div jsf:rendered="#{row.returnInfo != null}">
+							<span class="form-label">#{labels['dvijenie.infoPriVrashtane']}: </span>
+							<h:outputText value="#{row.returnInfo}" />
+						</div>
+					</p:rowExpansion>
+								
+				</p:dataTable>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Панел за актуализация -->
+	<div jsf:id="panelEditDvij" jsf:rendered="#{isView == null}">
+		<p:panel rendered="#{deloDvijenia.viewEditPanel}" styleClass="margin-bottom">
+			<f:facet name="header">
+				<div style="display:flex; align-items:center">
+					<span class="p-mr-6">#{labels['dvijenie.aktualizacia']}</span>
+					
+					<p:commandButton icon="fas fa-save"	value="#{labels['general.zapis']}"
+						 actionListener="#{deloDvijenia.actionSaveEdit}" partialSubmit="true" process="panelEditDvij"
+						 update="btnNewDvij panelEditDvij deloForm:table-wrapper" styleClass="p-mr-2"/>
+					
+					<p:commandButton rendered="#{deloDvijenia.tempDvij.returnDate != null}" icon="fas fa-trash"
+						value="#{labels['dvijenie.iztrivaneNaVrashtane']}" styleClass="ui-button-danger"
+					 	actionListener="#{deloDvijenia.actionDeleteReturn}" partialSubmit="true" process="@this"
+					 	update="btnNewDvij panelEditDvij deloForm:table-wrapper">
+						<p:confirm message="Изтриване на връщането?" icon="fas fa-exclamation-triangle" />
+					</p:commandButton>
+	
+					<span class="fas fa-ellipsis-v p-mx-2" />
+					
+					<p:commandButton icon="fas fa-plus"
+						 value="#{labels['dvijenie.novoPredavane']}" styleClass="ui-button-success"
+						 partialSubmit="true" process="@this"
+						 update="btnNewDvij panelNewDvij panelEditDvij panelReturn deloForm:toolbar deloForm:table-expander deloDvij-table"
+						 actionListener="#{deloDvijenia.actionNew}" />
+						 
+					<div style="flex-grow:1;"/>
+	
+					<p:commandButton icon="fas fa-times" title="#{labels['general.otkaz']}" styleClass="ui-button-icon-only ui-button-danger"
+						 actionListener="#{deloDvijenia.actionCancelEdit}" partialSubmit="true" process="@this"
+						 update="btnNewDvij panelEditDvij" />
+				 </div>
+		    </f:facet>
+		
+			<!-- Данни за предаване -->
+			<div>
+				<div class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#section-predavane')">
+						<h:outputText value="#{labels['dvijenie.danniZaPredavane']}"/>
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+				<div id="section-predavane">
+					<div class="p-grid ui-fluid">
+					
+						<!-- Дата на предаване -->
+						<div class="p-col-6 p-sm-4 p-lg-2">
+							<div class="form-label">#{labels['dvijenie.data']}</div>
+							<p:datePicker id="calendar-edit-predavane" value="#{deloDvijenia.tempDvij.dvijDate}" showIcon="true" pattern="dd.MM.yyyy HH:mm:ss"  mask="true"
+								showTime="true" showSeconds="true"
+								rendered="#{deloDvijenia.tempDvij.returnDate == null and deloDvijenia.tempDvij.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}"/>
+								
+							<h:outputText value="#{deloDvijenia.tempDvij.dvijDate}"
+								rendered="#{deloDvijenia.tempDvij.returnDate != null || deloDvijenia.tempDvij.dvijMethod == OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}"> 
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+							</h:outputText>
+						</div>
+						
+						<!-- Дата връщане ДО -->
+						<div class="p-col-6 p-sm-4 p-lg-2" jsf:rendered="#{deloDvijenia.tempDvij.returnDate == null or deloDvijenia.tempDvij.returnToDate != null}">
+							<div class="form-label">#{labels['dvijenie.daSeVarneDo']}</div>
+							<p:datePicker id="calendar-edit-vrashtane-do" rendered="#{deloDvijenia.tempDvij.returnDate == null}"
+								 value="#{deloDvijenia.tempDvij.returnToDate}" showIcon="true" pattern="dd.MM.yyyy HH:mm:ss"   mask="true" showTime="true" showSeconds="true"/>
+						 
+						 	<h:outputText value="#{deloDvijenia.tempDvij.returnToDate}" rendered="#{deloDvijenia.tempDvij.returnDate != null}"> 
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+							</h:outputText>
+						</div>
+						
+						<!-- Начин на предаване -->
+						<div class="p-col-12 p-sm-4 p-lg-2">
+							<div class="form-label">#{labels['dvijenie.nachin']}</div>
+							<p:selectOneMenu value="#{deloDvijenia.tempDvij.dvijMethod}" autoWidth="false" var="s"
+								rendered="#{deloDvijenia.tempDvij.returnDate == null and deloDvijenia.tempDvij.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}">
+								<f:selectItems value="#{deloDvijenia.predavaneTypeList}" />
+								<p:column>	
+						    		<i class="#{deloDvijenia.getMethodIcon(s)} p-mr-2"></i>
+							    	
+							    	<h:outputText value="#{deloDvijenia.getMethodText(s)}" />
+				                </p:column>
+							</p:selectOneMenu>
+					        
+							<div jsf:rendered="#{deloDvijenia.tempDvij.returnDate != null or deloDvijenia.tempDvij.dvijMethod == OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}">
+								<span class="p-mr-2">
+					    			<i class="#{deloDvijenia.getMethodIcon(deloDvijenia.tempDvij.dvijMethod)}"></i>
+						    	</span>	    	
+						    	
+								<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, deloDvijenia.tempDvij.dvijMethod, deloBean.currentLang, now)}" />
+							</div>
+						</div>
+						
+						<!-- Номер на том -->
+						<div class="p-col-12 p-sm-4 p-lg-2" jsf:rendered="#{deloDvijenia.delo.withTom == OmbConstants.CODE_ZNACHENIE_DA and deloDvijenia.tempDvij.tomNomer != null}">
+							<h:outputText value="#{labels['deloDvij.nomerNaTom']}" styleClass="form-label" />
+							<div>
+								<h:outputText value="#{deloDvijenia.tempDvij.tomNomer}" /> 
+							</div>
+						</div>
+						
+						<!-- Референт -->
+						<div class="p-col-12 p-sm-6 p-lg-3">
+							<span class="form-label">#{labels['dvijenie.predadenNa']}</span>
+							<span class="form-label" jsf:rendered="#{deloDvijenia.tempDvij.codeRef == null}"> (#{labels['dvijenie.svobodenTekst']})</span>
+							
+							<div jsf:rendered="#{deloDvijenia.tempDvij.returnDate == null}">
+								<!-- ако референтът е от адм.структура, показва компонент за адм. структура -->
+								<div class="select-modal-wrapper"
+									jsf:style="#{(deloDvijenia.tempDvij.codeRef != null and deloDvijenia.tempDvij.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL and deloDvijenia.isAdmStr(deloDvijenia.tempDvij.codeRef)) ? '' : 'display:none'}">
+									<div class="selectModalA">
+										<ibg:selectOneModalA id="selectAdmStrEdit1"
+											showRadioBtn="true" saveStateTree="false"
+											codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+											dateClassif="#{now}" styleAutoComp=""
+											selectedCode="#{deloDvijenia.tempDvij.codeRef}" update="@this"
+											dopInfoAutoComp="true" itemtipAtPosition="center bottom" compType="2" maxResults="50" />
+									</div>
+								</div>
+								
+								<!-- ако референтът е кореспондент, показва компонент за кореспонденти -->
+								<div jsf:id="edit-coresp-field" class="select-modal-wrapper" 
+									jsf:style="#{(deloDvijenia.tempDvij.codeRef != null and deloDvijenia.tempDvij.dvijMethod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL and deloDvijenia.isKoresp(deloDvijenia.tempDvij.codeRef)) ? '' : 'display:none'}">
+									<div class="selectModalA-with-buttons">		
+										<div jsf:id="refCorrP1" class="koresp-input">
+											<ibg:selectOneModalA id="selectKorespEdit1"
+												codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+												dateClassif="#{now}" styleAutoComp=""
+												selectedCode="#{deloDvijenia.tempDvij.codeRef}" hiddenTxt="true"
+												saveStateTree="false" minQueryLength="3"
+												compType="3" filtered="false"
+												update="deloForm:refCorrP1"
+												dopInfoAutoComp="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+												itemtipAtPosition="center bottom" />
+										</div>
+										<div>
+											<p:commandButton
+												icon="fas fa-list-ul"
+												partialSubmit="true" process="@this"
+												oncomplete="PF('dialog-koresp').show();" update="deloForm:dialog-koresp-wrapper"
+												title="#{labels['search.extendRef']}" />
+										</div>
+									</div>
+								</div>
+								<!-- ако кореспондентът е написан като свободен текст, поле за писане -->
+								<p:inputText id="selectTextEdit1" value="#{deloDvijenia.tempDvij.dvijText}" 
+									rendered="#{deloDvijenia.tempDvij.codeRef == null and deloDvijenia.tempDvij.dvijText != null}" />
+							</div>
+							
+							<div jsf:rendered="#{deloDvijenia.tempDvij.returnDate != null or deloDvijenia.tempDvij.dvijMethod == OmbConstants.CODE_ZNACHENIE_PREDAVANE_EMAIL}">
+								<h:outputText value="#{deloDvijenia.tempDvij.dvijText}" /> 
+							</div>
+							
+						</div>
+						
+						<!-- Информация -->
+						<div class="p-col-12" jsf:rendered="#{deloDvijenia.tempDvij.returnDate == null or deloDvijenia.tempDvij.dvijInfo != null}">
+							<div class="form-label">#{labels['dvijenie.informacia']}</div>
+							<p:inputTextarea value="#{deloDvijenia.tempDvij.dvijInfo}" rows="2" rendered="#{deloDvijenia.tempDvij.returnDate == null}" />
+							<h:outputText value="#{deloDvijenia.tempDvij.dvijInfo}" rendered="#{deloDvijenia.tempDvij.returnDate != null}" />
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Данни за връщане -->
+			<div jsf:rendered="#{deloDvijenia.tempDvij.returnDate != null}" class="margin-top">
+				<div  class="title-group">
+					<p:commandLink styleClass="extended-search-toggle expanded" onclick="toggleSection(this, '#section-vrashtane')">
+						<h:outputText value="#{labels['dvijenie.danniZaVrashtane']}"/>
+						<i class="fas fa-caret-right"></i>
+					</p:commandLink>
+				</div>
+				<div id="section-vrashtane">
+					<div class="p-grid ui-fluid">
+					
+						<!-- Дата на връщане -->
+						<div class="p-col-12 p-sm-4 p-lg-2">
+							<span class="form-label">#{labels['dvijenie.data']}</span>
+							<p:datePicker id="calendar-edit-vrashtane" value="#{deloDvijenia.tempDvij.returnDate}"
+								showIcon="true" pattern="dd.MM.yyyy HH:mm:ss"   mask="true" showTime="true" showSeconds="true" />
+						</div>
+						
+						<!-- Начин на връщане -->
+						<div class="p-col-12 p-sm-4 p-lg-2">
+							<span class="form-label">#{labels['dvijenie.nachin']}</span>
+							<p:selectOneMenu value="#{deloDvijenia.tempDvij.returnMethod}" var="s">
+								<f:selectItems value="#{deloDvijenia.predavaneTypeList}" />
+								<p:column>	
+						    		<i class="#{deloDvijenia.getMethodIcon(s)} p-mr-2"></i>
+							    	
+							    	<h:outputText value="#{deloDvijenia.getMethodText(s)}" />
+				                </p:column>
+					        </p:selectOneMenu>
+						</div>
+						
+						<!-- Референт, върнал -->
+						<div class="p-col-12 p-sm-6 p-lg-3">
+							<span class="form-label">#{labels['dvijenie.varnatOt']}</span>
+							<div>
+								<h:outputText value="#{deloDvijenia.tempDvij.returnTextRef}" rendered="#{deloDvijenia.tempDvij.returnCodeRef == null}" />
+								<h:outputText value="#{deloDvijenia.decodeCodeRefName(deloDvijenia.tempDvij.returnCodeRef)}" rendered="#{deloDvijenia.tempDvij.returnCodeRef != null}" />
+							</div>
+						</div>
+						
+						<!-- Информация при връщане -->
+						<div class="p-col-12">
+							<span class="form-label">#{labels['dvijenie.informacia']}</span>
+							<p:inputTextarea value="#{deloDvijenia.tempDvij.returnInfo}" rows="2" />
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</p:panel>
+	</div>
+	
+	<!-- Панел за връщане -->
+	<div jsf:id="panelReturn" jsf:rendered="#{isView == null}">
+		<p:panel rendered="#{deloDvijenia.viewReturnPanel}" styleClass="margin-bottom">
+			<f:facet name="header">
+				<div style="display:flex; align-items:center;">
+					<span class="p-mr-2">#{labels['dvijenie.vrashtane']}</span>
+					
+					<p:commandButton icon="fas fa-save"	value="#{labels['general.zapis']}"
+				    	actionListener="#{deloDvijenia.actionSaveReturn}" partialSubmit="true" process="panelReturn" 
+				    	update="btnNewDvij panelReturn deloForm:table-wrapper"/>
+	
+					<span class="fas fa-ellipsis-v  p-mx-2" />
+					
+					<p:commandButton icon="fas fa-plus"
+						 value="Ново предаване" styleClass="ui-button-success"
+						 partialSubmit="true" process="@this"
+						 update="btnNewDvij panelNewDvij panelEditDvij panelReturn deloForm:toolbar deloForm:table-expander deloDvij-table"
+						 actionListener="#{deloDvijenia.actionNew}" />
+					<div style="flex-grow:1;"/>
+	
+			    	<p:commandButton icon="fas fa-times" title="#{labels['general.otkaz']}" styleClass="ui-button-icon-only ui-button-danger"
+			    		actionListener="#{deloDvijenia.actionCancelReturn}" partialSubmit="true" process="@this" 
+				    	update="btnNewDvij panelReturn" />
+		    	</div>
+		    </f:facet>
+		    
+		    <!-- Данни за предаване -->
+		    <div class="p-grid ui-fluid">
+				<!-- Дата на предаване -->
+				<div class="p-col-6 p-sm-4 p-lg-2">
+					<div class="form-label">#{labels['dvijenie.dataPredavane']}</div>
+					<h:outputText value="#{deloDvijenia.tempDvij.dvijDate}"> 
+						<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+					</h:outputText>
+				</div>
+						
+				<!-- Дата връщане ДО -->
+				<div class="p-col-6 p-sm-4 p-lg-2" jsf:rendered="#{deloDvijenia.tempDvij.returnToDate != null}">
+					<div class="form-label">#{labels['dvijenie.daSeVarneDo']}</div>
+				 	<h:outputText value="#{deloDvijenia.tempDvij.returnToDate}" rendered="#{deloDvijenia.tempDvij.returnDate != null}"> 
+						<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+					</h:outputText>
+				</div>
+						
+				<!-- Начин на предаване -->
+				<div class="p-col-12 p-sm-4 p-lg-2">
+					<div class="form-label">#{labels['dvijenie.nachin']}</div>
+					<div>
+						<span class="p-mr-2">
+			    			<i class="#{deloDvijenia.getMethodIcon(deloDvijenia.tempDvij.dvijMethod)}"></i>
+				    	</span>	    	
+				    	
+						<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, deloDvijenia.tempDvij.dvijMethod, deloBean.currentLang, now)}" />
+					</div>
+				</div>
+				
+				<!-- Номер на том -->
+				<div class="p-col-12 p-sm-4 p-lg-2" jsf:rendered="#{deloDvijenia.delo.withTom == OmbConstants.CODE_ZNACHENIE_DA and deloDvijenia.tempDvij.tomNomer != null}">
+					<h:outputText value="#{labels['deloDvij.nomerNaTom']}" styleClass="form-label" />
+					<div>
+						<h:outputText value="#{deloDvijenia.tempDvij.tomNomer}" /> 
+					</div>
+				</div>
+						
+				<!-- Референт -->
+				<div class="p-col-12 p-sm-6 p-lg-3">
+					<span class="form-label">#{labels['dvijenie.referent']}</span>
+					<span class="form-label" jsf:rendered="#{deloDvijenia.tempDvij.codeRef == null}"> (#{labels['dvijenie.svobodenTekst']})</span>
+					<div>
+						<h:outputText value="#{deloDvijenia.tempDvij.dvijText}" /> 
+					</div>
+				</div>
+						
+				<!-- Информация -->
+				<div class="p-col-12" jsf:rendered="#{deloDvijenia.tempDvij.dvijInfo != null}">
+					<div class="form-label">#{labels['dvijenie.informacia']}</div>
+					<h:outputText value="#{deloDvijenia.tempDvij.dvijInfo}" />
+				</div>
+			</div>
+		    
+		    <!-- Данни за връщане -->
+		    <div class="p-grid ui-fluid margin-top">
+		    	<div class="p-col-12 p-sm-4 p-lg-2">
+					<span class="form-label">#{labels['dvijenie.dataVrashtane']}</span>
+					<p:datePicker id="calendar-return" value="#{deloDvijenia.tempDvij.returnDate}" showIcon="true" pattern="dd.MM.yyyy HH:mm:ss"   mask="true" showTime="true" showSeconds="true"/>
+				</div>
+				
+				<div class="p-col-12 p-sm-4 p-lg-2">
+					<span class="form-label">#{labels['dvijenie.nachin']}</span>
+					<p:selectOneMenu value="#{deloDvijenia.tempDvij.returnMethod}" var="s">
+						<f:selectItems value="#{deloDvijenia.predavaneTypeList}" />
+						<p:column>	
+				    		<i class="#{deloDvijenia.getMethodIcon(s)} p-mr-2"></i>
+					    	
+					    	<h:outputText value="#{deloDvijenia.getMethodText(s)}" />
+		                </p:column>
+			        </p:selectOneMenu>
+		        </div>
+				
+				<div class="p-col-12 p-sm-6 p-lg-3">
+					<span class="form-label">#{labels['dvijenie.varnatOt']}</span>
+					
+					<!-- ако референтът е от адм.структура, показва компонент за адм. структура -->
+					<div class="select-modal-wrapper" 
+						jsf:rendered="#{deloDvijenia.tempDvij.codeRef != null and deloDvijenia.isAdmStr(deloDvijenia.tempDvij.codeRef)}">
+						<div class="selectModalA">
+							<ibg:selectOneModalA id="selectAdmStrReturn"
+								showRadioBtn="true" saveStateTree="false"
+								codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+								dateClassif="#{now}" styleAutoComp=""
+								selectedCode="#{deloDvijenia.tempDvij.returnCodeRef}" update="@this"
+								dopInfoAutoComp="true" itemtipAtPosition="center bottom" compType="2" maxResults="50" />
+						</div>
+					</div>
+					
+					<!-- ако референтът е кореспондент, показва компонент за кореспонденти -->
+					<div jsf:id="return-coresp-field" class="select-modal-wrapper" 
+						jsf:rendered="#{deloDvijenia.tempDvij.codeRef != null and deloDvijenia.isKoresp(deloDvijenia.tempDvij.codeRef)}">
+						<div class="selectModalA-with-buttons">
+							<div jsf:id="refCorrP2" class="koresp-input">
+								<ibg:selectOneModalA id="selectKorespReturn"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}"
+									dateClassif="#{now}" styleAutoComp=""
+									selectedCode="#{deloDvijenia.tempDvij.returnCodeRef}" hiddenTxt="true"
+									saveStateTree="false" minQueryLength="3"
+									compType="3" filtered="false" update="@this"
+									dopInfoAutoComp="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+									itemtipAtPosition="center bottom" />
+							</div>
+							<p:commandButton
+								icon="fas fa-list-ul"
+								partialSubmit="true" process="@this"
+								oncomplete="PF('dialog-koresp').show();" update="deloForm:dialog-koresp-wrapper"
+								title="#{labels['search.extendRef']}" />
+						</div>
+					</div>
+					
+					<!-- ако референтът е написан като свободен текст, поле за писане -->
+					<p:inputText id="selectTextReturn" value="#{deloDvijenia.tempDvij.returnTextRef}" rendered="#{deloDvijenia.tempDvij.codeRef == null}" />
+				</div>
+				
+				<div class="p-col-12">
+					<span class="form-label">#{labels['dvijenie.informacia']}</span>
+					<p:inputTextarea value="#{deloDvijenia.tempDvij.returnInfo}" rows="2" />
+				</div>
+		    </div>
+		</p:panel>
+	</div>
+	
+	<div jsf:id="btnNewDvij">
+		<p:commandButton rendered="#{!deloDvijenia.viewNewPanel and !deloDvijenia.viewEditPanel and !deloDvijenia.viewReturnPanel and isView == null}" icon="fas fa-plus"
+			 value="#{labels['dvijenie.novoPredavane']}" styleClass="ui-button-success"
+			 partialSubmit="true" process="@this"
+			 update="btnNewDvij panelNewDvij panelEditDvij panelReturn"
+			 actionListener="#{deloDvijenia.actionNew}"
+			 onclick="if($('#deloForm\\:table-expander').hasClass('expanded')) {$('#deloForm\\:table-expander').trigger('click');}" />
+	 </div>
+	
+	<!-- Добавяне на нови движения -->
+	<div jsf:id="panelNewDvij">
+		<p:panel rendered="#{deloDvijenia.viewNewPanel}">
+
+			<f:facet name="header">
+				<div jsf:id="toolbar" style="display:flex; align-items: center;">
+					<span class="p-mr-2">#{labels['dvijenie.dobavianeNovoPredavane']}</span>
+					
+					<p:commandButton id="btnSaveNewDvij"
+						 rendered="#{deloDvijenia.newDvijenia.size() > 0}"
+						 icon="fas fa-save" styleClass="btn-save"
+						 value="#{ui_labels['general.save']}"
+						 actionListener="#{deloDvijenia.actionSaveNewClicked}"
+						 update="btnNewDvij panelNewDvij deloForm:table-expander deloDvij-table"
+						 title="#{labels['docDvij.zapisNaPredavane']}" />
+						 
+					<!-- Това е хитър скрит бутон, на когото целта е да показва confirm диалог. Не се клика от екрана, а от метода actionSaveNewClicked -->
+					<p:commandButton widgetVar="hiddenButton" style="display:none" actionListener="#{deloDvijenia.actionSaveNewDvij}"
+						update="btnNewDvij panelNewDvij deloForm:table-expander deloDvij-table">
+						<p:confirm header="#{labels['dvijenie.potvarjdenie']}" message="#{labels['deloDvij.potvardeteIzprashtaneto']}" icon="fas fa-exclamation-triangle" /> 
+					</p:commandButton>
+					 
+					<div style="flex-grow:1"/>
+					<p:commandButton icon="fas fa-times" title="#{labels['general.otkaz']}" styleClass="ui-button-icon-only ui-button-danger"
+						 actionListener="#{deloDvijenia.actionCancelNew}" partialSubmit="true" process="@this"
+						 update="btnNewDvij panelNewDvij deloForm:table-expander deloDvij-table" />
+				</div>
+			</f:facet>
+
+			<div class="p-grid">
+				<div class="p-col-12 p-md-3">
+					<div jsf:id="input-new-wrapper" class="p-grid p-align-end">
+						
+						<div class="p-col-12 form-label" style="font-size:18px;">#{labels['dvijenie.izborReferentiNachin']}</div>
+					
+						<!-- Дата на предаване -->
+						<div class="p-col-12 p-sm-6 ui-fluid">
+							<h:outputText value="#{labels['dvijenie.dataPredavane']}" styleClass="form-label" />
+							<p:datePicker id="calendar-predavane" value="#{deloDvijenia.dataPredavane}" showIcon="true" mask="true" pattern="dd.MM.yyyy HH:mm:ss" showTime="true" showSeconds="true" onchange="submitDatePredavane()">
+								<p:ajax event="dateSelect" partialSubmit="true" process="@this" />
+							</p:datePicker>
+							<p:remoteCommand name="submitDatePredavane" partialSubmit="true" process="@this calendar-predavane" delay="500"/>
+						</div>
+						
+						<!-- Да се върне до -->
+						<div class="p-col-12 p-sm-6 ui-fluid" jsf:id="date-vrashtane-wrapper">
+							<div jsf:rendered="#{deloDvijenia.newMetod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_SEOS 
+													and deloDvijenia.newMetod != OmbConstants.CODE_ZNACHENIE_PREDAVANE_SSEV}">
+								<h:outputText value="#{labels['dvijenie.daSeVarneDo']}" styleClass="form-label" />
+								<p:datePicker id="calendar-vrashtane" value="#{deloDvijenia.dataVrashtane}" showIcon="true"  mask="true" pattern="dd.MM.yyyy HH:mm:ss" showTime="true" showSeconds="true" onchange="submitDateVrashtane()">
+									<p:ajax event="dateSelect" partialSubmit="true" process="@this" />
+								</p:datePicker>
+								<p:remoteCommand name="submitDateVrashtane" partialSubmit="true" process="@this calendar-vrashtane" delay="500"/>
+							</div>
+						</div>
+					
+						<!-- Начин на предаване -->
+						<div class="p-col-12 ui-fluid">
+							<h:outputText value="#{labels['dvijenie.nachinNaPredavane']}" styleClass="form-label" />
+							<p:selectOneMenu id="advanced" value="#{deloDvijenia.newMetod}" var="s">
+								<f:selectItems value="#{deloDvijenia.predavaneTypeList}" />
+								<p:column>
+						    		<i class="#{deloDvijenia.getMethodIcon(s)} p-mr-2"></i>
+							    	
+							    	<h:outputText value="#{deloDvijenia.getMethodText(s)}" />
+				                </p:column>
+				                <p:ajax event="change" update="panelNewDvij" partialSubmit="true" process="@this" />
+					        </p:selectOneMenu>
+				        </div>
+				        
+				        <!-- Номер на том -->
+				        <div class="p-col-6 ui-fluid" jsf:rendered="#{deloDvijenia.delo.withTom == OmbConstants.CODE_ZNACHENIE_DA and deloDvijenia.useTomove()}">
+				        	<h:outputText value="#{labels['deloDvij.nomerNaTom']}" styleClass="form-label" />
+							<p:inputText id="inputTomNomer" value="#{deloDvijenia.tomNomer}" placeholder="1 - #{deloDvijenia.delo.brTom}">
+								<p:ajax event="blur" listener="#{deloDvijenia.validateTomNomerInput}" partialSubmit="true" process="@this" 
+									update="@this calendar-vrashtane calendar-predavane" />
+								<p:keyFilter regEx="/[\d]/"/>  
+							</p:inputText>
+				        </div>
+						
+						<!-- Информация -->
+						<div class="p-col-12 ui-fluid">
+							<h:outputText value="#{labels['dvijenie.informacia']}" styleClass="form-label" />
+							<p:inputTextarea value="#{deloDvijenia.newPredavaneInfo}" rows="2" placeholder="#{labels['dvijenie.informaciaPlaceholder']}">
+								<p:ajax event="blur" partialSubmit="true" process="@this" />
+							</p:inputTextarea>
+						</div>
+						
+						<!-- Административна структура -->
+						<div class="p-col-12 ui-fluid">
+							<h:outputText value="#{labels['dvijenie.admStruktura']}" styleClass="form-label" />
+							<div class="selectModalA">
+								<ibg:selectManyModalA binding="#{deloDvijenia.bindAdmStruct}"
+									showRadioBtn="true" saveStateTree="false"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_ADMIN_STR}" 
+									dateClassif="#{now}" styleAutoComp=""
+									selectedCodes="#{deloDvijenia.selectedAdmStruct}" 
+									onComplete="#{deloDvijenia.actionSelectAdmStruct()}"
+									update="deloForm:input-new-wrapper deloForm:table-new-wrapper deloForm:toolbar"
+									dopInfoAutoComp="true" itemtipAtPosition="center bottom" compType="2" maxResults="50" />
+							</div>
+						</div>
+						
+						<ui:remove><!-- Групи служители 
+						<div jsf:id="wrapper1" class="p-col-12 ui-fluid">
+							<h:outputText value="#{labels['dvijenie.gripuSlujiteli']}" styleClass="form-label" />
+							<div class="selectModalA">
+								<ibg:selectOneModalA binding="#{deloDvijenia.bindGrupiSluj}"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_GROUP_EMPL}" 
+									dateClassif="#{now}" styleAutoComp=""
+									selectedCode="#{deloDvijenia.selectedGroupSluj}" 
+									onComplete="#{deloDvijenia.actionSelectGroupSluj()}" 
+									compType="2" update="deloForm:input-new-wrapper deloForm:table-new-wrapper deloForm:toolbar deloForm:wrapper1" 
+									sortByName="true"
+									specifics="#{deloDvijenia.specRegistratura}"/>
+							</div>
+						</div>
+						--></ui:remove>
+						<!-- ЕИК, наименование/име на лице -->
+						<div class="p-col-12 ui-fluid" jsf:rendered="#{!deloDvijenia.selectedMetodSystem()}">
+							<h:outputText value="#{labels['dvijenie.eik']}" styleClass="form-label" />
+							<div class="selectModalA-with-buttons">
+								<div jsf:id="refCorrP3" class="koresp-input"> 
+									<ibg:selectOneModalA binding="#{deloDvijenia.bindEikName}"
+										showRadioBtn="true" saveStateTree="false" filtered="false"
+										codeClassif="#{OmbConstants.CODE_CLASSIF_REFERENTS}" 
+										dateClassif="#{now}" styleAutoComp=""
+										selectedCode="#{deloDvijenia.selectedKoresp}" 
+										onComplete="#{deloDvijenia.actionSelectEikName()}" 
+										update="deloForm:refCorrP3 deloForm:input-new-wrapper deloForm:table-new-wrapper deloForm:toolbar"
+										dopInfoAutoComp="#{userData.hasAccess(OmbConstants.CODE_CLASSIF_DEF_PRAVA, OmbConstants.CODE_ZNACHENIE_DEF_PRAVA_SEE_PERSONAL_DATA)}" 
+										itemtipAtPosition="center bottom" compType="3" />
+								</div>
+								<p:commandButton
+								    icon="fas fa-list-ul" 										  
+									partialSubmit="true"
+									process="@this" 
+									update="deloForm:dialog-koresp-wrapper"
+									oncomplete="PF('dialog-koresp').show();"	
+									title="#{labels['search.extendRef']}" />
+							</div>
+						</div>
+						
+						<!-- Групи кореспонденти -->
+						<div jsf:id="wrapper2" class="p-col-12 ui-fluid" jsf:rendered="#{!deloDvijenia.selectedMetodSystem()}">
+							<h:outputText value="#{labels['dvijenie.grupiKorespondenti']}" styleClass="form-label" />
+							<div class="selectModalA">
+								<ibg:selectOneModalA binding="#{deloDvijenia.bindGrupiKoresp}"
+									codeClassif="#{OmbConstants.CODE_CLASSIF_GROUP_CORRESP}" 
+									specifics="#{deloDvijenia.specGroup}" sortByName="true"
+									dateClassif="#{now}" styleAutoComp=""
+									selectedCode="#{deloDvijenia.selectedGroupKoresp}" 
+									onComplete="#{deloDvijenia.actionSelectGroupKoresp()}"
+									compType="2" update="deloForm:input-new-wrapper deloForm:table-new-wrapper deloForm:toolbar deloForm:wrapper2" />
+							</div>
+						</div>
+						
+						<!-- Кореспондент - свободен текст -->
+						<div class="p-col-12 ui-fluid" jsf:rendered="#{!deloDvijenia.selectedMetodSystem()}">
+							<h:outputText value="#{labels['dvijenie.korespondentTekst']}" styleClass="form-label" />
+							<div class="ui-inputgroup">
+								<p:inputText id="input-koresp" value="#{deloDvijenia.newKorespText}"
+									onkeypress="if (event.keyCode === 13) { korespEnter(); return false; }" >
+									<p:ajax event="blur" partialSubmit="true" process="@this" 
+										update=" deloForm:input-new-wrapper  deloForm:table-new-wrapper deloForm:toolbar" 
+										onstart="PrimeFaces.customFocus=true"
+										listener="#{deloDvijenia.actionSelectKorespText()}" />
+								</p:inputText>
+								<p:commandButton icon="fas fa-arrow-right" styleClass="inputgroup-button" 
+									action="#{deloDvijenia.actionSelectKorespText()}"
+									partialSubmit="true" process="@this input-koresp" title="#{labels['dvijenie.vavejdane']}"
+									update="input-koresp deloForm:input-new-wrapper  deloForm:table-new-wrapper deloForm:toolbar"/>
+							</div>
+							<p:remoteCommand name="korespEnter" action="#{deloDvijenia.actionSelectKorespText()}"
+				                 partialSubmit="true" process="@this input-koresp" onstart="PrimeFaces.customFocus=true"
+				                 update="input-koresp deloForm:table-new-wrapper deloForm:toolbar"/>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Таблица с новите движения -->
+				<div class="p-col-12 p-md-9">
+					<div class="p-grid">
+						<div class="p-col-12 ui-fluid" jsf:id="table-new-wrapper">
+							
+							<p:dataTable id="table-new-dvij" value="#{deloDvijenia.newDvijenia}"
+								rowIndexVar="index" var="row" rows="10" paginator="true"
+								editable="true" editMode="row" scrollable="true"
+								paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+								rowsPerPageTemplate="10,15,20" paginatorPosition="bottom"
+								rendered="#{deloDvijenia.newDvijenia != null and deloDvijenia.newDvijenia.size() > 0}">
+						        
+						        <p:ajax event="rowEdit" listener="#{deloDvijenia.onRowEdit(row)}" update="table-new-dvij" />
+						        <p:ajax event="rowEditInit" listener="#{deloDvijenia.onBeginRowEdit(row)}" />
+						        
+						        <f:facet name="header">
+						        	#{labels['deloDvij.referentiZaPredavane']}
+						        </f:facet>
+						        
+								<p:column width="16" headerText="#{ui_labels['general.No-symbol']}" style="text-align: center;">
+									<h:outputText value="#{index + 1}" />
+								</p:column>
+								
+								<p:column style="text-align: center" width="40">
+									<p:rowEditor cancelTitle="#{ui_labels['general.cancel']}"
+										saveTitle="#{ui_labels['general.save']}"
+										editTitle="#{ui_labels['general.edit']}" />
+								</p:column>
+															
+								<!-- Начин на предаване -->
+								<p:column headerText="#{labels['dvijenie.nachinNaPredavane']}" width="160">
+									<!-- Иконка -->
+							    	<span class="p-mr-2">
+							    		<i class="#{deloDvijenia.getMethodIcon(row.metodPredavane)}"></i>
+							    	</span>	    	
+							    	
+							    	<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DVIJ_METHOD, row.metodPredavane, deloDvijenia.currentLang, now)}" />
+								</p:column>
+								
+								<!-- Номер на том -->
+								<p:column headerText="#{labels['deloDvij.tom']}" width="30" rendered="#{deloDvijenia.delo.withTom == OmbConstants.CODE_ZNACHENIE_DA and deloDvijenia.useTomove()}">
+									<p:cellEditor>
+						                <f:facet name="output">
+											<h:outputText value="#{row.tomNomer}" />
+										</f:facet>
+						                <f:facet name="input">
+						                    <p:inputText value="#{row.tomNomer}">
+						                    	<p:keyFilter regEx="/[\d]/"/>  
+						                    </p:inputText>
+						                </f:facet>
+						            </p:cellEditor>
+								</p:column>
+								
+								<!-- Име -->
+								<p:column sortBy="#{row.name}" headerText="#{labels['dvijenie.ime']}">
+									<h:outputText value="#{row.name}" />
+								</p:column>
+
+								<!-- Допълнителна информация -->
+								<p:column headerText="#{labels['dvijenie.dopalnitelnaInformacia']}">
+							    	<span style="text-align: center">
+							    		<i class="#{deloDvijenia.getTypeIcon(row.type)}" title="#{deloDvijenia.getTypeString(row.type)}"></i>
+							    	</span>
+									<h:outputText value="#{row.dopInfo}" />
+								</p:column>
+								
+								<!-- Дата на предаване -->
+								<p:column headerText="#{labels['dvijenie.dataPredavane']}" width="160" style="text-align: center;">
+									<p:cellEditor>
+						                <f:facet name="output">
+											<h:outputText value="#{row.dataPredavane}"> 
+												<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+											</h:outputText>
+										</f:facet>
+						                <f:facet name="input">
+						                    <p:datePicker id="edit-calendar-predavane" value="#{row.dataPredavane}" showIcon="true"
+												pattern="dd.MM.yyyy HH:mm:ss"   mask="true" showTime="true" showSeconds="true"/>
+						                </f:facet>
+						            </p:cellEditor>
+								</p:column>
+								
+								<!-- Дата на връщане -->
+								<p:column headerText="#{labels['dvijenie.daSeVarneDo']}" width="160" style="text-align: center;">
+									<p:cellEditor>
+						                <f:facet name="output">
+											<h:outputText value="#{row.dataVrashtane}"> 
+												<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{deloBean.timeZone}"/>
+											</h:outputText>
+										</f:facet>
+						                <f:facet name="input">
+						                    <p:datePicker id="edit-calendar-vrashtane" value="#{row.dataVrashtane}" showIcon="true"
+												pattern="dd.MM.yyyy HH:mm:ss"   mask="true" showTime="true" showSeconds="true"/>
+						                </f:facet>
+						            </p:cellEditor>
+								</p:column>
+								
+								<!-- Информация -->
+								<p:column width="20" style="text-align:center;">
+									<p:commandLink id="info-link" rendered="#{row.information ne null and !row.information.isEmpty()}" title="#{labels['dvijenie.informacia']}">
+										<i class="fas fa-info-circle table-icon"></i>
+									</p:commandLink>
+									<p:overlayPanel for="info-link" rendered="#{row.information ne null and !row.information.isEmpty()}" style="min-width: 180px;" at="center bottom">
+										<h:outputText value="#{row.information}" escape="false" />
+									</p:overlayPanel>
+								</p:column>
+								
+								<p:column width="36" style="text-align: center;">
+									<p:commandButton icon="fas fa-trash" action="#{deloDvijenia.actionDeleteNewDvij(index)}" 
+										ajax="true" title="#{ui_labels['general.delete']}" styleClass="ui-button-danger" 
+										update="deloForm:table-new-wrapper deloForm:toolbar" partialSubmit="true" process="@this"/>
+								</p:column>
+								
+							</p:dataTable>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</p:panel>
+	</div>
+	
+	<!-- модален прозорец с компонент за въвеждане на кореспондент -->
+	<p:dialog appendTo="@form" widgetVar="dialog-koresp" closeOnEscape="true" header="#{labels['docu.titleExtSrchCoresp']}" 
+		    fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="top"
+		    modal="true" dynamic="true">
+	    <div jsf:id="dialog-koresp-wrapper" class="container #{guestPreferences.containerPosition}">
+
+		    <!-- при въвеждане на кореспондент при ново предаване -->
+			<ibg:refCorrespSearch id="searchCorespDvij" myId="cDvig" rendered="#{deloDvijenia.viewNewPanel}"
+				codeRef="#{deloDvijenia.selectedKoresp}"
+				dateClassif="#{new}" modal="true" 
+				onComplete="PF('dialog-koresp').hide(); korespEnter();"/>
+			<p:remoteCommand name="korespEnter" action="#{deloDvijenia.actionSelectEikName()}"
+				partialSubmit="true" process="@this"
+				update="deloForm:table-new-wrapper deloForm:toolbar dialog-koresp-wrapper"/>
+				
+			<!-- при въвеждане на кореспондент при Актуализация -->
+			<ibg:refCorrespSearch id="searchCorespDvij2"  myId="cDvig2" 
+			    rendered="#{deloDvijenia.viewEditPanel}"
+				codeRef="#{deloDvijenia.tempDvij.codeRef}"
+				dateClassif="#{now}" modal="true" 
+				onComplete="PF('dialog-koresp').hide();" update="deloForm:edit-coresp-field"/>
+				
+			<!-- при въвеждане на кореспондент при Връщане на предаване -->
+			<ibg:refCorrespSearch id="searchCorespDvij3"  myId="cDvig3" 
+			    rendered="#{deloDvijenia.viewReturnPanel}"
+				codeRef="#{deloDvijenia.tempDvij.returnCodeRef}"
+				dateClassif="#{now}" modal="true" 
+				onComplete="PF('dialog-koresp').hide();" update="deloForm:return-coresp-field"/>
+		
+		</div>
+	</p:dialog>
+	
+	<!-- Показва прозорче с допълнителна информация при кликане на иконката в горната таблица -->
+	<p:dialog appendTo="@form" widgetVar="dialog-details" closeOnEscape="true" header="#{deloDvijenia.informationText[0]}" 
+		    fitViewport="true" responsive="true" resizable="true" positionType="fixed" position="center"
+		    modal="true" dynamic="true" style="max-width:600px;">
+	   <f:facet name="header">
+			<h:outputText id="dialog-details-header" value="#{deloDvijenia.informationText[0]}" />
+		</f:facet>
+		<div jsf:id="dialog-details-wrapper">
+			<h:outputText value="#{deloDvijenia.informationText[1]}" escape="false"/>
+		</div>
+	</p:dialog>
+	
+	<!-- Проорец със съобщение, когато FROM_OTHER_DVIJ съдържа някакъв код.  -->
+	<p:dialog appendTo="@form" widgetVar="dialog-from-dvij-id" closeOnEscape="true" 
+			fitViewport="true" responsive="true" resizable="true" modal="true" 
+			dynamic="true" style="max-width:700px;">
+		<h:outputText value="#{labels['deloDvij.fromDvijId']}" />
+	</p:dialog>
+	
+	
+		<ui:remove> <!-- Модален за разглеждане данни за корепондент --> </ui:remove>
+	<h:panelGroup id="dpCorrDvij">
+		<p:dialog appendTo="@form"  closeOnEscape="true" 
+		    header="#{labels['docu.correspView']}"  
+		    fitViewport="true"	
+		    resizable="true"
+		    responsive="true" 
+		    position="top" 		
+			widgetVar="mCorrDvij" dynamic="true" id="modalCorrDvij" 
+			modal="true">
+			<div class="container #{guestPreferences.containerPosition}">	
+				
+			 		<ibg:refCorrespData id="btnCorrDvij1"  readonly="true"
+						 codeRef="#{deloDvijenia.idRefModal}"
+						 modal="true"					
+						 onComplete = "PF('mCorrDvij').hide();document.body.scrollTop = 0; document.documentElement.scrollTop = 0;"/>
+			</div>		
+	 		
+		</p:dialog>	
+	</h:panelGroup>
+	
+</ui:composition>

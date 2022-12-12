@@ -1,0 +1,9 @@
+/target/
+.classpath
+.project
+**/sass/customThemes/**/*.css
+/.vscrof
+.classpath
+.settings
+.tern-project
+/.idea/*

@@ -1,0 +1,132 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:f="http://java.sun.com/jsf/core"
+				xmlns:jsf="http://xmlns.jcp.org/jsf"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:ibg="http://java.sun.com/jsf/composite/components">
+
+<!--Основни данни за настройки за регистрация на документи през уеб услуга-->
+<h:panelGroup id="panelTab6" layout="block">
+
+	<h:panelGroup id="panelDataDocWSOptions">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#optionsList')">
+				<h:outputText value="#{labels['docWsOptions.optionsList']} #{labels['registraturaData.to']} #{systemData.decodeItem(OmbConstants.CODE_CLASSIF_REGISTRATURI, docWSOptionsBean.idReg, docWSOptionsBean.currentLang, now)}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="optionsList" class="p-grid ui-fluid">
+
+			<p:dataTable id="tblOptionsList" value="#{docWSOptionsBean.docWSOptionsList}" sortMode="single" 
+				rowIndexVar="idx" var="row" emptyMessage="#{ui_labels['general.norows']}" 
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+				rows="5" rowsPerPageTemplate="5,10,15,20,25" paginatorPosition="bottom" paginator="true" paginatorAlwaysVisible="true" >
+				
+				<p:column width="5" exportable="false" headerText="#{ui_labels['general.No-symbol']}">
+					<h:outputText value="#{idx + 1}" />
+				</p:column>
+				
+				<p:column width="10" exportable="false" style="text-align: center">
+					<p:commandButton icon="fas fa-edit" action="#{docWSOptionsBean.actionEdit(row.id)}" styleClass="btn-new" update="formRegistratura:tabsRegistraturi:panelTab6"/>
+				</p:column>
+				
+				<p:column width="80" sortBy="#{row.externalCode}" headerText="#{labels['docWsOptions.extCode']}">
+					<h:outputText value="#{row.externalCode}" />
+				</p:column>
+				
+				<p:column width="150" sortBy="#{row.docVid}" headerText="#{labels['docVidSetting.typeDoc']}">
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_VID, row.docVid, docWSOptionsBean.currentLang, now)}" />
+				</p:column>
+				
+				<p:column width="80" sortBy="#{row.docType}" headerText="#{labels['register.tipDoc']}" >
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DOC_TYPE, row.docType, docWSOptionsBean.currentLang, now)}" />
+				</p:column>
+				
+				<p:column width="50" sortBy="#{row.freeAccess}" headerText="#{labels['docu.freeAccess']}" >
+					<h:outputText value="#{systemData.decodeItem(OmbConstants.CODE_CLASSIF_DANE, row.freeAccess, docWSOptionsBean.currentLang, now)}" />
+				</p:column>					
+				
+			</p:dataTable>
+		</div>
+
+	</h:panelGroup>
+	
+	
+	<p:toolbar styleClass="margin-bottom" id="tbPanelTab6">		
+		<f:facet name="left">
+			<p:commandButton icon="fas fa-edit" action="#{docWSOptionsBean.actionNew}" update="formRegistratura:tabsRegistraturi:panelTab6" value="#{labels['docWsOptions.newOption']}" styleClass="ui-button-success" />
+		</f:facet>		
+	</p:toolbar>
+			
+	<h:panelGroup id="p6BasicData" layout="block" rendered="#{docWSOptionsBean.showDataForReg}">
+		
+		<div class="title-group">
+			<p:commandLink class="extended-search-toggle expanded" onclick="toggleSection(this, '#basicDataOptions')">
+				<h:outputText value="#{labels['registratura.basicData']}" />
+				<i class="fas fa-caret-right"></i>
+			</p:commandLink>
+		</div>
+
+		<div id="basicDataOptions" class="card">	
+		
+			<p:toolbar styleClass="margin-bottom" id="tbTab6Reg">
+				<f:facet name="left">
+					<p:commandButton icon="fas fa-save" action="#{docWSOptionsBean.actionSave}" update="formRegistratura:tabsRegistraturi:panelTab6" value="#{ui_labels['general.save']}" />
+				</f:facet>
+				<f:facet name="right">
+					<p:commandButton icon="fas fa-times" action="#{docWSOptionsBean.actionDelete}" update="formRegistratura:tabsRegistraturi:panelTab6" value="#{ui_labels['general.delete']}" rendered="#{docWSOptionsBean.entity.id ne null}" styleClass="ui-button-danger" onclick="if(!confirm('#{beanMessages['general.confirmDeleteMsg']}'))return false;"/> 
+				</f:facet>
+			</p:toolbar>
+			
+			 <div class="p-grid ui-fluid ">
+	
+			<!-- Външен код -->
+			<div class=" p-col-12 p-md-2 p-lg-2">		
+				 <h:outputText value="#{labels['docWsOptions.extCode']}" styleClass="form-label req"/>
+                 <p:inputText value="#{docWSOptionsBean.entity.externalCode}" id="externalCode" />                 		
+			</div>
+			
+			<!-- Вид документ -->
+			<div class=" p-col-12 p-md-5 p-lg-5">								
+				<h:outputText value="#{labels['docVidSetting.typeDoc']}" styleClass="form-label req"/>
+				<p:selectOneMenu value="#{docWSOptionsBean.entity.docVid}" id="docVid" styleClass="#{docWSOptionsBean.hasMessages('docVid') ? 'invalid': ''}" disabled="#{docWSOptionsBean.entity.id ne null}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_VID, now, docWSOptionsBean.currentLang)}"                           
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+                     		<p:ajax event="change" listener="#{docWSOptionsBean.actionChangeVidDoc}" update="formRegistratura:tabsRegistraturi:p6BasicData" partialSubmit="true" process="@form"/>
+				</p:selectOneMenu>						 
+												
+			</div>
+						
+			<!-- Тип документ -->
+			<div class=" p-col-12 p-md-2 p-lg-2">								
+				<h:outputText value="#{labels['register.tipDoc']}" styleClass="form-label req"/>
+				<p:selectOneMenu value="#{docWSOptionsBean.entity.docType}" id="docType" styleClass="#{docWSOptionsBean.hasMessages('docType') ? 'invalid': ''}">
+	 				<f:selectItem value="#{null}" itemValue="#{null}"/>
+                          <f:selectItems value="#{systemData.getSysClassification(OmbConstants.CODE_CLASSIF_DOC_TYPE, now, docWSOptionsBean.currentLang)}" 
+                     			var="itemSc" itemLabel="#{itemSc.tekst}" itemValue="#{itemSc.code}"/>
+				</p:selectOneMenu>						 
+			</div>
+			
+			<!-- Ограничен / свободен достъп -->
+			<div class=" p-col-12 p-md-2 p-lg-2">	
+								
+					<p:selectBooleanButton id="fAacc" value="#{docWSOptionsBean.limitedAccessCh}" style="margin-top:20px"
+						onLabel="#{labels['docu.ogranichen']}" onIcon="fas fa-lock"
+						offLabel="#{labels['docu.freeAccess']}" offIcon="fas fa-unlock">
+					</p:selectBooleanButton>				
+				
+			</div>
+			
+			</div>
+			
+		</div>
+						
+	</h:panelGroup>	
+
+</h:panelGroup>
+
+</ui:composition>
